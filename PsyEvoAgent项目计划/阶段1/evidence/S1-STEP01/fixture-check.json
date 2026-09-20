@@ -1,0 +1,93 @@
+{
+  "step_id": "S1-STEP01",
+  "task_ids": [
+    "S1-T01",
+    "RSI-S1-T01"
+  ],
+  "execution_kind": "local_static_fixture_check",
+  "source_kind": "synthetic",
+  "environment": {
+    "platform": "Windows",
+    "python": "3.14.4"
+  },
+  "started_at": "2026-09-20T07:03:00.176501+00:00",
+  "ended_at": "2026-09-20T07:03:00.511431+00:00",
+  "expected": "13 traceable fixtures; 8 invalid material mutations rejected",
+  "observed": {
+    "valid_fixtures": 13,
+    "rejected_mutations": [
+      "duplicate_fixture",
+      "missing_negative",
+      "unknown_acceptance",
+      "false_product_pass",
+      "false_human_approval",
+      "invalid_mode",
+      "missing_scenario",
+      "injected_owner"
+    ]
+  },
+  "status": "passed",
+  "failed_checks": 0,
+  "product_cases": {
+    "RSI-S1-A01": "planned",
+    "RSI-S1-A05": "planned",
+    "S1-A01": "planned",
+    "S1-A07": "planned"
+  },
+  "versions": {
+    "app": null,
+    "graph": null,
+    "model": null,
+    "provider": null,
+    "sdk": null,
+    "product_schema": null,
+    "evaluator": null,
+    "fixture": "s1-fixtures/1",
+    "scope": "s1-scope/1"
+  },
+  "model_calls": 0,
+  "limitations": [
+    "No product/API/database/provider execution",
+    "No independent human rubric or professional content approval",
+    "Expected examples are authored fixtures, not observed responses"
+  ],
+  "sha256": {
+    "_check_s1_step01.py": "e827f5bccec8128ec5a40638659a8c423df7d2fcacc0b229cd4365c2476c8a81",
+    "PsyEvoAgent项目计划/阶段1/fixtures/S1-STEP01/scenarios.json": "77c9715d7545cabbf91feaad9667df598352b7dc00c2072883cbfd2080e6e305",
+    "_check_docs.py": "ad1ce6c7ea5f87d236b005629a5bd54ddfa8183f4cedc56d6a4cf7184a5a6de7",
+    "README.md": "3197681d5afe8233ad0e7915a095f89a0ab0f24672163d6bf8f28d775d892162",
+    "AGENTS.md": "eddd0956950e7888cfce8f73b714dd612f2c52d002b7aad541b5b55c8cdcfcf4",
+    "PsyEvoAgent项目计划/阶段1/01-阶段目标与功能设计.md": "0fed3a769e90f109c95d0d621c98b7080236d58dfb4021f043729dcb860fe580",
+    "PsyEvoAgent项目计划/阶段1/02-技术方案与实施计划.md": "dc0a29d1209277f0084247649c786d3bf0d80a7909dc9cd0dcc8c15932ca1f89",
+    "PsyEvoAgent项目计划/阶段1/03-测试与验收标准.md": "e5cccb9b5b758214487ab0a04dc9954d3aa1ba9bbf76665e61a223f47ab473fc",
+    "PsyEvoAgent项目计划/阶段1/04-分步实施与检查清单.md": "8b99c8568aeab3c1b16b71d40b4c8f6380d3c5fdc2ab9125419531bfee448184",
+    "PsyEvoAgent项目计划/阶段2/01-阶段目标与功能设计.md": "0585735103b304a91a0794f6c2b63898c82d1dca7b146951a2c0c999894c5c30",
+    "PsyEvoAgent项目计划/阶段2/02-技术方案与实施计划.md": "a0bb25fc296377d6adea3b04f884effe66a15cb4900c8882309055d031b974d6",
+    "PsyEvoAgent项目计划/阶段2/03-测试与验收标准.md": "adfab9c9cba068d6f373e83fa003bad73b93fd3ce76a4f7c25cdb6a03650700a",
+    "PsyEvoAgent项目计划/阶段2/04-分步实施与检查清单.md": "6d7071e9aad663a8828fd2cc1be3ae0a6d023090ddd683ae6834044e6008649a",
+    "PsyEvoAgent项目计划/阶段3/01-阶段目标与功能设计.md": "b7eddf2dbf476d92b192b36cab8998990321cdd5bfc269d099f94e9d25baf9fe",
+    "PsyEvoAgent项目计划/阶段3/02-技术方案与实施计划.md": "1b6ed46be7390c7ffae8b5de643e6076cbb9676c7df773cf09302972d6643845",
+    "PsyEvoAgent项目计划/阶段3/03-测试与验收标准.md": "9fc3185d68880e2044cd7e0b1e84ab6cfdbaea792beabdd707bcc8beb745046a",
+    "PsyEvoAgent项目计划/阶段3/04-分步实施与检查清单.md": "919cabb68f7a54b8d9422ffa463aa7a24996b410ef7e4a66c781ed321daa3e0d",
+    "PsyEvoAgent项目计划/阶段4/01-阶段目标与功能设计.md": "bc8935a23cc67cd09863560fe1a170bdde592de5fade151a03c6599f03142726",
+    "PsyEvoAgent项目计划/阶段4/02-技术方案与实施计划.md": "142559b3971a215c118ec8895a96d6118f7aa91d675cf198b58fab68bde8993c",
+    "PsyEvoAgent项目计划/阶段4/03-测试与验收标准.md": "65bd091c2c7f448ed183d05d8676cea7e3852de875c02b1e5449f541b15ef9cf",
+    "PsyEvoAgent项目计划/阶段4/04-分步实施与检查清单.md": "630b320b8101b0209a9b1c3ce47ad7903b7c701df9e01b2814ce351baf786531",
+    "PsyEvoAgent项目计划/阶段5/01-阶段目标与功能设计.md": "70137024d9afc8ecf68c51423b7b5c17e6ef9958e3558d5a0a8bda215710b7b3",
+    "PsyEvoAgent项目计划/阶段5/02-技术方案与实施计划.md": "b5c2feab4610b6e6965dd57011ec31114ea76a3e81fc5eef8687d16c5f368b04",
+    "PsyEvoAgent项目计划/阶段5/03-测试与验收标准.md": "8affa22b53fe77e1b853c8ac45d97c1b36766bc4c2bc789a2dc7b13ea960adcf",
+    "PsyEvoAgent项目计划/阶段5/04-分步实施与检查清单.md": "3242947d8e00ccd5851a3b6030452b8ea9c452d3e7eda81a00c3ed08471b106d",
+    "PsyEvoAgent项目计划/阶段5A/01-阶段目标与功能设计.md": "629c052395aad19d87ec358502d00f8cfda556b04d510dd58d3516e669fdd476",
+    "PsyEvoAgent项目计划/阶段5A/02-技术方案与实施计划.md": "003e9ad1b5752d79063d2f83f32b2ed96daef89525ea7b3b97ce28b69be72be7",
+    "PsyEvoAgent项目计划/阶段5A/03-测试与验收标准.md": "c8f64ade0400452a5a1a487168751a993bfcd6960b731e3fb6b9b7bc5f7447a5",
+    "PsyEvoAgent项目计划/阶段5A/04-分步实施与检查清单.md": "93dca87ec58c31a775305459b0d449b06c102ef44359f1d0eccf02db918ac018",
+    "PsyEvoAgent项目计划/阶段6/01-阶段目标与功能设计.md": "d10d987f6a26d6ed3b62df102be3069918ce64c03112f51021fcb168376c955d",
+    "PsyEvoAgent项目计划/阶段6/02-技术方案与实施计划.md": "492b7ce606c69de4dd675b7ba1610f8a60e111ceabd6bcb87d81199e05485590",
+    "PsyEvoAgent项目计划/阶段6/03-测试与验收标准.md": "453ea92402ddd7836dac570493fc05f0d51514698b0ddc34ac2a354d5dcdaf0e",
+    "PsyEvoAgent项目计划/阶段6/04-分步实施与检查清单.md": "dd05b4a854184c287d12136a9ee83207a58dfe98d1a971752bbadd0fc654f934",
+    "PsyEvoAgent项目计划/阶段7/01-阶段目标与功能设计.md": "533eedd2b9c149b0049cb6b118e1f8329f32da6fddb58d5f606df80b7476468e",
+    "PsyEvoAgent项目计划/阶段7/02-技术方案与实施计划.md": "8d637e4ead7406ed071930bf7977699d214d45d7c0f7c9c66ac6abe17be0b3c3",
+    "PsyEvoAgent项目计划/阶段7/03-测试与验收标准.md": "383ec7f6fb7d0d3af1e9f678d144561db057dbe2d57dc9abbce9e637a3f79f0c",
+    "PsyEvoAgent项目计划/阶段7/04-分步实施与检查清单.md": "60f604f6bc0eb84da174ce67e053c1dfc44cc9908caa933f3640d950c5e929f8"
+  }
+}
