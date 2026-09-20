@@ -1,0 +1,16 @@
+﻿Command: python -B -X utf8 _check_docs.py
+Executed at: 2026-09-20T15:03:01.8747307+08:00
+Environment: Windows; Python 3.14.4
+Scope: document structure only; product acceptance not executed
+
+阶段1: tasks=13, cases=21, steps=8
+阶段2: tasks=14, cases=19, steps=8
+阶段3: tasks=12, cases=19, steps=7
+阶段4: tasks=11, cases=19, steps=8
+阶段5: tasks=13, cases=21, steps=8
+阶段5A: tasks=6, cases=15, steps=7
+阶段6: tasks=12, cases=20, steps=7
+阶段7: tasks=11, cases=19, steps=8
+Documents=32; tasks=92; cases=153; AUD=17
+Steps=61; subitems=207; local links=1471
+Document checks: PASSED (0 errors)
