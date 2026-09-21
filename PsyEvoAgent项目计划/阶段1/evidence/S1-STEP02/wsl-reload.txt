@@ -1,0 +1,33 @@
+INFO:     Started server process [108]
+INFO:     Waiting for application startup.
+INFO:     api.started
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:33435 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     api.stopped
+INFO:     Application shutdown complete.
+INFO:     Finished server process [108]
+dev.reloaded
+INFO:     Started server process [112]
+INFO:     Waiting for application startup.
+INFO:     api.started
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:33435 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     api.stopped
+INFO:     Application shutdown complete.
+INFO:     Finished server process [112]
+dev.reloaded
+INFO:     Started server process [115]
+INFO:     Waiting for application startup.
+INFO:     api.started
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:33435 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     api.stopped
+INFO:     Application shutdown complete.
+INFO:     Finished server process [115]
+dev.stopped

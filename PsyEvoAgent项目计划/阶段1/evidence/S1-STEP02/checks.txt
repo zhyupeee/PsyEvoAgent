@@ -1,0 +1,32 @@
+Baseline: 74c5dfe
+Started: 2026-09-20T08:05:59.754949+00:00
+Host: Windows; Python 3.14.4; Node v22.19.0; pnpm 10.28.0; uv 0.11.7
+Receipt setup first attempt failed with WinError 123 due to PowerShell stdin encoding; no checks ran in that attempt. Retried using escaped path.
+Command: python -B -X utf8 _check_docs.py
+Exit: 0
+阶段1: tasks=13, cases=21, steps=8
+阶段2: tasks=14, cases=19, steps=8
+阶段3: tasks=12, cases=19, steps=7
+阶段4: tasks=11, cases=19, steps=8
+阶段5: tasks=13, cases=21, steps=8
+阶段5A: tasks=6, cases=15, steps=7
+阶段6: tasks=12, cases=20, steps=7
+阶段7: tasks=11, cases=19, steps=8
+Documents=32; tasks=92; cases=153; AUD=17
+Steps=61; subitems=207; local links=1481
+Document checks: PASSED (0 errors)
+Command: python -B -X utf8 _check_s1_step01.py
+Exit: 0
+S1-STEP01 material checks: PASSED; 13 fixtures; 8 rejected mutations; 0 failures
+Product acceptance: 0 executed; all 4 referenced cases remain planned
+Command: git diff --check
+Exit: 0
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/02-技术方案与实施计划.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/03-测试与验收标准.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/04-分步实施与检查清单.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it
+Ended: 2026-09-20T08:06:00.324066+00:00
+Failed check commands: 0
+Scope: document/fixture/whitespace checks only; no application execution.
+S1-A13: BLOCKED; no product source, dependency manifests/locks, or test entrypoints.
+STEP01 original receipts were not overwritten.

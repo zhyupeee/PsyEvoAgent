@@ -1,0 +1,14 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  --font-brand: Georgia, serif;
+  --font-display: 'Songti SC', 'SimSun', serif;
+  --color-ink: #173b35;
+  --color-paper: #f3f1e9;
+  --color-line: #b8c2b4;
+  --color-muted: #52665d;
+  --color-status: #365d42;
+  --color-danger: #963e26;
+  --color-focus: #986200;
+}
