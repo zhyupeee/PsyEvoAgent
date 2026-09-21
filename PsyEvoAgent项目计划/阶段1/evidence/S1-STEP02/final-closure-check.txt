@@ -1,0 +1,43 @@
+2026-09-20T13:16:35.780653+00:00 Final STEP02 closure checks
+Command: D:\PsyEvoAgent\backend\.venv\Scripts\python.exe -B -X utf8 _check_docs.py
+Exit code: 0
+阶段1: tasks=13, cases=21, steps=8
+阶段2: tasks=14, cases=19, steps=8
+阶段3: tasks=12, cases=19, steps=7
+阶段4: tasks=11, cases=19, steps=8
+阶段5: tasks=13, cases=21, steps=8
+阶段5A: tasks=6, cases=15, steps=7
+阶段6: tasks=12, cases=20, steps=7
+阶段7: tasks=11, cases=19, steps=8
+Documents=32; tasks=92; cases=153; AUD=17
+Steps=61; subitems=207; local links=1507
+Document checks: PASSED (0 errors)
+
+
+Command: D:\PsyEvoAgent\backend\.venv\Scripts\python.exe -m ruff check --config backend/pyproject.toml scripts/check_step02.py scripts/probe_os_isolation.py
+Exit code: 0
+All checks passed!
+
+
+Command: D:\PsyEvoAgent\backend\.venv\Scripts\python.exe -m ruff format --check --config backend/pyproject.toml scripts/check_step02.py scripts/probe_os_isolation.py
+Exit code: 0
+2 files already formatted
+
+
+Command: wsl -d Ubuntu -- bash -n /mnt/d/PsyEvoAgent/scripts/check_step02_isolated.sh
+Exit code: 0
+
+
+Command: git diff --check
+Exit code: 0
+
+warning: in the working copy of 'AGENTS.md', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/02-技术方案与实施计划.md', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/03-测试与验收标准.md', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/04-分步实施与检查清单.md', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'README.md', CRLF will be replaced by LF the next time Git touches it
+
+windows-final-check.json: 20 commands passed; 32 current source hashes match.
+wsl-isolated-check.json: 21 commands passed; 32 current source hashes match.
+Unisolated negative case: expected exit 1 before any tests; verified.
+Final closure: PASSED

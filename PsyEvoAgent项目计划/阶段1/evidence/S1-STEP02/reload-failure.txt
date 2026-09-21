@@ -1,0 +1,8 @@
+INFO:     Will watch for changes in these directories: ['D:\\PsyEvoAgent\\.artifacts\\step02-20260920-194022\\pytest\\test_real_api_reload_does_not_0']
+INFO:     Uvicorn running on http://127.0.0.1:53508 (Press CTRL+C to quit)
+INFO:     Started reloader process [30552] using WatchFiles
+INFO:     Started server process [30888]
+INFO:     Waiting for application startup.
+INFO:     api.started
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app\main.py'. Reloading...

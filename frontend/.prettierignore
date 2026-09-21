@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.output/
+.tanstack/
+test-results/
+playwright-report/
+.cache/
+coverage/
+pnpm-lock.yaml
+src/routeTree.gen.ts
+.env
+.env.*
+*.log

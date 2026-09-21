@@ -1,0 +1,267 @@
+{
+  "step_id": "S1-STEP02",
+  "acceptance_id": "S1-A13",
+  "started": "2026-09-20T13:09:39.353755+00:00",
+  "execution_kind": "local-engineering-and-fake",
+  "os_isolation_required": true,
+  "limitations": [
+    "No business authorization, run cancellation, or model acceptance",
+    "Network-only isolation is not a filesystem sandbox"
+  ],
+  "commands": [
+    {
+      "command": [
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/repo/backend/.venv/bin/python",
+        "-I",
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/repo/scripts/probe_os_isolation.py"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "output": "{\n  \"interfaces\": [\n    \"lo\"\n  ],\n  \"network_namespace\": \"net:[4026532234]\",\n  \"no_new_privileges\": true,\n  \"capabilities\": \"none\",\n  \"kernel_probes\": [\n    {\n      \"address\": \"203.0.113.1\",\n      \"type\": \"SOCK_STREAM\",\n      \"errno\": 101\n    },\n    {\n      \"address\": \"203.0.113.1\",\n      \"type\": \"SOCK_DGRAM\",\n      \"errno\": 101\n    },\n    {\n      \"address\": \"2001:db8::1\",\n      \"type\": \"SOCK_STREAM\",\n      \"errno\": 101\n    },\n    {\n      \"address\": \"2001:db8::1\",\n      \"type\": \"SOCK_DGRAM\",\n      \"errno\": 101\n    }\n  ],\n  \"native_curl_exit\": 7,\n  \"wsl_interop\": \"blocked\",\n  \"status\": \"passed\"\n}\n"
+    },
+    {
+      "command": [
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/repo/backend/.venv/bin/python",
+        "--version"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "output": "Python 3.12.13\n"
+    },
+    {
+      "command": [
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/node-v22.19.0-linux-x64/bin/node",
+        "--version"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "output": "v22.19.0\n"
+    },
+    {
+      "command": [
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm",
+        "--version"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "output": "10.28.0\n"
+    },
+    {
+      "command": [
+        "uv",
+        "--version"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "output": "uv 0.11.7 (x86_64-unknown-linux-gnu)\n"
+    },
+    {
+      "command": [
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm",
+        "install",
+        "--lockfile-only",
+        "--frozen-lockfile",
+        "--offline",
+        "--ignore-scripts"
+      ],
+      "cwd": "frontend",
+      "exit_code": 0,
+      "output": "Done in 547ms using pnpm v10.28.0\n"
+    },
+    {
+      "command": [
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/repo/backend/.venv/bin/python",
+        "-c",
+        "import socket\ntry:\n socket.create_connection(('203.0.113.1', 443), 1)\nexcept PermissionError:\n print('Python external TCP blocked')\nelse:\n raise AssertionError('Guard did not block TCP')"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "output": "Python external TCP blocked\n"
+    },
+    {
+      "command": [
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/node-v22.19.0-linux-x64/bin/node",
+        "-e",
+        "try { require('node:net').connect(443, '203.0.113.1'); process.exitCode=1 } catch(e) { if (!e.message.includes('Gate blocks')) throw e; console.log('Node external TCP blocked') }"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "output": "Node external TCP blocked\n"
+    },
+    {
+      "command": [
+        "uv",
+        "lock",
+        "--check",
+        "--offline"
+      ],
+      "cwd": "backend",
+      "exit_code": 0,
+      "output": "Resolved 36 packages in 21ms\n"
+    },
+    {
+      "command": [
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/repo/backend/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "cwd": "backend",
+      "exit_code": 0,
+      "output": "All checks passed!\n"
+    },
+    {
+      "command": [
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/repo/backend/.venv/bin/python",
+        "-m",
+        "ruff",
+        "format",
+        "--check",
+        "."
+      ],
+      "cwd": "backend",
+      "exit_code": 0,
+      "output": "9 files already formatted\n"
+    },
+    {
+      "command": [
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/repo/backend/.venv/bin/python",
+        "-m",
+        "mypy"
+      ],
+      "cwd": "backend",
+      "exit_code": 0,
+      "output": "Success: no issues found in 9 source files\n"
+    },
+    {
+      "command": [
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/repo/backend/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp=/home/zhyupe1118/psyevo-step02-lUiA7MJC/repo/.artifacts/step02-20260920-210939/pytest"
+      ],
+      "cwd": "backend",
+      "exit_code": 0,
+      "output": "........                                                                 [100%]\n8 passed in 9.52s\n"
+    },
+    {
+      "command": [
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm",
+        "lint"
+      ],
+      "cwd": "frontend",
+      "exit_code": 0,
+      "output": "\n> psyevoagent-frontend@0.1.0 lint /home/zhyupe1118/psyevo-step02-lUiA7MJC/repo/frontend\n> eslint . --max-warnings 0\n\n"
+    },
+    {
+      "command": [
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm",
+        "typecheck"
+      ],
+      "cwd": "frontend",
+      "exit_code": 0,
+      "output": "\n> psyevoagent-frontend@0.1.0 typecheck /home/zhyupe1118/psyevo-step02-lUiA7MJC/repo/frontend\n> tsc --noEmit\n\n"
+    },
+    {
+      "command": [
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm",
+        "test:unit"
+      ],
+      "cwd": "frontend",
+      "exit_code": 0,
+      "output": "\n> psyevoagent-frontend@0.1.0 test:unit /home/zhyupe1118/psyevo-step02-lUiA7MJC/repo/frontend\n> vitest run\n\n\n RUN  v3.2.7 /home/zhyupe1118/psyevo-step02-lUiA7MJC/repo/frontend\n\n ✓ src/health.test.ts (2 tests) 13ms\n\n Test Files  1 passed (1)\n      Tests  2 passed (2)\n   Start at  21:10:04\n   Duration  915ms (transform 82ms, setup 0ms, collect 64ms, tests 13ms, environment 0ms, prepare 223ms)\n\n"
+    },
+    {
+      "command": [
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm",
+        "build"
+      ],
+      "cwd": "frontend",
+      "exit_code": 0,
+      "output": "\n> psyevoagent-frontend@0.1.0 build /home/zhyupe1118/psyevo-step02-lUiA7MJC/repo/frontend\n> vite build\n\nvite v7.3.6 building client environment for production...\ntransforming...\n✓ 155 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/client/assets/style-shwtDlVp.css    1.42 kB │ gzip:   0.73 kB\ndist/client/assets/index-DmYjgpkI.js     2.44 kB │ gzip:   1.27 kB\ndist/client/assets/index-0wl5g79E.js   344.18 kB │ gzip: 111.47 kB\n✓ built in 2.40s\nvite v7.3.6 building ssr environment for production...\ntransforming...\n✓ 122 modules transformed.\nrendering chunks...\ndist/server/assets/start-HYkvq4Ni.js                         0.06 kB\ndist/server/assets/empty-plugin-adapters-BFgPZ6_d.js         0.13 kB\ndist/server/assets/_tanstack-start-manifest_v-gHYUmieo.js    0.49 kB\ndist/server/assets/router-CLI__aZy.js                        1.33 kB\ndist/server/assets/index-K_rDk5Do.js                         3.91 kB\ndist/server/server.js                                      230.16 kB\n✓ built in 1.53s\n"
+    },
+    {
+      "command": [
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm",
+        "test:e2e"
+      ],
+      "cwd": "frontend",
+      "exit_code": 1,
+      "output": "\n> psyevoagent-frontend@0.1.0 test:e2e /home/zhyupe1118/psyevo-step02-lUiA7MJC/repo/frontend\n> playwright test\n\n\nRunning 4 tests using 1 worker\n\n  ✘  1 tests/foundation.spec.ts:12:1 › real Start page and same-origin FastAPI gateway work twice with keyboard (9ms)\n  ✘  2 tests/foundation.spec.ts:28:1 › slow request can be stopped and late success cannot overwrite it (8ms)\n  ✘  3 tests/foundation.spec.ts:49:1 › errors focus the message, never display raw bodies, and allow retry (7ms)\n  ✘  4 tests/foundation.spec.ts:61:1 › mobile reduced-motion layout fits and external browser requests are denied (9ms)\n\n\n  1) tests/foundation.spec.ts:12:1 › real Start page and same-origin FastAPI gateway work twice with keyboard \n\n    Error: browserType.launch: Target page, context or browser has been closed\n    Browser logs:\n\n    <launching> /home/zhyupe1118/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --disable-background-networking --disable-component-update --user-data-dir=/tmp/playwright_chromiumdev_profile-V9a8Wb --remote-debugging-pipe --no-startup-window\n    <launched> pid=653\n    [pid=653][err] /home/zhyupe1118/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell: error while loading shared libraries: libnspr4.so: cannot open shared object file: No such file or directory\n    Call log:\n      - <launching> /home/zhyupe1118/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --disable-background-networking --disable-component-update --user-data-dir=/tmp/playwright_chromiumdev_profile-V9a8Wb --remote-debugging-pipe --no-startup-window\n      - <launched> pid=653\n      - [pid=653][err] /home/zhyupe1118/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell: error while loading shared libraries: libnspr4.so: cannot open shared object file: No such file or directory\n      - [pid=653] <gracefully close start>\n      - [pid=653] <kill>\n      - [pid=653] <will force kill>\n      - [pid=653] exception while trying to kill process: Error: kill ESRCH\n      - [pid=653] <process did exit: exitCode=127, signal=null>\n      - [pid=653] starting temporary directories cleanup\n      - [pid=653] finished temporary directories cleanup\n      - [pid=653] <gracefully close end>\n\n\n    Error Context: test-results/foundation-real-Start-page-6bc84-ay-work-twice-with-keyboard/error-context.md\n\n  2) tests/foundation.spec.ts:28:1 › slow request can be stopped and late success cannot overwrite it \n\n    Error: browserType.launch: Target page, context or browser has been closed\n    Browser logs:\n\n    <launching> /home/zhyupe1118/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --disable-background-networking --disable-component-update --user-data-dir=/tmp/playwright_chromiumdev_profile-VVa5id --remote-debugging-pipe --no-startup-window\n    <launched> pid=665\n    [pid=665][err] /home/zhyupe1118/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell: error while loading shared libraries: libnspr4.so: cannot open shared object file: No such file or directory\n    Call log:\n      - <launching> /home/zhyupe1118/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --disable-background-networking --disable-component-update --user-data-dir=/tmp/playwright_chromiumdev_profile-VVa5id --remote-debugging-pipe --no-startup-window\n      - <launched> pid=665\n      - [pid=665][err] /home/zhyupe1118/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell: error while loading shared libraries: libnspr4.so: cannot open shared object file: No such file or directory\n      - [pid=665] <gracefully close start>\n      - [pid=665] <kill>\n      - [pid=665] <will force kill>\n      - [pid=665] exception while trying to kill process: Error: kill ESRCH\n      - [pid=665] <process did exit: exitCode=127, signal=null>\n      - [pid=665] starting temporary directories cleanup\n      - [pid=665] finished temporary directories cleanup\n      - [pid=665] <gracefully close end>\n\n\n    Error Context: test-results/foundation-slow-request-ca-d681f-success-cannot-overwrite-it/error-context.md\n\n  3) tests/foundation.spec.ts:49:1 › errors focus the message, never display raw bodies, and allow retry \n\n    Error: browserType.launch: Target page, context or browser has been closed\n    Browser logs:\n\n    <launching> /home/zhyupe1118/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --disable-background-networking --disable-component-update --user-data-dir=/tmp/playwright_chromiumdev_profile-bbmOF1 --remote-debugging-pipe --no-startup-window\n    <launched> pid=677\n    [pid=677][err] /home/zhyupe1118/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell: error while loading shared libraries: libnspr4.so: cannot open shared object file: No such file or directory\n    Call log:\n      - <launching> /home/zhyupe1118/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --disable-background-networking --disable-component-update --user-data-dir=/tmp/playwright_chromiumdev_profile-bbmOF1 --remote-debugging-pipe --no-startup-window\n      - <launched> pid=677\n      - [pid=677][err] /home/zhyupe1118/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell: error while loading shared libraries: libnspr4.so: cannot open shared object file: No such file or directory\n      - [pid=677] <gracefully close start>\n      - [pid=677] <kill>\n      - [pid=677] <will force kill>\n      - [pid=677] exception while trying to kill process: Error: kill ESRCH\n      - [pid=677] <process did exit: exitCode=127, signal=null>\n      - [pid=677] starting temporary directories cleanup\n      - [pid=677] finished temporary directories cleanup\n      - [pid=677] <gracefully close end>\n\n\n    Error Context: test-results/foundation-errors-focus-th-ce4cf--raw-bodies-and-allow-retry/error-context.md\n\n  4) tests/foundation.spec.ts:61:1 › mobile reduced-motion layout fits and external browser requests are denied \n\n    Error: browserType.launch: Target page, context or browser has been closed\n    Browser logs:\n\n    <launching> /home/zhyupe1118/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --disable-background-networking --disable-component-update --user-data-dir=/tmp/playwright_chromiumdev_profile-yejXZg --remote-debugging-pipe --no-startup-window\n    <launched> pid=689\n    [pid=689][err] /home/zhyupe1118/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell: error while loading shared libraries: libnspr4.so: cannot open shared object file: No such file or directory\n    Call log:\n      - <launching> /home/zhyupe1118/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --disable-background-networking --disable-component-update --user-data-dir=/tmp/playwright_chromiumdev_profile-yejXZg --remote-debugging-pipe --no-startup-window\n      - <launched> pid=689\n      - [pid=689][err] /home/zhyupe1118/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell: error while loading shared libraries: libnspr4.so: cannot open shared object file: No such file or directory\n      - [pid=689] <gracefully close start>\n      - [pid=689] <kill>\n      - [pid=689] <will force kill>\n      - [pid=689] exception while trying to kill process: Error: kill ESRCH\n      - [pid=689] <process did exit: exitCode=127, signal=null>\n      - [pid=689] starting temporary directories cleanup\n      - [pid=689] finished temporary directories cleanup\n      - [pid=689] <gracefully close end>\n\n\n    Error Context: test-results/foundation-mobile-reduced--01cc8-browser-requests-are-denied/error-context.md\n\n  4 failed\n    tests/foundation.spec.ts:12:1 › real Start page and same-origin FastAPI gateway work twice with keyboard \n    tests/foundation.spec.ts:28:1 › slow request can be stopped and late success cannot overwrite it \n    tests/foundation.spec.ts:49:1 › errors focus the message, never display raw bodies, and allow retry \n    tests/foundation.spec.ts:61:1 › mobile reduced-motion layout fits and external browser requests are denied \n ELIFECYCLE  Command failed with exit code 1.\n"
+    },
+    {
+      "command": [
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/repo/backend/.venv/bin/python",
+        "-B",
+        "-X",
+        "utf8",
+        "_check_docs.py"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "output": "阶段1: tasks=13, cases=21, steps=8\n阶段2: tasks=14, cases=19, steps=8\n阶段3: tasks=12, cases=19, steps=7\n阶段4: tasks=11, cases=19, steps=8\n阶段5: tasks=13, cases=21, steps=8\n阶段5A: tasks=6, cases=15, steps=7\n阶段6: tasks=12, cases=20, steps=7\n阶段7: tasks=11, cases=19, steps=8\nDocuments=32; tasks=92; cases=153; AUD=17\nSteps=61; subitems=207; local links=1492\nDocument checks: PASSED (0 errors)\n"
+    },
+    {
+      "command": [
+        "/home/zhyupe1118/psyevo-step02-lUiA7MJC/repo/backend/.venv/bin/python",
+        "-B",
+        "-X",
+        "utf8",
+        "_check_s1_step01.py"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "output": "S1-STEP01 material checks: PASSED; 13 fixtures; 8 rejected mutations; 0 failures\nProduct acceptance: 0 executed; all 4 referenced cases remain planned\n"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": ".",
+      "exit_code": 0,
+      "output": ""
+    }
+  ],
+  "bundle_probe_leaks": [],
+  "hashes": {
+    "backend/pyproject.toml": "c29f76ec02c6496b149afcc8e89f7cb47c84e8a2afd86a9d9186b4923cbf701e",
+    "backend/uv.lock": "c57f60907eedd2bf51cc7322a2c740f2920e4d92e72db287684011ca8745de8d",
+    "backend/app/main.py": "28d56216039432ae4a476970687e2d9456f6af30a4f18d1291b248ddf0cc9386",
+    "backend/app/worker.py": "4e2a4a4c61864220659dbfea1363adbeba036d37e5934d572326d3639080df24",
+    "backend/app/dev.py": "3c9de27718e9219472f40a0d668adef4cbbbbcbc6ae5388a9f65b953558c09b1",
+    "backend/app/__init__.py": "a7ee3344db8f829529c6f818a8fe650053ac61e72a5bd87aff5a7855d130586e",
+    "backend/app/config.py": "d1cae0336398a8186acf74c73cf82c076deba8c3a9fa34b35971d78b71fb5b48",
+    "backend/tests/fakes.py": "90a8f68f1ab1a460045a295d0e028b836e8f78c61d83a36dcd45fe631fbc2b74",
+    "backend/tests/test_processes.py": "4b204d8413481f0388771f2f4b67e1da052aa727a300198cc39dcc80d77d0693",
+    "backend/tests/test_foundation.py": "84fee0b46841cd8eb3c3bcf5cf10db533cec7a326f198ad7e3c8238b18ddbb86",
+    "backend/tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "frontend/tsconfig.json": "d6a6c4694fc0af7cfc946c2580901d6658c9a1e6175c8d772a6b3439cdf8da1b",
+    "frontend/eslint.config.js": "1032ec42fe9fddd221fe49dce227be9f610fec65a69260322a6e2ef81130534d",
+    "frontend/vitest.config.ts": "ac04393f55d8fc13727ae90c6e253812904678a35d14e2c460360dbde68fed8f",
+    "frontend/package.json": "85be1227f8cbf6e5a525b40159e6ee998f4be4b496be19887e9df1e36b044d18",
+    "frontend/pnpm-workspace.yaml": "27b336209bd8b917cefb2a3f8c97fb893829ce96cd2ec58ddc952a26080b0672",
+    "frontend/playwright.config.ts": "5bae711ea2e91807fcc73935bd4ae959f056c054f28a3f6b79e3b56750237d26",
+    "frontend/pnpm-lock.yaml": "037320498bc2a959e29032867ddb039d0c9df090cc5a559fbcbc48e27355c9f1",
+    "frontend/vite.config.ts": "cc652e207335fc053c2118246e96ad822c0e1aadb073ad71c878b6984c22d920",
+    "frontend/src/style.css": "fcfca36570819a316adf401f75f59fff1213232e992ff51867abbff8950876be",
+    "frontend/src/health.ts": "7c853f22c2bc88b77824fa2e79f64dd1a6b1751cc921a1fa297402790e16688e",
+    "frontend/src/health.test.ts": "8c865b3d09c39e09c24cfe1f18c2d7bc51dd26b698f90fe761daae4e2d0229f7",
+    "frontend/src/routeTree.gen.ts": "f4a843c61899ede2abbc4a7153e6a00557765f737b724b152463c533c4e0ddb0",
+    "frontend/src/router.tsx": "74201994bef77bcc0e159c75fe5e4f64ed59420cf0b9a7e17fdbf09690fc6e3a",
+    "frontend/tests/foundation.spec.ts": "05f55524d35ad167c3d32a1488e9b1a4c2b9e44ccdf9fea22713d51382701e23",
+    "frontend/src/routes/index.tsx": "9c55946aa2af0da903d7c834c3dd93bab5eb75e5a3c5c176f8575f5b4570d540",
+    "frontend/src/routes/__root.tsx": "f3e543d3c8d56c0423a8a33c70e147addc9c6a8867cfa3519d47d3e02c480caa",
+    "scripts/network-guard.cjs": "d4a6cf4697d8fe52a574415b0bb442a24503fbc21e5b66ecb58cd218eb6c7f4e",
+    "scripts/check_step02_isolated.sh": "2dc9b87c3e180898db9532e2d2f0b0ee5eca721fc2442973be7fb419d9a4033e",
+    "scripts/probe_os_isolation.py": "ef44d8726627f996e2667ce7de58ae5321ca5d2c5faa9fe7ed43f87a9fb517ee",
+    "scripts/check_step02.py": "5af7b5976c3c97483bef1aa5908b7979b38abffe921648799b3c011d2a4ba396",
+    "scripts/network_guard/sitecustomize.py": "97fc141b346f624d6eff50c1d1ee915f75b580c51093fab3a29c7d73f3ee30db"
+  },
+  "ended": "2026-09-20T13:10:26.374249+00:00",
+  "status": "failed"
+}

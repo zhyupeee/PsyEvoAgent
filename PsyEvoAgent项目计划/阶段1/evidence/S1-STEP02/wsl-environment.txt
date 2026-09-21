@@ -1,0 +1,23 @@
+Linux 6.6.87.2-microsoft-standard-WSL2
+PRETTY_NAME="Ubuntu 24.04.3 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.3 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+
+Browser prerequisites verified after Playwright install-deps chromium:
+fonts-wqy-zenhei	0.9.45-8
+libasound2t64:amd64	1.2.11-1ubuntu0.3
+libnspr4:amd64	2:4.35-1.1build1
+libnss3:amd64	2:3.98-1ubuntu0.2
+
+Host WSL interop still works after isolated gate exits:
+Windows cmd.exe exit 0
