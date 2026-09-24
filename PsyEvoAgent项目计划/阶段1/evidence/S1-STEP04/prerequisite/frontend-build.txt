@@ -1,0 +1,48 @@
+
+> psyevoagent-frontend@0.1.0 build D:\PsyEvoAgent\frontend
+> vite build
+
+[36mvite v7.3.6 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32m✓[39m 337 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/client/[22m[35massets/style-DMv5MUh8.css        [39m[1m[2m 12.97 kB[22m[1m[22m[2m │ gzip:   3.50 kB[22m
+[2mdist/client/[22m[36massets/me-Ciu70bGZ.js            [39m[1m[2m  0.17 kB[22m[1m[22m[2m │ gzip:   0.16 kB[22m
+[2mdist/client/[22m[36massets/index-DJRwAMgq.js         [39m[1m[2m  0.17 kB[22m[1m[22m[2m │ gzip:   0.16 kB[22m
+[2mdist/client/[22m[36massets/login-Chaf9Xu2.js         [39m[1m[2m  0.18 kB[22m[1m[22m[2m │ gzip:   0.16 kB[22m
+[2mdist/client/[22m[36massets/register-C1s4430y.js      [39m[1m[2m  0.18 kB[22m[1m[22m[2m │ gzip:   0.17 kB[22m
+[2mdist/client/[22m[36massets/brand-B3lEKRkX.js         [39m[1m[2m  0.36 kB[22m[1m[22m[2m │ gzip:   0.29 kB[22m
+[2mdist/client/[22m[36massets/health-D9PfcRIc.js        [39m[1m[2m  3.62 kB[22m[1m[22m[2m │ gzip:   1.66 kB[22m
+[2mdist/client/[22m[36massets/account-page-BnfbE0Wh.js  [39m[1m[2m186.84 kB[22m[1m[22m[2m │ gzip:  52.02 kB[22m
+[2mdist/client/[22m[36massets/index-CfqqQ_wp.js         [39m[1m[2m346.42 kB[22m[1m[22m[2m │ gzip: 112.34 kB[22m
+[32m✓ built in 2.15s[39m
+[36mvite v7.3.6 [32mbuilding ssr environment for production...[36m[39m
+transforming...
+[32m✓[39m 134 modules transformed.
+rendering chunks...
+[2mdist/server/[22m[36massets/start-HYkvq4Ni.js                       [39m[1m[2m  0.06 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/empty-plugin-adapters-BFgPZ6_d.js       [39m[1m[2m  0.13 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/me-CaV1n8Z7.js                          [39m[1m[2m  0.38 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/index-D6OE0C1g.js                       [39m[1m[2m  0.38 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/login-eThUweN0.js                       [39m[1m[2m  0.38 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/register-BAsCHBht.js                    [39m[1m[2m  0.39 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/brand-yk77jtlB.js                       [39m[1m[2m  0.67 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/_tanstack-start-manifest_v-Dr_20qXN.js  [39m[1m[2m  1.29 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/router-C9da2s6b.js                      [39m[1m[2m  3.89 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/health-BSrn5gNu.js                      [39m[1m[2m  5.15 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/account-page-Fv19Er9t.js                [39m[1m[2m 19.88 kB[22m[1m[22m
+[2mdist/server/[22m[36mserver.js                                      [39m[1m[2m230.16 kB[22m[1m[22m
+[32m✓ built in 707ms[39m
+[33mnode_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/regexes.js (74:0): A comment
+
+"/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+ * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+ * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+
+in "node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.[39m
+[33mnode_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/util.js (400:0): A comment
+
+"// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+
+in "node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.[39m

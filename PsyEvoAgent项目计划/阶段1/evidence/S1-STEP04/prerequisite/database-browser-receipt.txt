@@ -1,0 +1,1 @@
+Registered accounts persisted across PostgreSQL restart; no consent fabricated

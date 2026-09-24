@@ -1,0 +1,159 @@
+CHECK D:\PsyEvoAgent\backend\.venv\Scripts\python.exe --version
+Python 3.12.13
+
+CHECK C:\Users\xuand\.nvmd\versions\22.19.0\node.EXE --version
+v22.19.0
+
+CHECK C:\Users\xuand\.nvmd\versions\22.19.0\pnpm.cmd --version
+10.28.0
+
+CHECK uv --version
+uv 0.11.7 (9d177269e 2026-04-15 x86_64-pc-windows-msvc)
+
+CHECK C:\Users\xuand\.nvmd\versions\22.19.0\pnpm.cmd install --lockfile-only --frozen-lockfile --offline --ignore-scripts
+Done in 705ms using pnpm v10.28.0
+
+CHECK D:\PsyEvoAgent\backend\.venv\Scripts\python.exe D:\PsyEvoAgent\scripts\probe_python_guard.py
+Python TCP and DNS guard probes passed
+
+CHECK C:\Users\xuand\.nvmd\versions\22.19.0\node.EXE D:\PsyEvoAgent\scripts\probe_node_guard.cjs
+Node TCP and DNS guard probes passed
+
+CHECK uv lock --check --offline
+Resolved 69 packages in 3ms
+
+CHECK D:\PsyEvoAgent\backend\.venv\Scripts\python.exe -m ruff check .
+All checks passed!
+
+CHECK D:\PsyEvoAgent\backend\.venv\Scripts\python.exe -m ruff format --check .
+37 files already formatted
+
+CHECK D:\PsyEvoAgent\backend\.venv\Scripts\python.exe -m mypy
+Success: no issues found in 30 source files
+
+CHECK D:\PsyEvoAgent\backend\.venv\Scripts\python.exe -m pytest -p no:cacheprovider --basetemp=D:\PsyEvoAgent\.artifacts\step02-20260924-135244\pytest
+.............................................................            [100%]
+61 passed, 18 deselected in 53.30s
+
+CHECK C:\Users\xuand\.nvmd\versions\22.19.0\pnpm.cmd lint
+
+> psyevoagent-frontend@0.1.0 lint D:\PsyEvoAgent\frontend
+> eslint . --max-warnings 0
+
+
+CHECK C:\Users\xuand\.nvmd\versions\22.19.0\pnpm.cmd typecheck
+
+> psyevoagent-frontend@0.1.0 typecheck D:\PsyEvoAgent\frontend
+> tsc --noEmit
+
+
+CHECK C:\Users\xuand\.nvmd\versions\22.19.0\pnpm.cmd test:unit
+
+> psyevoagent-frontend@0.1.0 test:unit D:\PsyEvoAgent\frontend
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/PsyEvoAgent/frontend[39m
+
+ [32m✓[39m src/health.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 13:54:05
+[2m   Duration [22m 2.61s[2m (transform 239ms, setup 0ms, collect 125ms, tests 26ms, environment 1ms, prepare 890ms)[22m
+
+
+CHECK C:\Users\xuand\.nvmd\versions\22.19.0\pnpm.cmd build
+
+> psyevoagent-frontend@0.1.0 build D:\PsyEvoAgent\frontend
+> vite build
+
+[36mvite v7.3.6 [32mbuilding client environment for production...[36m[39m
+transforming...
+[33mnode_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/util.js (400:0): A comment
+
+"// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+
+in "node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.[39m
+[33mnode_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/regexes.js (74:0): A comment
+
+"/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+ * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+ * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+
+in "node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.[39m
+[32m✓[39m 337 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/client/[22m[35massets/style-DMv5MUh8.css        [39m[1m[2m 12.97 kB[22m[1m[22m[2m │ gzip:   3.50 kB[22m
+[2mdist/client/[22m[36massets/me-Ciu70bGZ.js            [39m[1m[2m  0.17 kB[22m[1m[22m[2m │ gzip:   0.16 kB[22m
+[2mdist/client/[22m[36massets/index-DJRwAMgq.js         [39m[1m[2m  0.17 kB[22m[1m[22m[2m │ gzip:   0.16 kB[22m
+[2mdist/client/[22m[36massets/login-Chaf9Xu2.js         [39m[1m[2m  0.18 kB[22m[1m[22m[2m │ gzip:   0.16 kB[22m
+[2mdist/client/[22m[36massets/register-C1s4430y.js      [39m[1m[2m  0.18 kB[22m[1m[22m[2m │ gzip:   0.17 kB[22m
+[2mdist/client/[22m[36massets/brand-B3lEKRkX.js         [39m[1m[2m  0.36 kB[22m[1m[22m[2m │ gzip:   0.29 kB[22m
+[2mdist/client/[22m[36massets/health-D9PfcRIc.js        [39m[1m[2m  3.62 kB[22m[1m[22m[2m │ gzip:   1.66 kB[22m
+[2mdist/client/[22m[36massets/account-page-BnfbE0Wh.js  [39m[1m[2m186.84 kB[22m[1m[22m[2m │ gzip:  52.02 kB[22m
+[2mdist/client/[22m[36massets/index-CfqqQ_wp.js         [39m[1m[2m346.42 kB[22m[1m[22m[2m │ gzip: 112.34 kB[22m
+[32m✓ built in 6.97s[39m
+[36mvite v7.3.6 [32mbuilding ssr environment for production...[36m[39m
+transforming...
+[32m✓[39m 134 modules transformed.
+rendering chunks...
+[2mdist/server/[22m[36massets/start-HYkvq4Ni.js                       [39m[1m[2m  0.06 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/empty-plugin-adapters-BFgPZ6_d.js       [39m[1m[2m  0.13 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/me-CaV1n8Z7.js                          [39m[1m[2m  0.38 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/index-D6OE0C1g.js                       [39m[1m[2m  0.38 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/login-eThUweN0.js                       [39m[1m[2m  0.38 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/register-BAsCHBht.js                    [39m[1m[2m  0.39 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/brand-yk77jtlB.js                       [39m[1m[2m  0.67 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/_tanstack-start-manifest_v-Dr_20qXN.js  [39m[1m[2m  1.29 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/router-C9da2s6b.js                      [39m[1m[2m  3.89 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/health-BSrn5gNu.js                      [39m[1m[2m  5.15 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/account-page-Fv19Er9t.js                [39m[1m[2m 19.88 kB[22m[1m[22m
+[2mdist/server/[22m[36mserver.js                                      [39m[1m[2m230.16 kB[22m[1m[22m
+[32m✓ built in 1.32s[39m
+
+CHECK C:\Users\xuand\.nvmd\versions\22.19.0\pnpm.cmd test:e2e
+
+> psyevoagent-frontend@0.1.0 test:e2e D:\PsyEvoAgent\frontend
+> playwright test
+
+
+Running 5 tests using 1 worker
+
+  ok 1 tests\account-recovery.spec.ts:3:1 › session service failure stays on home and retry restores login (2.6s)
+  ok 2 tests\foundation.spec.ts:12:1 › real Start page and same-origin FastAPI gateway work twice with keyboard (1.9s)
+  ok 3 tests\foundation.spec.ts:38:1 › slow request can be stopped and late success cannot overwrite it (3.8s)
+  ok 4 tests\foundation.spec.ts:67:1 › errors focus the message, never display raw bodies, and allow retry (1.9s)
+  ok 5 tests\foundation.spec.ts:83:1 › mobile reduced-motion layout fits and external browser requests are denied (359ms)
+
+  5 passed (12.8s)
+
+CHECK D:\PsyEvoAgent\backend\.venv\Scripts\python.exe -B -X utf8 _check_docs.py
+阶段1: tasks=13, cases=21, steps=8
+阶段2: tasks=14, cases=19, steps=8
+阶段3: tasks=12, cases=19, steps=7
+阶段4: tasks=11, cases=19, steps=8
+阶段5: tasks=13, cases=21, steps=8
+阶段5A: tasks=6, cases=15, steps=7
+阶段6: tasks=12, cases=20, steps=7
+阶段7: tasks=11, cases=19, steps=8
+Documents=32; tasks=92; cases=153; AUD=17
+Steps=61; subitems=208; local links=1905
+Document checks: PASSED (0 errors)
+
+CHECK D:\PsyEvoAgent\backend\.venv\Scripts\python.exe -B -X utf8 _check_s1_step01.py
+S1-STEP01 material checks: PASSED; 13 fixtures; 8 rejected mutations; 0 failures
+Product acceptance: 0 executed; all 4 referenced cases remain planned
+
+CHECK git diff --check
+warning: in the working copy of 'backend/pyproject.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/public/site.webmanifest', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/style.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'scripts/check_step02_isolated.sh', LF will be replaced by CRLF the next time Git touches it
+
+CHECK git diff --cached --check
+
+CHECK git diff --check origin/main...HEAD
+
+Receipt: D:\PsyEvoAgent\.artifacts\step02-20260924-135244\receipt.json

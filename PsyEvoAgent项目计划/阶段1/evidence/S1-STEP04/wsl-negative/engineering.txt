@@ -1,0 +1,10 @@
+CHECK /home/zhyupe1118/psyevo-step04-H4z95o/backend/.venv/bin/python -I /home/zhyupe1118/psyevo-step04-H4z95o/scripts/probe_os_isolation.py
+Traceback (most recent call last):
+  File "/home/zhyupe1118/psyevo-step04-H4z95o/scripts/probe_os_isolation.py", line 83, in <module>
+    main()
+  File "/home/zhyupe1118/psyevo-step04-H4z95o/scripts/probe_os_isolation.py", line 17, in main
+    assert interfaces == ["lo"], interfaces
+           ^^^^^^^^^^^^^^^^^^^^
+AssertionError: ['docker0', 'eth0', 'lo']
+
+Receipt: /home/zhyupe1118/psyevo-step04-H4z95o/.artifacts/step02-20260924-135519/receipt.json

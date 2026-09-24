@@ -10,7 +10,6 @@ import os
 import signal
 import sys
 import threading
-from contextlib import suppress
 from multiprocessing.process import BaseProcess
 from multiprocessing.synchronize import Event
 from pathlib import Path
@@ -33,18 +32,24 @@ def serve(port: int, stop: Event) -> None:
     )
 
     async def run() -> None:
-        async def monitor_stop() -> None:
-            await asyncio.to_thread(stop.wait)
-            server.should_exit = True
+        loop = asyncio.get_running_loop()
+        monitor: asyncio.Handle
 
-        monitor = asyncio.create_task(monitor_stop())
+        def monitor_stop() -> None:
+            nonlocal monitor
+            # A multiprocessing.Event cannot be awaited. A timer avoids a
+            # blocking executor thread surviving a Windows reload/EOF race.
+            if stop.is_set():
+                server.should_exit = True
+            else:
+                monitor = loop.call_later(0.05, monitor_stop)
+
+        monitor = loop.call_soon(monitor_stop)
         try:
             await server.serve()
         finally:
             stop.set()
             monitor.cancel()
-            with suppress(asyncio.CancelledError):
-                await monitor
 
     asyncio.run(run())
 

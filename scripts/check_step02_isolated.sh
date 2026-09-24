@@ -3,6 +3,13 @@
 set -euo pipefail
 repo_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$repo_dir"
+check_script=scripts/check_step02.py
+if [ "${1:-}" = "--step04" ] && [ "$#" -eq 1 ]; then
+  check_script=scripts/check_step04.py
+elif [ "$#" -ne 0 ]; then
+  echo "Usage: $0 [--step04]" >&2
+  exit 2
+fi
 for tool in unshare ip mount setpriv env; do
   command -v "$tool" >/dev/null
 done
@@ -20,5 +27,5 @@ exec env -i HOME="$HOME" PATH="$PATH" LANG=C.UTF-8 \
       mount --bind /usr/bin/false /init
     fi
     exec setpriv --no-new-privs --bounding-set=-all --inh-caps=-all --ambient-caps=-all \
-      backend/.venv/bin/python -X utf8 scripts/check_step02.py --require-os-isolation
-  ' </dev/null
+      backend/.venv/bin/python -X utf8 "$1" --require-os-isolation
+  ' bash "$check_script" </dev/null
