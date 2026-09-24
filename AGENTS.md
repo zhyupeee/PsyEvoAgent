@@ -4,6 +4,8 @@
 
 ## Project Structure & Module Organization
 
+2026-09-24 STEP04 adds `backend/app/support.py`: a synthetic-only single LangGraph, local LangChain fake adapter, budget ledger and fixed output rules. Live model execution, start/SSE APIs and the complete support product remain unimplemented. Use `scripts/check_step04.py`, or the existing WSL isolation entry with `--step04`, for this slice; keep live Provider capabilities unknown until independently verified.
+
 This workspace contains planning documents, the S1-STEP02 engineering foundation, and the S1-STEP03 registration/login/account and experiment-default/source-link slice in backend/, frontend/, and scripts/. Model execution and the complete support product are not implemented. `PsyEvoAgent项目计划/阶段1/`–`阶段7/` and `阶段5A/` contain 32 documents: `01` for goals, `02` for technical contracts, `03` for acceptance, and `04` for ordered implementation steps and checks. Original, RSI, and audit requirements are integrated by topic; do not recreate separate upgrade or audit editions. Stage 5A specifies role collaboration.
 
 Read the [project guide](README.md) and [shared contracts and implementation evidence](PsyEvoAgent项目计划/阶段1/02-技术方案与实施计划.md#missing-sources). The two historical overviews have been integrated into the stage documents, including core entities and source provenance. Submission/handoff materials remain unavailable; local engineering receipts exist under stage 1 evidence, but are not business acceptance; do not invent them. Historical source checks are not current execution evidence.

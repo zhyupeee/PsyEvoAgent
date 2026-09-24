@@ -1,0 +1,2 @@
+warning: in the working copy of 'frontend/public/site.webmanifest', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/style.css', LF will be replaced by CRLF the next time Git touches it

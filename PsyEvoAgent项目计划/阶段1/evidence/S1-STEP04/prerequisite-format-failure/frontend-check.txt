@@ -1,0 +1,40 @@
+
+> psyevoagent-frontend@0.1.0 check D:\PsyEvoAgent\frontend
+> pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run format:check
+
+
+> psyevoagent-frontend@0.1.0 typecheck D:\PsyEvoAgent\frontend
+> tsc --noEmit
+
+
+> psyevoagent-frontend@0.1.0 lint D:\PsyEvoAgent\frontend
+> eslint . --max-warnings 0
+
+
+> psyevoagent-frontend@0.1.0 test D:\PsyEvoAgent\frontend
+> pnpm run test:unit
+
+
+> psyevoagent-frontend@0.1.0 test:unit D:\PsyEvoAgent\frontend
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/PsyEvoAgent/frontend[39m
+
+ [32m✓[39m src/health.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 13:30:27
+[2m   Duration [22m 1.89s[2m (transform 66ms, setup 0ms, collect 73ms, tests 10ms, environment 0ms, prepare 214ms)[22m
+
+
+> psyevoagent-frontend@0.1.0 format:check D:\PsyEvoAgent\frontend
+> prettier --check .
+
+Checking formatting...
+ ELIFECYCLE  Command failed with exit code 1.
+ ELIFECYCLE  Command failed with exit code 1.
+[[33mwarn[39m] public/site.webmanifest
+[[33mwarn[39m] src/style.css
+[[33mwarn[39m] Code style issues found in 2 files. Run Prettier with --write to fix.

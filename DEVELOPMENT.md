@@ -1,6 +1,20 @@
-# 本地工程开发（S1-STEP02/03）
+# 本地工程开发（S1-STEP02/03/04）
 
 > 当前按[内部实验执行约定](EXPERIMENT.md)推进：可通过指定HTTPS地址分享；目标注册先验证邮箱，登录后直接进入，无年龄或用途确认，不设公众资格、真人告知或期限审批前置。业务不设固定TTL。邮箱身份已实现；真实 SMTP 尚未配置，验证范围见阶段1 STEP03.5 记录。
+
+## S1-STEP04 单Support隔离合成验收
+
+后端内部`app.support.SupportRuntime`执行唯一LangGraph；仅接LangChain本地fake，不注册HTTP/start/SSE接口，不启动Worker，也不修改数据库schema。现有网页不新增聊天入口。运行输入由可信调用方提供身份、来源快照及核权函数；实际数据库run绑定与事件交付在STEP05实现。本步合同与局限见[STEP04技术](PsyEvoAgent项目计划/阶段1/02-技术方案与实施计划.md#s1-step04-implementation)。
+
+新增消费者所需锁：LangGraph 1.2.12、langchain-core 1.6.4；langsmith 0.14.0仅用于显式关闭SDK追踪。`uv.lock`还将websockets从17.1解析为16.1.1以满足新增依赖；其余已有直接业务依赖未移除。先在backend执行`uv sync --locked --group dev`，然后在根目录执行：
+
+```powershell
+backend/.venv/Scripts/python.exe -X utf8 scripts/check_step04.py
+```
+
+WSL独立源码副本先准备Linux依赖与浏览器，再执行`bash scripts/check_step02_isolated.sh --step04`。入口复用原工程门禁、内核隔离与外连负例探针，再输出本步JUnit、13场景正反例、fake账本和能力矩阵，位于`.artifacts/step04-*/`。命令不安装依赖、不访问开发库、不发送真实邮件或模型请求。没有内核隔离时`--require-os-isolation`仍拒绝运行，不降级。
+
+本步运行配置由显式Pydantic参数提供，不增加环境配置读取器；不读取Provider密钥或`.env`。Budget/ModelProfile/VersionBinding在单次运行内冻结；拒绝共享模型缓存、外部callbacks、verbose/debug和未计量SDK重试，LangSmith tracing显式关闭。fake价格使用SYNTHETIC币种，usage未知保留预占且actual为null；不能拿fake金额估算真实费用。规则评分不代表语义安全审阅，真实Provider及支持内容审阅仍BLOCKED。未实现组件不冒充已批准版本。
 
 ## S1-STEP03 注册登录与实验入口
 
