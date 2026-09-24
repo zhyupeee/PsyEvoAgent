@@ -1,0 +1,175 @@
+{
+  "step_id": "S1-STEP03",
+  "started": "2026-09-21T08:53:37.522505+00:00",
+  "execution_kind": "real-local-postgresql-api-browser-with-synthetic-accounts",
+  "acceptance_ids": [
+    "S1-A02",
+    "S1-A06",
+    "RSI-S1-A02",
+    "RSI-S1-A03"
+  ],
+  "image": "postgres:16.13-bookworm@sha256:472efd9a66f2b2f1a5aeb18b28de74332e6ef88c2b93a1a5d812fb6db67a5f60",
+  "commands": [
+    {
+      "label": "image",
+      "exit_code": 0,
+      "log": "image.txt"
+    },
+    {
+      "label": "database-create",
+      "exit_code": 0,
+      "log": "database-create.txt"
+    },
+    {
+      "label": "database-port",
+      "exit_code": 0,
+      "log": "database-port.txt"
+    },
+    {
+      "label": "database-version",
+      "exit_code": 0,
+      "log": "database-version.txt"
+    },
+    {
+      "label": "lock",
+      "exit_code": 0,
+      "log": "lock.txt"
+    },
+    {
+      "label": "lint",
+      "exit_code": 0,
+      "log": "lint.txt"
+    },
+    {
+      "label": "format",
+      "exit_code": 0,
+      "log": "format.txt"
+    },
+    {
+      "label": "types",
+      "exit_code": 0,
+      "log": "types.txt"
+    },
+    {
+      "label": "migration",
+      "exit_code": 0,
+      "log": "migration.txt"
+    },
+    {
+      "label": "schema-drift",
+      "exit_code": 0,
+      "log": "schema-drift.txt"
+    },
+    {
+      "label": "api-migrations",
+      "exit_code": 0,
+      "log": "api-migrations.txt"
+    },
+    {
+      "label": "foundation",
+      "exit_code": 0,
+      "log": "foundation.txt"
+    },
+    {
+      "label": "seed-synthetic",
+      "exit_code": 0,
+      "log": "seed-synthetic.txt"
+    },
+    {
+      "label": "frontend-build",
+      "exit_code": 0,
+      "log": "frontend-build.txt"
+    },
+    {
+      "label": "frontend-check",
+      "exit_code": 0,
+      "log": "frontend-check.txt"
+    },
+    {
+      "label": "browser",
+      "exit_code": 0,
+      "log": "browser.txt"
+    },
+    {
+      "label": "database-restart",
+      "exit_code": 0,
+      "log": "database-restart.txt"
+    },
+    {
+      "label": "database-browser-receipt",
+      "exit_code": 1,
+      "log": "database-browser-receipt.txt"
+    },
+    {
+      "label": "database-cleanup",
+      "exit_code": 0,
+      "log": "database-cleanup.txt"
+    }
+  ],
+  "passed": false,
+  "limitations": [
+    "No real-user eligibility or notice approval",
+    "No model, feedback, run execution or complete deletion acceptance",
+    "Language/browser network guards are not kernel egress isolation"
+  ],
+  "finished": "2026-09-21T08:56:27.117478+00:00",
+  "source_sha256": {
+    "backend/alembic.ini": "e7955a0ffb9c32a9c5067d7885ee9197328f17a4a12fb4a5bb556c2b85763aa2",
+    "backend/app/api.py": "2883a354f028cec9a993de8d9ec3bc9d61e9c8b3b320953ed57aa98dd2d45a6f",
+    "backend/app/contracts.py": "1648d13e0f7dd26a49fa9699db1e73b1bdd7c45e204f884fd7b64482f752e9be",
+    "backend/app/database.py": "90778ac82d09af6a4ff53b854deb669a3f9cad2196c74e40e35e71ca693080c4",
+    "backend/app/models.py": "3b7cb0637ca9d08c690e9772ca86abeca7dbb0a626bf42f0e7e57b5fcccefe85",
+    "backend/app/provision.py": "84064cf023c8577d8fe27ab9239c6bd93b717401bf1c3c818254752e4b208c7f",
+    "backend/app/security.py": "db4aa4a62a8e469f821aba5437ae1aedd2e6236cfc193786aa228ce1ad866893",
+    "backend/migrations/env.py": "e6526809dce26d393201d97034152b5ef77040bbca95bcc3e190b0f40be299af",
+    "backend/migrations/script.py.mako": "d38920781b4d31ae1c0a71bc09f41c2ade8feab9e5a087e3f30cb4bbf0c1c9d3",
+    "backend/migrations/versions/7af8981db341_step03_identity_consent_and_versioned_.py": "9fac8052d2e4d23667f1d7d2a9a3bb486923ffa35a05c2aab9a51e93d74b809d",
+    "backend/migrations/versions/c1756470d092_enforce_composite_owner_references.py": "38128c1867c06baf8b011dd4726e8c4d0b92695eba584d23aa96946fa3b2178a",
+    "backend/tests/test_step03.py": "2ca91fc9d184ccd0c5924df0395b061f108c63ac943beb30e60bc6d5d34ea6e4",
+    "backend/tests/test_step03_migrations.py": "ad11cd0d3720ae163d8bd10cc2ed7d22d5a6f9ffa2358380274e654c64f04348",
+    "frontend/playwright.step03.config.ts": "0f01dbaa122aefc0c52308ea6e3b111e3ec2660a2894d8fb80bac9707123be11",
+    "frontend/src/privacy-api.ts": "df3c72ef9d37648992c1ca7f2b64bf2e150178320f2b31aabd270be701c7d6a0",
+    "frontend/src/routes/me.privacy.tsx": "96b7ea829e8dbaf589a5b63d7ddffbf6609250af6036526c97a3803b3e7aa527",
+    "frontend/tests/privacy.spec.ts": "732e9d555f6f5bfb4867a3080c96446069cc9e249998b44286f0af05f96cb467",
+    "scripts/check_step03.py": "103a929b2dc80f340109e9162333388316066f946ba8b3302dfd2eefb59d0d44",
+    "backend/.python-version": "50b10393ce287fb4af7616d016dd16ac1a56412af4d2c74cde7ddc5ad5c78761",
+    "backend/app/__init__.py": "a7ee3344db8f829529c6f818a8fe650053ac61e72a5bd87aff5a7855d130586e",
+    "backend/app/config.py": "a95bf7fe1927607fd9490981bf30acf2b94d1e964fbd5282d84c75b080dd7789",
+    "backend/app/dev.py": "2d2e033866567de7ffb040d9ed684beb7cfd5407c67973e2c4c39532d9c6bccb",
+    "backend/app/main.py": "01f43ea12abc32412e5ea29c12552ee59268bd34f7c2ed210059d8c587f58fdf",
+    "backend/app/worker.py": "4e2a4a4c61864220659dbfea1363adbeba036d37e5934d572326d3639080df24",
+    "backend/pyproject.toml": "58be8f0b089faab3b042926b8fa7cc269281cdf19dbc2b553a4081862b27721a",
+    "backend/tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backend/tests/fakes.py": "90a8f68f1ab1a460045a295d0e028b836e8f78c61d83a36dcd45fe631fbc2b74",
+    "backend/tests/test_foundation.py": "659603067ac942b7f456c90c17570713c1e690c523475edd93f993af45a2eb8e",
+    "backend/tests/test_processes.py": "201d965a51aa9ce129c57fc741e122aacf532070ab833f12dc802e00626f1931",
+    "backend/uv.lock": "e862c2f8bf599046a6d68ec92b6f3063470f684c851e629dd62f239b1f7fbc42",
+    "frontend/.node-version": "751fc97484d12d7946b0ec9c74d94ecfa555de9daa35f040f037ae1fadc22958",
+    "frontend/.npmrc": "15710541251db726de1491304fa7ca666f8eefc2af25e0ebf9a7efa4e1c5980f",
+    "frontend/.prettierignore": "59e57937b4150c34cfcc2bd275b03184dc8b177526a657704b3a3e4122504be9",
+    "frontend/.prettierrc.json": "24b10369e8edf923789a6221d106c3765662e0ad67693b3650abd0de28b47d3f",
+    "frontend/eslint.config.js": "cd50518c4a88fca5b22f91e7d17c990d25d130f3c5bae2279b1d8bc3a11b7f07",
+    "frontend/package.json": "ccd2119de4dcc575fe16f080a5022498b50c3371b4463b2dbef4af7f01fba497",
+    "frontend/playwright.config.ts": "ebcc459267474a54d86666b046ad7de0bf685f073bcfc7f79d592e7abe73514f",
+    "frontend/pnpm-lock.yaml": "3d84f3ebca92cd8b5f5d29f0478f0fbea69175fb5a93dc5747e9b58ca4d060fd",
+    "frontend/pnpm-workspace.yaml": "27b336209bd8b917cefb2a3f8c97fb893829ce96cd2ec58ddc952a26080b0672",
+    "frontend/src/health.test.ts": "b496e4ed878dbe2b37e5c5853833fbb0a5439e388c5fb42b353d9abf624b8fa8",
+    "frontend/src/health.ts": "048b1cf49c8c9a78ba566065fae75cb398bc3cedd7cb638b194d7d2df80d68ff",
+    "frontend/src/routeTree.gen.ts": "cc9165cdfa301498d2b5278e02c17f8818b709ed6a77801c4dd8084db5ce2246",
+    "frontend/src/router.tsx": "74201994bef77bcc0e159c75fe5e4f64ed59420cf0b9a7e17fdbf09690fc6e3a",
+    "frontend/src/routes/__root.tsx": "9f95f7e244d814e8dbc28d665e72d2feb20809ceee662885f1dd4efa192a8552",
+    "frontend/src/routes/index.tsx": "ff0c4788473b53dbc07cf7f59c03b1d3e144b149304a1ac20530bfcd6f9c4542",
+    "frontend/src/style.css": "576dcf3e6f6139558a30b16f8772117a31f1928a6fe3d468490c11e8a3aae626",
+    "frontend/tests/foundation.spec.ts": "a590c32f46c7faf431a9294a93d1aacc509f9231a79cf88892760d8d41df873f",
+    "frontend/tsconfig.json": "d6a6c4694fc0af7cfc946c2580901d6658c9a1e6175c8d772a6b3439cdf8da1b",
+    "frontend/vite.config.ts": "78bdec969bb47dc8e840b721315179bc627600651ebe23d4ee8dfe44a506a2c7",
+    "frontend/vitest.config.ts": "ac04393f55d8fc13727ae90c6e253812904678a35d14e2c460360dbde68fed8f",
+    "scripts/check_step02.py": "7ab307b987c7f8e5678fc50ba1028e8f3293bb44fe6b6e797249801f2619d311",
+    "scripts/check_step02_isolated.sh": "e39160dfd29b6566299da99fabc178964225cbaed1d02e871cc10f27f69fa282",
+    "scripts/network-guard.cjs": "7fd6a25aa7268b3b2e1c515192d8d029c2fa406fa8ed6e664ffe64181b96cdd5",
+    "scripts/network_guard/sitecustomize.py": "6e67c91808a97391cf95ee684ba9e7ea475492096107b33d934d4787d6fc8196",
+    "scripts/probe_node_guard.cjs": "668c00e085c4c13d41e005f6dade62e09877b2f27bc3e588fdffa78c23fe60d6",
+    "scripts/probe_os_isolation.py": "ef44d8726627f996e2667ce7de58ae5321ca5d2c5faa9fe7ed43f87a9fb517ee",
+    "scripts/probe_python_guard.py": "67b01bc46c3caa39e72bdea07069bbb83336a56e14e7f5d19866bd91446354bb"
+  }
+}

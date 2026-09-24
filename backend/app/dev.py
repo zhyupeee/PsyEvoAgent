@@ -77,6 +77,10 @@ def main() -> None:
         help="For supervised runs: close stdin to stop and await API cleanup",
     )
     args = parser.parse_args()
+    if not args.stop_on_stdin_eof:
+        from app.dev_instances import replace_previous
+
+        replace_previous("backend", Path(__file__).resolve().parents[1], args.port)
     shutdown = threading.Event()
 
     def request_stop(signum: int, frame: FrameType | None) -> None:

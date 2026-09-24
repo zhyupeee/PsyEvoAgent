@@ -1,0 +1,19 @@
+# Only PostgreSQL. API, frontend and Worker remain local processes.
+services:
+  postgres:
+    image: postgres:16.13-bookworm@sha256:472efd9a66f2b2f1a5aeb18b28de74332e6ef88c2b93a1a5d812fb6db67a5f60
+    environment:
+      POSTGRES_DB: psyevo_synthetic_dev
+      POSTGRES_USER: psyevo
+      POSTGRES_PASSWORD: ${PSYEVO_POSTGRES_PASSWORD:?Set a local database password}
+    ports:
+      - '127.0.0.1:55432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U psyevo -d psyevo_synthetic_dev']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+volumes:
+  postgres_data:

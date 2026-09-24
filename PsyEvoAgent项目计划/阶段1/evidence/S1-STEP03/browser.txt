@@ -1,0 +1,12 @@
+
+Running 2 tests using 1 worker
+
+  ok 1 tests\privacy.spec.ts:11:1 › real database: age, independent decisions, withdrawal, logout and another account (17.4s)
+  ok 2 tests\privacy.spec.ts:77:1 › mobile keyboard, save failure and private SSR boundary (3.3s)
+
+  2 passed (39.3s)
+[WebServer] INFO:     Started server process [60484]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)

@@ -2,6 +2,7 @@ import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests',
+  testMatch: ['foundation.spec.ts', 'account-recovery.spec.ts'],
   fullyParallel: false,
   workers: 1,
   reporter: 'list',
@@ -31,6 +32,7 @@ export default defineConfig({
           },
           {
             command: 'pnpm dev',
+            env: { PSYEVO_ENV: 'test' },
             url: 'http://127.0.0.1:3000',
             reuseExistingServer: false,
             timeout: 60000,

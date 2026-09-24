@@ -1,0 +1,40 @@
+{
+  "step": "S1-STEP03.5",
+  "at": "2026-09-23T13:09:42.351521+00:00",
+  "cleanup": {
+    "database": "psyevo_synthetic_dev",
+    "host": "127.0.0.1",
+    "port": 55432,
+    "predicate": "email IS NULL AND username IS NOT NULL",
+    "expected_rows": {
+      "context_grants": 0,
+      "deletion_jobs": 0,
+      "runs": 0,
+      "conversations": 0,
+      "consent_records": 0,
+      "user_preferences": 1,
+      "identity_sessions": 1,
+      "idempotency_records": 0,
+      "users": 1
+    },
+    "applied": true,
+    "actual_rows": {
+      "context_grants": 0,
+      "deletion_jobs": 0,
+      "runs": 0,
+      "conversations": 0,
+      "consent_records": 0,
+      "user_preferences": 1,
+      "identity_sessions": 1,
+      "idempotency_records": 0,
+      "users": 1
+    }
+  },
+  "seed": {
+    "email": "admin@psy.com",
+    "created": true,
+    "credential_file": ".env.step03-account.json",
+    "verification": "synthetic only",
+    "administrator_privileges": false
+  }
+}

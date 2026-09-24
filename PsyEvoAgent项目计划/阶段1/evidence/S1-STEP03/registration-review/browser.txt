@@ -1,0 +1,16 @@
+
+Running 6 tests using 1 worker
+
+  ok 1 tests\foundation.spec.ts:12:1 › real Start page and same-origin FastAPI gateway work twice with keyboard (1.7s)
+  ok 2 tests\foundation.spec.ts:37:1 › slow request can be stopped and late success cannot overwrite it (537ms)
+  ok 3 tests\foundation.spec.ts:66:1 › errors focus the message, never display raw bodies, and allow retry (644ms)
+  ok 4 tests\foundation.spec.ts:82:1 › mobile reduced-motion layout fits and external browser requests are denied (189ms)
+  ok 5 tests\privacy.spec.ts:11:1 › register directly, refresh, old privacy link, logout and change account (4.3s)
+  ok 6 tests\privacy.spec.ts:67:1 › mobile keyboard, failed requests, no private SSR and session expiry (1.2s)
+
+  6 passed (17.3s)
+[WebServer] INFO:     Started server process [69796]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8103 (Press CTRL+C to quit)

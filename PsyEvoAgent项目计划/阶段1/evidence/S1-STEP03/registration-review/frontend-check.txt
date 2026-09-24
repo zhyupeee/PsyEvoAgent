@@ -1,0 +1,36 @@
+
+> psyevoagent-frontend@0.1.0 check D:\PsyEvoAgent\frontend
+> pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run format:check
+
+
+> psyevoagent-frontend@0.1.0 typecheck D:\PsyEvoAgent\frontend
+> tsc --noEmit
+
+
+> psyevoagent-frontend@0.1.0 lint D:\PsyEvoAgent\frontend
+> eslint . --max-warnings 0
+
+
+> psyevoagent-frontend@0.1.0 test D:\PsyEvoAgent\frontend
+> pnpm run test:unit
+
+
+> psyevoagent-frontend@0.1.0 test:unit D:\PsyEvoAgent\frontend
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/PsyEvoAgent/frontend[39m
+
+ [32m✓[39m src/health.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 19:16:47
+[2m   Duration [22m 597ms[2m (transform 34ms, setup 0ms, collect 35ms, tests 5ms, environment 0ms, prepare 105ms)[22m
+
+
+> psyevoagent-frontend@0.1.0 format:check D:\PsyEvoAgent\frontend
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!

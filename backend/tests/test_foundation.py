@@ -13,7 +13,7 @@ from app.worker import run_worker
 from tests.fakes import FakeProvider
 
 
-def test_api_lifecycle_health_and_no_business_routes(caplog: pytest.LogCaptureFixture) -> None:
+def test_api_lifecycle_health_and_unconfigured_storage(caplog: pytest.LogCaptureFixture) -> None:
     caplog.set_level(logging.INFO, logger="uvicorn.error")
 
     async def check() -> None:
@@ -26,7 +26,7 @@ def test_api_lifecycle_health_and_no_business_routes(caplog: pytest.LogCaptureFi
                     "status": "ok",
                     "stage": "S1-STEP02",
                 }
-                assert (await client.post("/api/v1/sessions", json={})).status_code == 404
+                assert (await client.post("/api/v1/sessions", json={})).status_code == 503
 
     asyncio.run(check())
     assert [record.message for record in caplog.records if record.name == "uvicorn.error"] == [
@@ -42,7 +42,8 @@ def test_import_has_no_worker_or_consumer_side_effects(monkeypatch: pytest.Monke
 
     importlib.reload(app.main)
     application = app.main.create_app(Settings(environment="test"))
-    assert len(application.routes) == 2
+    assert application.state.engine is None
+    assert not any("start" in path for path in application.openapi()["paths"])
 
 
 def test_settings_fail_closed_without_echoing_environment(monkeypatch: pytest.MonkeyPatch) -> None:

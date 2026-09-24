@@ -1,0 +1,23 @@
+{
+  "checks": [
+    {
+      "check": "working-diff",
+      "exit_code": 0
+    },
+    {
+      "check": "staged-diff",
+      "exit_code": 2
+    },
+    {
+      "check": "documents",
+      "exit_code": 1
+    }
+  ],
+  "staged_note": "Existing staged EXPERIMENT.md trailing blank line; user index preserved",
+  "windows_platform_followup": {
+    "ruff": "passed",
+    "mypy": "passed",
+    "startup_tests": 4
+  },
+  "scope": "S1-STEP03 only; no other feature slice implemented"
+}
