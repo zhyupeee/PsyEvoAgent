@@ -1,0 +1,1 @@
+Browser writes persisted across PostgreSQL restart; 4 independent purpose records verified

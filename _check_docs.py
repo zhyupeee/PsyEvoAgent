@@ -50,7 +50,10 @@ def check(workspace):
         print("\n".join(errors))
         return 1
 
-    paths = [workspace / "README.md", workspace / "AGENTS.md", *root.rglob("*.md")]
+    paths = [
+        workspace / name
+        for name in ("README.md", "AGENTS.md", "EXPERIMENT.md", "DEVELOPMENT.md")
+    ] + list(root.rglob("*.md"))
     texts = {p.resolve(): p.read_text(encoding="utf-8") for p in paths}
     tasks, cases, aud = [], [], []
     mapped_tasks, mapped_cases = set(), set()

@@ -1,0 +1,13 @@
+阶段1: tasks=13, cases=21, steps=8
+阶段2: tasks=14, cases=19, steps=8
+阶段3: tasks=12, cases=19, steps=7
+阶段4: tasks=11, cases=19, steps=8
+阶段5: tasks=13, cases=21, steps=8
+阶段5A: tasks=6, cases=15, steps=7
+阶段6: tasks=12, cases=20, steps=7
+阶段7: tasks=11, cases=19, steps=8
+Documents=32; tasks=92; cases=153; AUD=17
+Steps=61; subitems=208; local links=1895
+ERROR: D:\PsyEvoAgent\PsyEvoAgent项目计划\阶段1\04-分步实施与检查清单.md:297: missing file evidence/S1-STEP03/privacy-desktop.png
+ERROR: D:\PsyEvoAgent\PsyEvoAgent项目计划\阶段1\04-分步实施与检查清单.md:297: missing file evidence/S1-STEP03/privacy-mobile.png
+Document checks: FAILED (2 errors)

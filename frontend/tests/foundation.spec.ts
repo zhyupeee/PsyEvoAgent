@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+﻿import { expect, test } from '@playwright/test'
 
 test.beforeEach(async ({ context }) => {
   // Browser requests are independently restricted, including redirects.
@@ -14,17 +14,18 @@ test('real Start page and same-origin FastAPI gateway work twice with keyboard',
 }) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
-  await page.goto('/')
+  await page.goto('/health')
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
     '先确认连接',
   )
   const check = page.getByRole('button', { name: '检查连接', exact: true })
   await expect(page.locator('body')).toHaveCSS(
     'background-color',
-    'rgb(243, 241, 233)',
+    'rgb(247, 249, 252)',
   )
   await expect(check).toHaveCSS('min-height', '48px')
   await expect(check).toBeEnabled()
+  await page.getByRole('link', { name: /PsyEvoAgent/ }).focus()
   await page.keyboard.press('Tab')
   await expect(check).toBeFocused()
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -50,7 +51,7 @@ test('slow request can be stopped and late success cannot overwrite it', async (
     await waiting
     await route.fulfill({ json: { status: 'ok', stage: 'S1-STEP02' } })
   })
-  await page.goto('/')
+  await page.goto('/health')
   await page.getByRole('button', { name: '检查连接', exact: true }).click()
   await received
   await page.keyboard.press('Tab')
@@ -69,7 +70,7 @@ test('errors focus the message, never display raw bodies, and allow retry', asyn
   await page.route('**/api/v1/health', (route) =>
     route.fulfill({ status: 503, body: 'synthetic-private-body' }),
   )
-  await page.goto('/')
+  await page.goto('/health')
   await page.getByRole('button', { name: '检查连接', exact: true }).click()
   await expect(page.getByRole('alert')).toBeFocused()
   await expect(page.getByRole('alert')).toContainText('连接未完成')
@@ -84,7 +85,7 @@ test('mobile reduced-motion layout fits and external browser requests are denied
 }) => {
   await page.setViewportSize({ width: 375, height: 812 })
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.goto('/')
+  await page.goto('/health')
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,

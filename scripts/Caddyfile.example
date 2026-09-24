@@ -1,0 +1,12 @@
+# Start with: caddy run --config scripts/Caddyfile.example --adapter caddyfile
+# Set PSYEVO_PUBLIC_HOST to the configured HTTPS Origin's host (no scheme/path).
+# Set PSYEVO_TLS_CERT and PSYEVO_TLS_KEY to existing certificate/key paths.
+https://{$PSYEVO_PUBLIC_HOST} {
+    tls {$PSYEVO_TLS_CERT} {$PSYEVO_TLS_KEY}
+    handle /api/v1/* {
+        reverse_proxy 127.0.0.1:8000
+    }
+    handle {
+        reverse_proxy 127.0.0.1:3000
+    }
+}

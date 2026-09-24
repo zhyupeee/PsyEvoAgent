@@ -1,14 +1,16 @@
 # Repository Guidelines
 
+> 当前按[内部实验执行约定](EXPERIMENT.md)推进：可通过指定HTTPS地址分享；目标注册先完成邮箱验证码校验，登录后直接进入，无年龄或用途确认，不设公众资格、真人告知或期限审批前置。业务不设固定TTL。邮箱身份已实现；真实 SMTP 尚未配置，验证范围见阶段1 STEP03.5 记录。
+
 ## Project Structure & Module Organization
 
-This workspace contains planning documents plus the S1-STEP02 engineering foundation in backend/, frontend/, and scripts/. Business features are not implemented. `PsyEvoAgent项目计划/阶段1/`–`阶段7/` and `阶段5A/` contain 32 documents: `01` for goals, `02` for technical contracts, `03` for acceptance, and `04` for ordered implementation steps and checks. Original, RSI, and audit requirements are integrated by topic; do not recreate separate upgrade or audit editions. Stage 5A specifies role collaboration.
+This workspace contains planning documents, the S1-STEP02 engineering foundation, and the S1-STEP03 registration/login/account and experiment-default/source-link slice in backend/, frontend/, and scripts/. Model execution and the complete support product are not implemented. `PsyEvoAgent项目计划/阶段1/`–`阶段7/` and `阶段5A/` contain 32 documents: `01` for goals, `02` for technical contracts, `03` for acceptance, and `04` for ordered implementation steps and checks. Original, RSI, and audit requirements are integrated by topic; do not recreate separate upgrade or audit editions. Stage 5A specifies role collaboration.
 
 Read the [project guide](README.md) and [shared contracts and implementation evidence](PsyEvoAgent项目计划/阶段1/02-技术方案与实施计划.md#missing-sources). The two historical overviews have been integrated into the stage documents, including core entities and source provenance. Submission/handoff materials remain unavailable; local engineering receipts exist under stage 1 evidence, but are not business acceptance; do not invent them. Historical source checks are not current execution evidence.
 
 ## Build, Test, and Development Commands
 
-`rg --files` inventories documents. Application manifests and locks now exist. See DEVELOPMENT.md for verified Windows/WSL commands and the Linux/WSL kernel-isolated PR gate in scripts/check_step02_isolated.sh. No Compose or deployment CI exists. Inspect actual scripts before documenting commands.
+`rg --files` inventories documents. Application manifests and locks now exist. See DEVELOPMENT.md for Windows/WSL commands, the kernel-isolated engineering gate in scripts/check_step02_isolated.sh, and separate real PostgreSQL acceptance in scripts/check_step03.py. Compose runs PostgreSQL only; no deployment CI exists. Inspect actual scripts before documenting commands.
 
 Once implemented, default to local Windows/WSL processes: TanStack Start through the actual `pnpm dev` script, FastAPI through uv with development reload, and an independent Python Worker when needed. Never start consumers during API import or reload.
 
@@ -45,3 +47,7 @@ PRs should identify affected stages, contract changes, acceptance IDs, validatio
 Inspect existing edits before writing. Never expose credentials or private conversations. Document configuration readers and loading rules; keep real credentials ignored. Preserve data during routine restarts; destructive resets, paid calls, and production changes require explicit authorization.
 
 Honor review-only requests. Separate planned, implemented, and verified status. If ResearchVault guidance is available, read it once per session and update it only within authorized scope; it is absent from this checkout.
+
+## Experiment Entry Contract
+
+The email-code registration creates an account only after code verification; ordinary email/password login then goes directly to implemented features. Current code uses email/password login with email-code registration/recovery and authenticated password change. Historical username provisioning is disabled. Do not reintroduce age, per-purpose consent, notice, public eligibility or retention approval gates. Keep experiment-defaults/1 separate from historical user decisions; never synthesize granted records. Source links retain owner/version/run/deletion checks without consent prerequisites. Memory is planned to auto-save after extraction and validation, retaining inference labels. Important deletion/external effects still require confirmation. Use additive migrations, preserve historical receipts, and run tests only against isolated synthetic check/migration databases. A configured single HTTPS Origin and same-origin proxy support remote sharing; this does not authorize actual publication.

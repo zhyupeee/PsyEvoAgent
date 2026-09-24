@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "backend": "cd ../backend && uv run --no-sync python -m app.dev",
+    "backend": "node ../scripts/require-dev-database.cjs && cd ../backend && uv run --no-sync python -m app.dev",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
@@ -21,10 +21,13 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@tanstack/react-form": "1.33.5",
+    "@tanstack/react-query": "5.103.1",
     "@tanstack/react-router": "1.170.38",
     "@tanstack/react-start": "1.168.56",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",
