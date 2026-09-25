@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="17" time="7.856" timestamp="2026-09-24T15:42:24.157202+08:00" hostname="zyp"><testcase classname="tests.test_runs" name="test_draft_start_replay_and_persisted_output" time="0.823" /><testcase classname="tests.test_runs" name="test_cancel_terminal_and_no_late_output[draft]" time="0.209" /><testcase classname="tests.test_runs" name="test_cancel_terminal_and_no_late_output[queued]" time="0.264" /><testcase classname="tests.test_runs" name="test_cancel_terminal_and_no_late_output[running]" time="0.325" /><testcase classname="tests.test_runs" name="test_parallel_start_and_cas_race" time="0.286" /><testcase classname="tests.test_runs" name="test_replay_and_snapshot_reauthorize[source_deleted]" time="0.520" /><testcase classname="tests.test_runs" name="test_replay_and_snapshot_reauthorize[source_version]" time="0.383" /><testcase classname="tests.test_runs" name="test_replay_and_snapshot_reauthorize[grant_revoked]" time="0.366" /><testcase classname="tests.test_runs" name="test_replay_and_snapshot_reauthorize[owner]" time="0.376" /><testcase classname="tests.test_runs" name="test_cursor_handshake_expiry_and_snapshot" time="0.931" /><testcase classname="tests.test_runs" name="test_deadline_recovery_logout_and_disabled_provider" time="0.488" /><testcase classname="tests.test_runs" name="test_worker_output_gate_and_unknown_cost[unsafe]" time="0.375" /><testcase classname="tests.test_runs" name="test_worker_output_gate_and_unknown_cost[unknown_usage]" time="0.347" /><testcase classname="tests.test_runs" name="test_worker_output_gate_and_unknown_cost[cancel]" time="0.348" /><testcase classname="tests.test_runs" name="test_interaction_dedupe_union_idle_and_clock_drift" time="0.253" /><testcase classname="tests.test_runs" name="test_send_convenience_client_id_and_csrf" time="0.316" /><testcase classname="tests.test_runs" name="test_inflight_stop_persists_unknown_charge[cancel]" time="0.163"><failure message="AssertionError: assert (('163b8432-c0ff-40c8-9098-4839b2140791', '6b87c929-14a7-41f6-b592-15def954469c') and '163b8432-c0f...-4839b2140791' == '97b160de-66b...-0077d6ba9dc3'&#10;  &#10;  - 97b160de-66b3-4edb-abc4-0077d6ba9dc3&#10;  + 163b8432-c0ff-40c8-9098-4839b2140791)">client = &lt;starlette.testclient.TestClient object at 0x0000026B188C15E0&gt;
+stop = 'cancel'
+
+    @pytest.mark.parametrize("stop", ["cancel", "logout", "delete_source"])
+    def test_inflight_stop_persists_unknown_charge(client: TestClient, stop: str) -&gt; None:
+        sid, rid, body = create(client)
+        start(client, rid, body)
+        selected = claim(engine(client))
+&gt;       assert selected and selected[0] == rid
+E       AssertionError: assert (('163b8432-c0ff-40c8-9098-4839b2140791', '6b87c929-14a7-41f6-b592-15def954469c') and '163b8432-c0f...-4839b2140791' == '97b160de-66b...-0077d6ba9dc3'
+E         
+E         - 97b160de-66b3-4edb-abc4-0077d6ba9dc3
+E         + 163b8432-c0ff-40c8-9098-4839b2140791)
+
+tests\test_runs.py:410: AssertionError</failure></testcase></testsuite></testsuites>

@@ -160,7 +160,8 @@ def test_identity_purpose_versions_and_storage() -> None:
                 assert draft.status_code == 201
                 rid = draft.json()["id"]
                 assert draft.json()["status"] == "draft"
-                assert (await ca.post(f"/api/v1/runs/{rid}/start", json={})).status_code == 404
+                # STEP05 now registers start; invalid payload still cannot execute a model.
+                assert (await ca.post(f"/api/v1/runs/{rid}/start", json={})).status_code == 422
                 assert (await cb.get(f"/api/v1/runs/{rid}")).status_code == 404
                 ca.headers["Idempotency-Key"] = uuid4().hex
                 c = await ca.post(

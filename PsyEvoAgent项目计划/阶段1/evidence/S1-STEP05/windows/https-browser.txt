@@ -1,0 +1,11 @@
+
+Running 1 test using 1 worker
+
+  ok 1 tests\https.spec.ts:4:1 › configured HTTPS origin, secure cookie, icons and rejected alternate origin (4.0s)
+
+  1 passed (11.6s)
+[WebServer] INFO:     Started server process [52812]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8105 (Press CTRL+C to quit)

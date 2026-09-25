@@ -1,4 +1,4 @@
-"""STEP03 persistence. No model execution, message pipeline or background consumer."""
+"""Identity/source persistence plus STEP05 messages, execution metadata and events."""
 
 from datetime import UTC, datetime
 from uuid import uuid4
@@ -10,6 +10,7 @@ from sqlalchemy import (
     ForeignKeyConstraint,
     Integer,
     String,
+    Text,
     UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB
@@ -212,3 +213,71 @@ class Idempotency(Base):
     request_hash: Mapped[str] = mapped_column(String(64))
     resource_type: Mapped[str] = mapped_column(String(30))
     resource_id: Mapped[str] = mapped_column(String(36))
+
+
+class RunExecution(Personal, Base):
+    """One durable execution per existing run; no second run state machine."""
+
+    __tablename__ = "run_executions"
+    __table_args__ = (
+        UniqueConstraint("run_id"),
+        ForeignKeyConstraint(["run_id", "owner_id"], ["runs.id", "runs.owner_id"]),
+    )
+    run_id: Mapped[str] = mapped_column(String(36))
+    identity_id: Mapped[str] = mapped_column(ForeignKey("identity_sessions.id"))
+    request_hash: Mapped[str] = mapped_column(String(64))
+    versions: Mapped[dict[str, str]] = mapped_column(JSONB)
+    budget: Mapped[dict[str, object]] = mapped_column(JSONB)
+    grant_ids: Mapped[list[str]] = mapped_column(JSONB)
+    preference: Mapped[str] = mapped_column(String(20))
+    deadline_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    generation: Mapped[int] = mapped_column(Integer, default=1)
+    event_seq: Mapped[int] = mapped_column(Integer, default=0)
+    event_floor: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class Message(Personal, Base):
+    __tablename__ = "messages"
+    __table_args__ = (
+        ForeignKeyConstraint(["run_id", "owner_id"], ["runs.id", "runs.owner_id"]),
+        UniqueConstraint("owner_id", "client_message_id"),
+        UniqueConstraint("run_id", "role"),
+        CheckConstraint("role IN ('user','assistant')"),
+    )
+    run_id: Mapped[str] = mapped_column(String(36))
+    role: Mapped[str] = mapped_column(String(20))
+    content: Mapped[str] = mapped_column(Text)
+    client_message_id: Mapped[str | None] = mapped_column(String(128))
+
+
+class RunEvent(Base):
+    __tablename__ = "run_events"
+    run_id: Mapped[str] = mapped_column(ForeignKey("runs.id"), primary_key=True)
+    event_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    envelope: Mapped[dict[str, object]] = mapped_column(JSONB)
+
+
+class ModelCall(Base):
+    __tablename__ = "model_calls"
+    request_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    run_id: Mapped[str] = mapped_column(ForeignKey("runs.id"), index=True)
+    receipt: Mapped[dict[str, object]] = mapped_column(JSONB)
+
+
+class Interaction(Personal, Base):
+    __tablename__ = "interaction_events"
+    __table_args__ = (
+        UniqueConstraint("owner_id", "event_key"),
+        UniqueConstraint("owner_id", "tab_id", "sequence"),
+        ForeignKeyConstraint(["run_id", "owner_id"], ["runs.id", "runs.owner_id"]),
+    )
+    run_id: Mapped[str] = mapped_column(String(36))
+    event_key: Mapped[str] = mapped_column(String(128))
+    request_hash: Mapped[str] = mapped_column(String(64))
+    event_type: Mapped[str] = mapped_column(String(30))
+    initiation: Mapped[str] = mapped_column(String(30))
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    received_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    tab_id: Mapped[str | None] = mapped_column(String(64))
+    sequence: Mapped[int | None] = mapped_column(Integer)
+    segment: Mapped[dict[str, object] | None] = mapped_column(JSONB)

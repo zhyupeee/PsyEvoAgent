@@ -4,6 +4,8 @@
 
 ## Project Structure & Module Organization
 
+2026-09-24 STEP05 adds durable start/idempotency, native SSE replay/snapshot, cancel CAS, interaction dedupe and a standalone synthetic Worker in `backend/app/runs.py`, `run_stream.py`, and `run_worker.py`. Reuse `scripts/check_step05.py` for disposable PostgreSQL + real gateway acceptance; `app.worker --support` requires explicit test-only fake mode. Default live execution remains disabled. STEP06 chat UI and STEP07 deletion/history remain unimplemented. Current evidence: `PsyEvoAgent项目计划/阶段1/evidence/S1-STEP05/README.md`; earlier paragraphs describe historical slices.
+
 2026-09-24 STEP04 adds `backend/app/support.py`: a synthetic-only single LangGraph, local LangChain fake adapter, budget ledger and fixed output rules. Live model execution, start/SSE APIs and the complete support product remain unimplemented. Use `scripts/check_step04.py`, or the existing WSL isolation entry with `--step04`, for this slice; keep live Provider capabilities unknown until independently verified.
 
 This workspace contains planning documents, the S1-STEP02 engineering foundation, and the S1-STEP03 registration/login/account and experiment-default/source-link slice in backend/, frontend/, and scripts/. Model execution and the complete support product are not implemented. `PsyEvoAgent项目计划/阶段1/`–`阶段7/` and `阶段5A/` contain 32 documents: `01` for goals, `02` for technical contracts, `03` for acceptance, and `04` for ordered implementation steps and checks. Original, RSI, and audit requirements are integrated by topic; do not recreate separate upgrade or audit editions. Stage 5A specifies role collaboration.

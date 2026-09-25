@@ -1,0 +1,16 @@
+Final Windows source hashes: 109 matching files; no code changes after final gate.
+Command: ['python', '-B', '-X', 'utf8', '_check_docs.py']
+阶段1: tasks=13, cases=21, steps=8
+阶段2: tasks=14, cases=19, steps=8
+阶段3: tasks=12, cases=19, steps=7
+阶段4: tasks=11, cases=19, steps=8
+阶段5: tasks=13, cases=21, steps=8
+阶段5A: tasks=6, cases=15, steps=7
+阶段6: tasks=12, cases=20, steps=7
+阶段7: tasks=11, cases=19, steps=8
+Documents=32; tasks=92; cases=153; AUD=17
+Steps=61; subitems=208; local links=1939
+Document checks: PASSED (0 errors)
+
+Command: ['git', 'diff', '--check']
+warning: in the working copy of 'backend/pyproject.toml', LF will be replaced by CRLF the next time Git touches it

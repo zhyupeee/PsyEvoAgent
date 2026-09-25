@@ -38,12 +38,15 @@ def test_api_lifecycle_health_and_unconfigured_storage(caplog: pytest.LogCapture
 def test_import_has_no_worker_or_consumer_side_effects(monkeypatch: pytest.MonkeyPatch) -> None:
     # Poison the module: importing a worker from the API must fail this regression.
     monkeypatch.setitem(sys.modules, "app.worker", None)
+    monkeypatch.setitem(sys.modules, "app.run_worker", None)
     import app.main
 
     importlib.reload(app.main)
     application = app.main.create_app(Settings(environment="test"))
     assert application.state.engine is None
-    assert not any("start" in path for path in application.openapi()["paths"])
+    assert "/api/v1/runs/{run_id}/start" in application.openapi()["paths"]
+    assert application.state.settings.support_mode == "disabled"
+    assert application.state.run_connections.counts == {}
 
 
 def test_settings_fail_closed_without_echoing_environment(monkeypatch: pytest.MonkeyPatch) -> None:

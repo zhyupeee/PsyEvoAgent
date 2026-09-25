@@ -1,4 +1,12 @@
-# 本地工程开发（S1-STEP02/03/04）
+# 本地工程开发（S1-STEP02/03/04/05）
+
+## S1-STEP05 持久run与真实网关验收
+
+根目录执行`uv run --directory backend --offline --no-sync python ../scripts/check_step05.py --web-port 3105 --api-port 8105 --tls-port 3445`。复用STEP03随机独立PostgreSQL容器及网络保护，执行迁移/API/后端/前端/身份浏览器/HTTPS，再启动独立fake Worker做原生EventSource断流重放、快照、取消终态与撤销来源检查，最后重启数据库核对唯一run/调用/主动发起。仅清理本次创建的容器和测试进程，不操作开发库。收据位于`.artifacts/psyevo-step05-*/receipt.json`。
+
+配置读取沿`app.config.load_settings`，不自动加载.env。新增`PSYEVO_SUPPORT_MODE`默认disabled；fake只允许`PSYEVO_ENV=test`与独立loopback合成check库。显式`uv run --no-sync python -m app.worker --support`消费该库；不加--support仍为原生命周期探针。API导入/reload无消费者。普通开发库即使配置fake也拒绝，不以固定假回答冒充可用心理支持。
+
+本步无聊天页面。浏览器验收位于`frontend/tests/runs.spec.ts`；仅测试工厂`tests.run_gateway:create_gateway_app`挂载合成游标淘汰夹具，正式工厂不含测试路由。`check_step02_isolated.sh --step04`继续复用完整工程与Support隔离门禁，同时收集本步非数据库回归；真实PostgreSQL门禁单列，不能混称全链内核隔离。详情见[STEP05记录](PsyEvoAgent项目计划/阶段1/evidence/S1-STEP05/README.md)。
 
 > 当前按[内部实验执行约定](EXPERIMENT.md)推进：可通过指定HTTPS地址分享；目标注册先验证邮箱，登录后直接进入，无年龄或用途确认，不设公众资格、真人告知或期限审批前置。业务不设固定TTL。邮箱身份已实现；真实 SMTP 尚未配置，验证范围见阶段1 STEP03.5 记录。
 

@@ -1,0 +1,11 @@
+
+Running 1 test using 1 worker
+
+  ok 1 tests\runs.spec.ts:3:1 › real gateway: draft/grant/start, EventSource disconnect/replay, snapshot and revoke (3.6s)
+
+  1 passed (12.4s)
+[WebServer] INFO:     Started server process [33824]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8105 (Press CTRL+C to quit)

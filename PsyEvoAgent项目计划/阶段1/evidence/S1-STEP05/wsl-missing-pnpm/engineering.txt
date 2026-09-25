@@ -1,0 +1,42 @@
+CHECK /home/zhyupe1118/psyevo-step05-h6GVNT/backend/.venv/bin/python -I /home/zhyupe1118/psyevo-step05-h6GVNT/scripts/probe_os_isolation.py
+{
+  "interfaces": [
+    "lo"
+  ],
+  "network_namespace": "net:[4026532720]",
+  "no_new_privileges": true,
+  "capabilities": "none",
+  "kernel_probes": [
+    {
+      "address": "203.0.113.1",
+      "type": "SOCK_STREAM",
+      "errno": 101
+    },
+    {
+      "address": "203.0.113.1",
+      "type": "SOCK_DGRAM",
+      "errno": 101
+    },
+    {
+      "address": "2001:db8::1",
+      "type": "SOCK_STREAM",
+      "errno": 101
+    },
+    {
+      "address": "2001:db8::1",
+      "type": "SOCK_DGRAM",
+      "errno": 101
+    }
+  ],
+  "native_curl_exit": 7,
+  "wsl_interop": "blocked",
+  "status": "passed"
+}
+
+CHECK /home/zhyupe1118/psyevo-step05-h6GVNT/backend/.venv/bin/python --version
+Python 3.12.13
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/node-v22.19.0-linux-x64/bin/node --version
+v22.19.0
+
+Receipt: /home/zhyupe1118/psyevo-step05-h6GVNT/.artifacts/step02-20260924-155206/receipt.json

@@ -1,0 +1,249 @@
+CHECK /home/zhyupe1118/psyevo-step05-h6GVNT/backend/.venv/bin/python -I /home/zhyupe1118/psyevo-step05-h6GVNT/scripts/probe_os_isolation.py
+{
+  "interfaces": [
+    "lo"
+  ],
+  "network_namespace": "net:[4026532509]",
+  "no_new_privileges": true,
+  "capabilities": "none",
+  "kernel_probes": [
+    {
+      "address": "203.0.113.1",
+      "type": "SOCK_STREAM",
+      "errno": 101
+    },
+    {
+      "address": "203.0.113.1",
+      "type": "SOCK_DGRAM",
+      "errno": 101
+    },
+    {
+      "address": "2001:db8::1",
+      "type": "SOCK_STREAM",
+      "errno": 101
+    },
+    {
+      "address": "2001:db8::1",
+      "type": "SOCK_DGRAM",
+      "errno": 101
+    }
+  ],
+  "native_curl_exit": 7,
+  "wsl_interop": "blocked",
+  "status": "passed"
+}
+
+CHECK /home/zhyupe1118/psyevo-step05-h6GVNT/backend/.venv/bin/python --version
+Python 3.12.13
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/node-v22.19.0-linux-x64/bin/node --version
+v22.19.0
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm --version
+10.28.0
+
+CHECK uv --version
+uv 0.11.7 (x86_64-unknown-linux-gnu)
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm install --lockfile-only --frozen-lockfile --offline --ignore-scripts
+Done in 320ms using pnpm v10.28.0
+
+CHECK /home/zhyupe1118/psyevo-step05-h6GVNT/backend/.venv/bin/python /home/zhyupe1118/psyevo-step05-h6GVNT/scripts/probe_python_guard.py
+Python TCP and DNS guard probes passed
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/node-v22.19.0-linux-x64/bin/node /home/zhyupe1118/psyevo-step05-h6GVNT/scripts/probe_node_guard.cjs
+Node TCP and DNS guard probes passed
+
+CHECK uv lock --check --offline
+Resolved 69 packages in 1ms
+
+CHECK /home/zhyupe1118/psyevo-step05-h6GVNT/backend/.venv/bin/python -m ruff check .
+All checks passed!
+
+CHECK /home/zhyupe1118/psyevo-step05-h6GVNT/backend/.venv/bin/python -m ruff format --check .
+44 files already formatted
+
+CHECK /home/zhyupe1118/psyevo-step05-h6GVNT/backend/.venv/bin/python -m mypy
+Success: no issues found in 36 source files
+
+CHECK /home/zhyupe1118/psyevo-step05-h6GVNT/backend/.venv/bin/python -m pytest -p no:cacheprovider --basetemp=/home/zhyupe1118/psyevo-step05-h6GVNT/.artifacts/step02-20260924-155839/pytest
+.................................................................        [100%]
+65 passed, 42 deselected in 41.60s
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm lint
+
+> psyevoagent-frontend@0.1.0 lint /home/zhyupe1118/psyevo-step05-h6GVNT/frontend
+> eslint . --max-warnings 0
+
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm typecheck
+
+> psyevoagent-frontend@0.1.0 typecheck /home/zhyupe1118/psyevo-step05-h6GVNT/frontend
+> tsc --noEmit
+
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm test:unit
+
+> psyevoagent-frontend@0.1.0 test:unit /home/zhyupe1118/psyevo-step05-h6GVNT/frontend
+> vitest run
+
+
+ RUN  v3.2.7 /home/zhyupe1118/psyevo-step05-h6GVNT/frontend
+
+ ✓ src/health.test.ts (2 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  15:59:30
+   Duration  306ms (transform 40ms, setup 0ms, collect 30ms, tests 5ms, environment 0ms, prepare 91ms)
+
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm build
+
+> psyevoagent-frontend@0.1.0 build /home/zhyupe1118/psyevo-step05-h6GVNT/frontend
+> vite build
+
+vite v7.3.6 building client environment for production...
+transforming...
+node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/util.js (400:0): A comment
+
+"// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+
+in "node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/regexes.js (74:0): A comment
+
+"/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+ * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+ * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+
+in "node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+✓ 337 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/assets/style-DMv5MUh8.css         12.97 kB │ gzip:   3.50 kB
+dist/client/assets/me-Ciu70bGZ.js              0.17 kB │ gzip:   0.16 kB
+dist/client/assets/index-DJRwAMgq.js           0.17 kB │ gzip:   0.16 kB
+dist/client/assets/login-Chaf9Xu2.js           0.18 kB │ gzip:   0.16 kB
+dist/client/assets/register-C1s4430y.js        0.18 kB │ gzip:   0.17 kB
+dist/client/assets/brand-B3lEKRkX.js           0.36 kB │ gzip:   0.29 kB
+dist/client/assets/health-D9PfcRIc.js          3.62 kB │ gzip:   1.66 kB
+dist/client/assets/account-page-BnfbE0Wh.js  186.84 kB │ gzip:  52.02 kB
+dist/client/assets/index-CfqqQ_wp.js         346.42 kB │ gzip: 112.34 kB
+✓ built in 2.35s
+vite v7.3.6 building ssr environment for production...
+transforming...
+✓ 134 modules transformed.
+rendering chunks...
+dist/server/assets/start-HYkvq4Ni.js                         0.06 kB
+dist/server/assets/empty-plugin-adapters-BFgPZ6_d.js         0.13 kB
+dist/server/assets/me-CaV1n8Z7.js                            0.38 kB
+dist/server/assets/index-D6OE0C1g.js                         0.38 kB
+dist/server/assets/login-eThUweN0.js                         0.38 kB
+dist/server/assets/register-BAsCHBht.js                      0.39 kB
+dist/server/assets/brand-yk77jtlB.js                         0.67 kB
+dist/server/assets/_tanstack-start-manifest_v-CXQdlOCR.js    1.43 kB
+dist/server/assets/router-C9da2s6b.js                        3.89 kB
+dist/server/assets/health-BSrn5gNu.js                        5.15 kB
+dist/server/assets/account-page-Fv19Er9t.js                 19.88 kB
+dist/server/server.js                                      230.16 kB
+✓ built in 774ms
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm test:e2e
+
+> psyevoagent-frontend@0.1.0 test:e2e /home/zhyupe1118/psyevo-step05-h6GVNT/frontend
+> playwright test
+
+
+Running 5 tests using 1 worker
+
+  ✓  1 tests/account-recovery.spec.ts:3:1 › session service failure stays on home and retry restores login (1.2s)
+  ✓  2 tests/foundation.spec.ts:12:1 › real Start page and same-origin FastAPI gateway work twice with keyboard (1.1s)
+  ✓  3 tests/foundation.spec.ts:38:1 › slow request can be stopped and late success cannot overwrite it (548ms)
+  ✓  4 tests/foundation.spec.ts:67:1 › errors focus the message, never display raw bodies, and allow retry (1.1s)
+  ✓  5 tests/foundation.spec.ts:83:1 › mobile reduced-motion layout fits and external browser requests are denied (165ms)
+
+  5 passed (5.0s)
+
+CHECK /home/zhyupe1118/psyevo-step05-h6GVNT/backend/.venv/bin/python -B -X utf8 _check_docs.py
+阶段1: tasks=13, cases=21, steps=8
+阶段2: tasks=14, cases=19, steps=8
+阶段3: tasks=12, cases=19, steps=7
+阶段4: tasks=11, cases=19, steps=8
+阶段5: tasks=13, cases=21, steps=8
+阶段5A: tasks=6, cases=15, steps=7
+阶段6: tasks=12, cases=20, steps=7
+阶段7: tasks=11, cases=19, steps=8
+Documents=32; tasks=92; cases=153; AUD=17
+Steps=61; subitems=208; local links=1920
+Document checks: PASSED (0 errors)
+
+CHECK /home/zhyupe1118/psyevo-step05-h6GVNT/backend/.venv/bin/python -B -X utf8 _check_s1_step01.py
+S1-STEP01 material checks: PASSED; 13 fixtures; 8 rejected mutations; 0 failures
+Product acceptance: 0 executed; all 4 referenced cases remain planned
+
+CHECK git diff --check
+warning: in the working copy of '.gitattributes', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.gitignore', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP01/document-check.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP01/fixture-check.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP02/checks.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP02/final-closure-check.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP02/reload-failure.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP02/reload-resume.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP02/resume-document-check.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP02/wsl-environment.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP02/wsl-reload.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/browser.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/documents.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/api-migrations.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/browser.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/database-browser-receipt.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/database-cleanup.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/database-create.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/database-port.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/database-restart.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/database-restarted-port.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/database-version.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/documents.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/format.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/foundation.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/frontend-build.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/frontend-check.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/https-browser.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/image.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/lint.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/lock.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/schema-drift.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/test-certificate.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/windows/types.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/email-identity/wsl-isolated.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/persistence.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/registration-review/api-migrations.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/registration-review/browser.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/registration-review/database-browser-receipt.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/registration-review/documents.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/registration-review/foundation.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/registration-review/frontend-build.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/registration-review/frontend-check.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/registration-review/https-browser.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/fixtures/S1-STEP01/scenarios.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '_check_s1_step01.py', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/.python-version', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/alembic.ini', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/migrations/script.py.mako', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/pyproject.toml', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'frontend/.node-version', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'frontend/.npmrc', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'frontend/.prettierignore', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'scripts/Caddyfile.example', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'scripts/https-test-proxy.cjs', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'scripts/network-guard.cjs', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'scripts/probe_node_guard.cjs', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'scripts/require-dev-database.cjs', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'scripts/start-dev.ps1', CRLF will be replaced by LF the next time Git touches it
+
+CHECK git diff --cached --check
+
+CHECK git diff --check origin/feat/完成第一阶段step4...HEAD
+
+Receipt: /home/zhyupe1118/psyevo-step05-h6GVNT/.artifacts/step02-20260924-155839/receipt.json
