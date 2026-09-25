@@ -22,6 +22,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--web-port", type=int, default=3000)
 parser.add_argument("--api-port", type=int, default=8000)
 parser.add_argument("--tls-port", type=int, default=3443)
+parser.add_argument("--step05", action="store_true", help="Also verify durable fake runs and gateway SSE")
 args = parser.parse_args()
 if any(not 1024 <= port <= 65535 for port in (args.web_port, args.api_port, args.tls_port)):
     parser.error("Ports must be between 1024 and 65535")
@@ -29,7 +30,7 @@ if len({args.web_port, args.api_port, args.tls_port}) != 3:
     parser.error("Web, API and TLS ports must be distinct")
 BACKEND = ROOT / "backend"
 IMAGE = "postgres:16.13-bookworm@sha256:472efd9a66f2b2f1a5aeb18b28de74332e6ef88c2b93a1a5d812fb6db67a5f60"
-NAME = "psyevo-step03-" + uuid4().hex[:12]
+NAME = ("psyevo-step05-" if args.step05 else "psyevo-step03-") + uuid4().hex[:12]
 RUN = ROOT / ".artifacts" / NAME
 RUN.mkdir(parents=True)
 ENV = {
@@ -68,7 +69,7 @@ PNPM = shutil.which("pnpm.cmd" if os.name == "nt" else "pnpm")
 if PNPM is None:
     raise SystemExit("pnpm is not installed")
 RECEIPT: dict[str, object] = {
-    "step_id": "S1-STEP03",
+    "step_id": "S1-STEP05" if args.step05 else "S1-STEP03",
     "started": datetime.now(UTC).isoformat(),
     "execution_kind": "real-local-postgresql-api-browser-with-synthetic-accounts",
     "acceptance_ids": ["S1-A02", "S1-A06", "RSI-S1-A02", "RSI-S1-A03"],
@@ -83,6 +84,9 @@ RECEIPT: dict[str, object] = {
 }
 commands: list[dict[str, object]] = []
 RECEIPT["commands"] = commands
+if args.step05:
+    RECEIPT["acceptance_ids"] = ["S1-A05", "S1-A11", "RSI-S1-A04", "RSI-S1-A07"]
+    RECEIPT["limitations"] = ["Isolated synthetic accounts and fake model only; live Provider/content/SMTP BLOCKED", "No STEP06 chat UI or STEP07 deletion implementation", "Windows network guards are not kernel isolation"]
 
 
 def run(label: str, args: list[str], cwd: Path = ROOT, timeout: int = 240) -> str:
@@ -226,6 +230,18 @@ engine.dispose()
     run("test-certificate", [openssl, "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", str(key), "-out", str(cert), "-days", "1", "-subj", "/CN=127.0.0.1", "-addext", "subjectAltName=IP:127.0.0.1"])
     ENV.update(PSYEVO_BROWSER_ORIGIN=f"https://127.0.0.1:{args.tls_port}", PSYEVO_TEST_TLS_PORT=str(args.tls_port), PSYEVO_TEST_TLS_CERT=str(cert), PSYEVO_TEST_TLS_KEY=str(key))
     run("https-browser", [PNPM, "exec", "playwright", "test", "--config", "playwright.https.config.ts"], ROOT / "frontend")
+    if args.step05:
+        run("seed-step05", [sys.executable, "-c", seed.replace("admin@example.com", "step05-browser@example.com").replace("synthetic-admin-password", "synthetic-browser-password").replace("browser-b@example.com", "step05-unused@example.com")], BACKEND)
+        ENV.update(PSYEVO_SUPPORT_MODE="fake", PSYEVO_BROWSER_ORIGIN=f"http://127.0.0.1:{args.web_port}")
+        with (RUN / "support-worker.txt").open("w", encoding="utf-8") as worker_log:
+            worker = subprocess.Popen([sys.executable, "-m", "app.worker", "--support"], cwd=BACKEND, env=ENV, stdout=worker_log, stderr=subprocess.STDOUT)
+            try:
+                run("step05-gateway", [PNPM, "exec", "playwright", "test", "--config", "playwright.step05.config.ts"], ROOT / "frontend")
+                if worker.poll() is not None:
+                    raise RuntimeError("Support worker exited before gateway acceptance completed")
+            finally:
+                worker.terminate()
+                worker.wait(timeout=15)
     run("database-restart", ["docker", "restart", NAME])
     # Docker may assign a new published port after restart when HostPort was random.
     port = (
@@ -272,6 +288,27 @@ print('Registered accounts persisted across PostgreSQL restart; no consent fabri
 engine.dispose()
 """
     run("database-browser-receipt", [sys.executable, "-c", persisted], BACKEND)
+    if args.step05:
+        verify_runs = '''
+from sqlalchemy import select, func
+from sqlalchemy.orm import Session
+from app.config import load_settings
+from app.database import make_engine
+from app.models import ModelCall, RunEvent, Run, User, Interaction
+engine = make_engine(load_settings().database_url.get_secret_value())
+with Session(engine) as db:
+    user = db.scalar(select(User).where(User.email == "step05-browser@example.com"))
+    assert user is not None
+    runs = db.scalars(select(Run).where(Run.owner_id == user.id)).all()
+    assert len(runs) == 1 and runs[0].status == "completed"
+    rid = runs[0].id
+    assert db.scalar(select(func.count()).select_from(ModelCall).where(ModelCall.run_id == rid)) == 1
+    assert db.scalar(select(func.count()).select_from(Interaction).where(Interaction.run_id == rid)) == 1
+    assert db.scalar(select(func.count()).select_from(RunEvent).where(RunEvent.run_id == rid)) == 128
+print("PostgreSQL restart: one browser run, one model call, one initiation; event window retained")
+engine.dispose()
+'''
+        run("step05-restart-facts", [sys.executable, "-c", verify_runs], BACKEND)
     run("documents", [sys.executable, "-B", "-X", "utf8", "_check_docs.py"])
     run("diff", ["git", "diff", "--check"])
     RECEIPT["passed"] = True

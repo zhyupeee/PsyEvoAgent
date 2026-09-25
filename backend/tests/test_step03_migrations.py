@@ -18,13 +18,16 @@ from app.models import (
     Consent,
     ContextGrant,
     Conversation,
+    IdentitySession,
     LoginAttempt,
     Preferences,
     Run,
+    RunExecution,
     User,
     now,
 )
 from app.security import password_hash
+from app.support import Budget, VersionBinding
 
 
 class HistoricalBase(DeclarativeBase):
@@ -45,6 +48,55 @@ class HistoricalUser(HistoricalBase):
 
 pytestmark = pytest.mark.postgres
 BACKEND = Path(__file__).resolve().parents[1]
+
+
+def test_step05_upgrade_preserves_runs_and_refuses_lossy_downgrade(migration_url: str) -> None:
+    config = Config(str(BACKEND / "alembic.ini"))
+    command.upgrade(config, "g034_login_attempts")
+    engine = make_engine(migration_url)
+    try:
+        with Session(engine) as db, db.begin():
+            user = User(email="step05-migration@example.com", password_hash="synthetic")
+            db.add(user)
+            db.flush()
+            source = Conversation(owner_id=user.id)
+            auth = IdentitySession(
+                owner_id=user.id,
+                token_hash="synthetic-unique-token",
+                csrf_token="synthetic-csrf",
+                expires_at=now() + timedelta(hours=1),
+            )
+            db.add_all([source, auth])
+            db.flush()
+            run = Run(owner_id=user.id, session_id=source.id, session_version=1)
+            db.add(run)
+            db.flush()
+            rid, uid, aid = run.id, user.id, auth.id
+        command.upgrade(config, "head")
+        command.check(config)
+        with Session(engine) as db, db.begin():
+            retained = db.get(Run, rid)
+            assert retained is not None and retained.status == "draft" and retained.version == 1
+            db.add(
+                RunExecution(
+                    owner_id=uid,
+                    run_id=rid,
+                    identity_id=aid,
+                    request_hash="synthetic-request",
+                    versions=VersionBinding().model_dump(),
+                    budget=Budget().model_dump(mode="json"),
+                    grant_ids=[],
+                    preference="listen",
+                    deadline_at=now() + timedelta(seconds=10),
+                )
+            )
+        with pytest.raises(RuntimeError, match="STEP05 execution history"):
+            command.downgrade(config, "g034_login_attempts")
+        command.check(config)
+        with Session(engine) as db:
+            assert db.scalar(select(RunExecution).where(RunExecution.run_id == rid)) is not None
+    finally:
+        engine.dispose()
 
 
 def test_default_configuration_migration_preserves_history(migration_url: str) -> None:
@@ -142,6 +194,11 @@ def test_empty_upgrade_is_repeatable(migration_url: str) -> None:
             "context_grants",
             "deletion_jobs",
             "idempotency_records",
+            "run_executions",
+            "run_events",
+            "model_calls",
+            "messages",
+            "interaction_events",
         }
     finally:
         engine.dispose()
@@ -257,8 +314,7 @@ def test_no_expiry_migration_preserves_records_and_refuses_lossy_downgrade(
             command.downgrade(config, "c1756470d092")
         with engine.connect() as connection:
             assert (
-                connection.scalar(text("SELECT version_num FROM alembic_version"))
-                == "g034_login_attempts"
+                connection.scalar(text("SELECT version_num FROM alembic_version")) == "d642b94fcbb5"
             )
         command.check(config)
     finally:

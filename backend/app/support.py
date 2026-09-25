@@ -230,6 +230,7 @@ class SupportRuntime:
         profile: ModelProfile,
         authorize: Callable[[SupportInput], bool],
         sdk_retries: int = 0,
+        record_call: Callable[[CallReceipt], None] | None = None,
     ) -> None:
         if not isinstance(model, FakeMessagesListChatModel) or sdk_retries != 0:
             raise ValueError("Only local fake adapters with zero SDK retries are enabled")
@@ -244,6 +245,7 @@ class SupportRuntime:
         self.model = model
         self.profile = profile
         self.authorize = authorize
+        self.record_call = record_call
         graph = StateGraph(GraphState)
         graph.add_node("meta", self._meta)
         graph.add_node("support", self._support)
@@ -308,6 +310,8 @@ class SupportRuntime:
                 reserved_cost=cost,
             )
             ledger.calls.append(receipt)
+            if self.record_call is not None:
+                self.record_call(receipt)  # Durable reservation before any adapter invocation.
             started = time.monotonic()
             retry_delay: float | None = None
             try:
@@ -375,6 +379,8 @@ class SupportRuntime:
                 return {"stop_reason": "provider_error"}
             finally:
                 receipt.elapsed_ms = int((time.monotonic() - started) * 1000)
+                if self.record_call is not None:
+                    self.record_call(receipt)
             # An unknown failed attempt keeps its reservation. Only the configured
             # fake price/token upper bound permits a further synthetic call.
             if retry_delay is not None:

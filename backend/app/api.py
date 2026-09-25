@@ -373,6 +373,12 @@ def verify_email_code(request: Request, db: Session, email: str, purpose: str, c
 
 
 def replace_password(db: Session, user: User, password: str) -> None:
+    from app.runs import stop_identity_runs
+
+    for identity_id in db.scalars(
+        select(IdentitySession.id).where(IdentitySession.owner_id == user.id)
+    ):
+        stop_identity_runs(db, identity_id)
     user.password_hash = password_hash(password)
     user.failed_logins = 0
     user.locked_until = None
@@ -439,8 +445,11 @@ def experiment_config(auth: Auth) -> dict[str, Any]:
 
 
 @router.post("/auth/logout", status_code=204)
-def logout(response: Response, auth: Auth) -> None:
+def logout(response: Response, db: DB, auth: Auth) -> None:
+    from app.runs import stop_identity_runs
+
     auth.revoked_at = now()
+    stop_identity_runs(db, auth.id)
     response.delete_cookie(COOKIE, path="/api/v1", secure=True, httponly=True, samesite="strict")
 
 
@@ -558,9 +567,11 @@ def create_draft(body: DraftCreate, request: Request, db: DB, auth: Auth) -> dic
 
 @router.get("/runs/{resource_id}")
 def get_run(resource_id: str, db: DB, auth: Auth) -> dict[str, Any]:
+    from app.runs import snapshot
+
     row = owned(db, Run, resource_id, auth.owner_id)
     owned(db, Conversation, row.session_id, auth.owner_id)
-    return resource(row)
+    return snapshot(db, row)
 
 
 @router.post("/context-grants", status_code=201)

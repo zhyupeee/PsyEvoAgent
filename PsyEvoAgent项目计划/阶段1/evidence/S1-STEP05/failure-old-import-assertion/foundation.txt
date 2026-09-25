@@ -1,0 +1,22 @@
+..........F.....................................................         [100%]
+================================== FAILURES ===================================
+_____________ test_import_has_no_worker_or_consumer_side_effects ______________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000284E3772780>
+
+    def test_import_has_no_worker_or_consumer_side_effects(monkeypatch: pytest.MonkeyPatch) -> None:
+        # Poison the module: importing a worker from the API must fail this regression.
+        monkeypatch.setitem(sys.modules, "app.worker", None)
+        import app.main
+    
+        importlib.reload(app.main)
+        application = app.main.create_app(Settings(environment="test"))
+        assert application.state.engine is None
+>       assert not any("start" in path for path in application.openapi()["paths"])
+E       assert not True
+E        +  where True = any(<generator object test_import_has_no_worker_or_consumer_side_effects.<locals>.<genexpr> at 0x00000284E3794AD0>)
+
+tests\test_foundation.py:46: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_foundation.py::test_import_has_no_worker_or_consumer_side_effects
+1 failed, 63 passed, 39 deselected in 32.43s

@@ -19,6 +19,9 @@ from app.config import Settings, load_settings
 from app.database import make_engine
 from app.mail import Mailer, SMTPMailer
 from app.models import opaque_id
+from app.run_stream import Connections
+from app.run_stream import router as stream_router
+from app.runs import router as runs_router
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -51,6 +54,9 @@ def create_app(settings: Settings | None = None, mailer: Mailer | None = None) -
     application.state.engine = None
     application.state.mailer = mailer or SMTPMailer(application.state.settings)
     application.include_router(router)
+    application.include_router(runs_router)
+    application.include_router(stream_router)
+    application.state.run_connections = Connections()
 
     @application.middleware("http")
     async def private_headers(request: Request, call_next: RequestResponseEndpoint) -> Response:

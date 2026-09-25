@@ -40,4 +40,8 @@ files = ["app", "tests"]
 testpaths = ["tests"]
 addopts = "-q --strict-markers -m 'not postgres'"
 markers = ["postgres: STEP03 real isolated PostgreSQL acceptance (run explicitly with -m postgres)"]
-filterwarnings = ["error"]
+filterwarnings = [
+    "error",
+    # Locked Starlette TestClient imports this deprecated AnyIO compatibility alias.
+    "ignore:The anyio.abc.BlockingPortal alias is deprecated.*:DeprecationWarning",
+]

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="0.395" timestamp="2026-09-24T15:37:25.234854+08:00" hostname="zyp"><testcase classname="" name="tests.test_runs" time="0.000"><error message="collection failure">tests\test_runs.py:15: in &lt;module&gt;
+    from fastapi.testclient import TestClient
+.venv\Lib\site-packages\fastapi\testclient.py:1: in &lt;module&gt;
+    from starlette.testclient import TestClient as TestClient  # noqa
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\starlette\testclient.py:53: in &lt;module&gt;
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+                                                             ^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\anyio\_lazyimport.py:35: in __getattr__
+    emit_deprecation_warning(module_name, name, new_name)
+.venv\Lib\site-packages\anyio\_lazyimport.py:84: in emit_deprecation_warning
+    warnings.warn(
+E   DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.</error></testcase></testsuite></testsuites>

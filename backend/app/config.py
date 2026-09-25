@@ -23,6 +23,7 @@ class Settings(BaseModel):
     smtp_password: SecretStr | None = None
     smtp_tls_mode: Literal["starttls", "ssl"] | None = None
     email_code_key: SecretStr | None = None
+    support_mode: Literal["disabled", "fake"] = "disabled"
 
     @property
     def email_ready(self) -> bool:
@@ -77,6 +78,10 @@ class Settings(BaseModel):
 
     @model_validator(mode="after")
     def isolated_test_database(self) -> "Settings":
+        if self.support_mode == "fake" and (
+            self.environment != "test" or self.database_url is None
+        ):
+            raise ValueError("Fake support requires an isolated synthetic test database")
         if self.environment == "test" and self.database_url is not None:
             url = make_url(self.database_url.get_secret_value())
             if url.host not in {"127.0.0.1", "localhost"} or not (url.database or "").startswith(
@@ -91,6 +96,7 @@ def load_settings(environ: Mapping[str, str] | None = None) -> Settings:
     return Settings.model_validate(
         {
             "environment": source.get("PSYEVO_ENV", "development"),
+            "support_mode": source.get("PSYEVO_SUPPORT_MODE", "disabled"),
             "database_url": source.get("PSYEVO_DATABASE_URL"),
             "browser_origin": source.get("PSYEVO_BROWSER_ORIGIN", "http://127.0.0.1:3000"),
             **{
