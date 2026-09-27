@@ -23,14 +23,17 @@ parser.add_argument("--web-port", type=int, default=3000)
 parser.add_argument("--api-port", type=int, default=8000)
 parser.add_argument("--tls-port", type=int, default=3443)
 parser.add_argument("--step05", action="store_true", help="Also verify durable fake runs and gateway SSE")
+parser.add_argument("--step06", action="store_true", help="Also verify chat, preferences and independent exercise UI")
 args = parser.parse_args()
+if args.step06:
+    args.step05 = True
 if any(not 1024 <= port <= 65535 for port in (args.web_port, args.api_port, args.tls_port)):
     parser.error("Ports must be between 1024 and 65535")
 if len({args.web_port, args.api_port, args.tls_port}) != 3:
     parser.error("Web, API and TLS ports must be distinct")
 BACKEND = ROOT / "backend"
 IMAGE = "postgres:16.13-bookworm@sha256:472efd9a66f2b2f1a5aeb18b28de74332e6ef88c2b93a1a5d812fb6db67a5f60"
-NAME = ("psyevo-step05-" if args.step05 else "psyevo-step03-") + uuid4().hex[:12]
+NAME = ("psyevo-step06-" if args.step06 else "psyevo-step05-" if args.step05 else "psyevo-step03-") + uuid4().hex[:12]
 RUN = ROOT / ".artifacts" / NAME
 RUN.mkdir(parents=True)
 ENV = {
@@ -87,6 +90,11 @@ RECEIPT["commands"] = commands
 if args.step05:
     RECEIPT["acceptance_ids"] = ["S1-A05", "S1-A11", "RSI-S1-A04", "RSI-S1-A07"]
     RECEIPT["limitations"] = ["Isolated synthetic accounts and fake model only; live Provider/content/SMTP BLOCKED", "No STEP06 chat UI or STEP07 deletion implementation", "Windows network guards are not kernel isolation"]
+if args.step06:
+    RECEIPT["step_id"] = "S1-STEP06"
+    RECEIPT["acceptance_ids"] = ["S1-A02", "S1-A03", "RSI-S1-A08", "S1-A05", "S1-A11"]
+    RECEIPT["limitations"] = ["Synthetic UI acceptance; live Provider/content review/SMTP BLOCKED", "No STEP07 history/deletion/feedback", "Language guards are not kernel isolation"]
+    ENV["PSYEVO_STEP06_ARTIFACTS"] = str(RUN)
 
 
 def run(label: str, args: list[str], cwd: Path = ROOT, timeout: int = 240) -> str:
@@ -237,6 +245,8 @@ engine.dispose()
             worker = subprocess.Popen([sys.executable, "-m", "app.worker", "--support"], cwd=BACKEND, env=ENV, stdout=worker_log, stderr=subprocess.STDOUT)
             try:
                 run("step05-gateway", [PNPM, "exec", "playwright", "test", "--config", "playwright.step05.config.ts"], ROOT / "frontend")
+                if args.step06:
+                    run("step06-browser", [PNPM, "exec", "playwright", "test", "--config", "playwright.step06.config.ts"], ROOT / "frontend")
                 if worker.poll() is not None:
                     raise RuntimeError("Support worker exited before gateway acceptance completed")
             finally:
@@ -309,6 +319,32 @@ print("PostgreSQL restart: one browser run, one model call, one initiation; even
 engine.dispose()
 '''
         run("step05-restart-facts", [sys.executable, "-c", verify_runs], BACKEND)
+    if args.step06:
+        verify_pages = '''
+from sqlalchemy import select, func
+from sqlalchemy.orm import Session
+from app.config import load_settings
+from app.database import make_engine
+from app.models import User, Preferences, Message, Run, Interaction, ModelCall
+engine = make_engine(load_settings().database_url.get_secret_value())
+with Session(engine) as db:
+    user = db.scalar(select(User).where(User.email == "step05-unused@example.com"))
+    assert user is not None
+    pref = db.scalar(select(Preferences).where(Preferences.owner_id == user.id))
+    assert pref is not None and pref.display_preferences["font_size"] == "large"
+    assert pref.display_preferences["hide_titles"] is True and pref.version == 2
+    messages = list(db.scalars(select(Message).where(Message.owner_id == user.id, Message.role == "user")))
+    assert len(messages) == 2
+    sent = [m for m in messages if m.content == "合成页面输入，只想倾听"]
+    assert len(sent) == 1
+    run = db.get(Run, sent[0].run_id)
+    assert run is not None and run.status == "completed"
+    assert db.scalar(select(func.count()).select_from(Interaction).where(Interaction.run_id == run.id)) == 1
+    assert db.scalar(select(func.count()).select_from(ModelCall).where(ModelCall.run_id == run.id)) == 1
+print("STEP06 restart: preferences persisted; lost-ack retry produced one input/run/call/initiation")
+engine.dispose()
+'''
+        run("step06-restart-facts", [sys.executable, "-c", verify_pages], BACKEND)
     run("documents", [sys.executable, "-B", "-X", "utf8", "_check_docs.py"])
     run("diff", ["git", "diff", "--check"])
     RECEIPT["passed"] = True

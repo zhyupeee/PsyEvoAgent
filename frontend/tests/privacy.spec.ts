@@ -72,7 +72,7 @@ test('email register, refresh, account change revokes sessions and logout', asyn
   await expect(page.locator('body')).not.toContainText(
     /年龄|同意|撤回|用途确认/,
   )
-  await expect(page.locator('a[href="/chat"]')).toHaveCount(0)
+  await expect(page.locator('a[href="/chat"]')).toBeVisible()
   const cookie = (await context.cookies()).find(
     (item) => item.name === 'psyevo_session',
   )

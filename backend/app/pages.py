@@ -1,0 +1,68 @@
+"""STEP06 read models; no history management or exercise persistence."""
+
+from typing import Any
+
+from fastapi import APIRouter, Request
+from sqlalchemy import select
+
+from app.api import DB, Auth, owned
+from app.models import Conversation, Message, Run
+from app.runs import snapshot
+
+router = APIRouter(prefix="/api/v1")
+
+
+@router.get("/sessions/{session_id}/current-run")
+def current_run(session_id: str, db: DB, auth: Auth) -> dict[str, Any] | None:
+    owned(db, Conversation, session_id, auth.owner_id)
+    run = db.scalar(
+        select(Run)
+        .where(
+            Run.session_id == session_id,
+            Run.owner_id == auth.owner_id,
+            Run.deleted_at.is_(None),
+        )
+        .order_by(Run.created_at.desc(), Run.id.desc())
+        .limit(1)
+    )
+    if run is None:
+        return None
+    result = snapshot(db, run)  # Recheck grants/deletion before returning either message.
+    message = db.scalar(
+        select(Message).where(
+            Message.run_id == run.id, Message.role == "user", Message.deleted_at.is_(None)
+        )
+    )
+    return {**result, "input_text": message.content if message else None}
+
+
+@router.get("/resources/exercises/attention")
+def exercise(request: Request, auth: Auth) -> dict[str, Any]:
+    # Content review is external and unresolved. Never expose this fixture in development.
+    synthetic = request.app.state.settings.environment == "test"
+    return {
+        "id": "attention",
+        "title": "注意身边的事物",
+        "version": "synthetic-attention/1",
+        "review_status": "unreviewed",
+        "available": synthetic,
+        "steps": [
+            "看看身边，留意一件你能看见的东西。",
+            "如果愿意，留意此刻听到的一种声音。",
+            "留意身体与椅子或地面的接触。也可以直接跳过。",
+        ]
+        if synthetic
+        else [],
+    }
+
+
+@router.get("/resources/support")
+def support(auth: Auth) -> dict[str, Any]:
+    return {
+        "items": [],
+        "checked_at": None,
+        "message": (
+            "暂无已核实的校内值班信息。可从学校官方网站查找学生事务或"
+            "心理支持部门的公开入口，并核对信息日期。"
+        ),
+    }

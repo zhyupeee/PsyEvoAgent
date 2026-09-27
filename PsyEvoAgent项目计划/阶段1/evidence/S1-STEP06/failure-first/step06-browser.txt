@@ -1,0 +1,58 @@
+
+Running 4 tests using 1 worker
+
+  ok 1 tests\support.spec.ts:29:1 › chat: real send, lost acknowledgement retry, snapshot reload, account isolation (6.6s)
+  x  2 tests\support.spec.ts:71:1 › stop reflects backend terminal even when completion wins; stream loss recovers without send (30.0s)
+  x  3 tests\support.spec.ts:100:1 › preferences: failure is not saved; persistence, mobile keyboard and title display (30.0s)
+  ok 4 tests\support.spec.ts:149:1 › independent exercise: no model requests, skip, exit, refresh, unknown resources (4.5s)
+
+
+  1) tests\support.spec.ts:71:1 › stop reflects backend terminal even when completion wins; stream loss recovers without send 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.fill: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByLabel('想说的事')
+
+
+      81 |   })
+      82 |   await page.route('**/api/v1/runs/*/events*', (route) => route.abort('failed'))
+    > 83 |   await page.getByLabel('想说的事').fill('合成取消检查')
+         |                                 ^
+      84 |   await page.getByRole('button', { name: '发送', exact: true }).click()
+      85 |   const stop = page.getByRole('button', { name: '停止生成' })
+      86 |   await stop.click()
+        at D:\PsyEvoAgent\frontend\tests\support.spec.ts:83:33
+
+    Error Context: test-results\support-stop-reflects-back-0f563--loss-recovers-without-send\error-context.md
+
+  2) tests\support.spec.ts:100:1 › preferences: failure is not saved; persistence, mobile keyboard and title display 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.selectOption: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByLabel('字号', { exact: true })
+
+
+      103 |   await login(page)
+      104 |   await page.goto('/me')
+    > 105 |   await page.getByLabel('字号', { exact: true }).selectOption('large')
+          |                                                ^
+      106 |   await page.getByLabel('隐藏对话标题').check()
+      107 |   await page.route('**/api/v1/me/preferences', (route) =>
+      108 |     route.request().method() === 'PATCH'
+        at D:\PsyEvoAgent\frontend\tests\support.spec.ts:105:48
+
+    Error Context: test-results\support-preferences-failur-b1433--keyboard-and-title-display\error-context.md
+
+  2 failed
+    tests\support.spec.ts:71:1 › stop reflects backend terminal even when completion wins; stream loss recovers without send 
+    tests\support.spec.ts:100:1 › preferences: failure is not saved; persistence, mobile keyboard and title display 
+  2 passed (1.4m)
+[WebServer] INFO:     Started server process [47800]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8106 (Press CTRL+C to quit)

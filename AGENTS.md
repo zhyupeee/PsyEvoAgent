@@ -4,6 +4,8 @@
 
 ## Project Structure & Module Organization
 
+2026-09-25 STEP06 implements chat/current-turn recovery, independent synthetic exercise/resources and preferences UI. Reuse `scripts/check_step06.py` for isolated PostgreSQL + real page acceptance; `backend/app/pages.py` adds only current-turn/static-resource read models. No new schema, dependencies, Agent loop or Worker. Unreviewed exercise steps are test-only; development returns unavailable. STEP07 history/revision/deletion/feedback remain unimplemented. Current evidence: `PsyEvoAgent项目计划/阶段1/evidence/S1-STEP06/README.md`; below are historical slices.
+
 2026-09-24 STEP05 adds durable start/idempotency, native SSE replay/snapshot, cancel CAS, interaction dedupe and a standalone synthetic Worker in `backend/app/runs.py`, `run_stream.py`, and `run_worker.py`. Reuse `scripts/check_step05.py` for disposable PostgreSQL + real gateway acceptance; `app.worker --support` requires explicit test-only fake mode. Default live execution remains disabled. STEP06 chat UI and STEP07 deletion/history remain unimplemented. Current evidence: `PsyEvoAgent项目计划/阶段1/evidence/S1-STEP05/README.md`; earlier paragraphs describe historical slices.
 
 2026-09-24 STEP04 adds `backend/app/support.py`: a synthetic-only single LangGraph, local LangChain fake adapter, budget ledger and fixed output rules. Live model execution, start/SSE APIs and the complete support product remain unimplemented. Use `scripts/check_step04.py`, or the existing WSL isolation entry with `--step04`, for this slice; keep live Provider capabilities unknown until independently verified.
