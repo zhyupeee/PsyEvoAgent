@@ -1,4 +1,14 @@
-# 本地工程开发（S1-STEP02/03/04/05/06）
+# 本地工程开发（S1-STEP02/03/04/05/06/07）
+
+## S1-STEP07 历史、修订、删除与反馈
+
+`/chat`新增本人标题搜索、归档/恢复；会话内有管理、历史分支、修订/重新生成、可选反馈。`/me`提供会话管理及删除处理记录。删除先确认并持久阻断访问，再串行清理在线正文/事件/反馈/来源使用；中途失败不显示完成，可按回执重试。当前未配置持久LangGraph检查点、应用备份、真实Provider，其清理在回执中标不适用；用量元数据及无正文墓碑保留。没有新增Agent、Worker消费者或依赖。
+
+已有开发库只做增量迁移：在backend运行`uv run --no-sync alembic upgrade head`；新增`h007_history_feedback`，保留旧会话/run/消息及历史决定，有本步数据时拒绝有损降级。不要删卷或重置开发库。
+
+根目录运行`backend/.venv/Scripts/python.exe -X utf8 scripts/check_step07.py --web-port 3107 --api-port 8107 --tls-port 3447`。入口复用原随机独立PostgreSQL门禁，执行前置回归、真实API/迁移、fake Worker、STEP07页面及数据库重启直接核对；仅处理本次合成库。`PSYEVO_STEP07_ARTIFACTS`仅由检查器注入，读取者`frontend/tests/history.spec.ts`保存合成截图，不是产品配置；不新增产品环境变量、.env加载或邮件/模型外发。WSL仍使用独立Linux依赖和`check_step02_isolated.sh --step04`做工程/Support内核出口检查，不冒充STEP07数据库页面已在内核隔离执行。
+
+STEP07执行结果以[本步记录](PsyEvoAgent项目计划/阶段1/evidence/S1-STEP07/README.md)为准；下文为历史实施时点。
 
 ## S1-STEP06 对话、资源与偏好页面
 

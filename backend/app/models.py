@@ -281,3 +281,33 @@ class Interaction(Personal, Base):
     tab_id: Mapped[str | None] = mapped_column(String(64))
     sequence: Mapped[int | None] = mapped_column(Integer)
     segment: Mapped[dict[str, object] | None] = mapped_column(JSONB)
+
+
+class Feedback(Personal, Base):
+    __tablename__ = "feedback"
+    __table_args__ = (
+        ForeignKeyConstraint(["run_id", "owner_id"], ["runs.id", "runs.owner_id"]),
+        CheckConstraint("helpfulness IN ('helpful','neutral','unhelpful','not_rated')"),
+        CheckConstraint("category IN ('general','misunderstood','listen_only','inappropriate')"),
+    )
+    run_id: Mapped[str] = mapped_column(String(36))
+    helpfulness: Mapped[str] = mapped_column(String(20))
+    category: Mapped[str] = mapped_column(String(20))
+    comment: Mapped[str | None] = mapped_column(Text)
+    notice_version: Mapped[str] = mapped_column(String(40), default="feedback-scope/1")
+
+
+class RunBranch(Personal, Base):
+    """An immutable revision edge; each branch reuses the existing run and messages."""
+
+    __tablename__ = "run_branches"
+    __table_args__ = (
+        UniqueConstraint("run_id"),
+        UniqueConstraint("parent_run_id"),
+        ForeignKeyConstraint(["run_id", "owner_id"], ["runs.id", "runs.owner_id"]),
+        ForeignKeyConstraint(["parent_run_id", "owner_id"], ["runs.id", "runs.owner_id"]),
+        CheckConstraint("kind IN ('revision','regenerate')"),
+    )
+    run_id: Mapped[str] = mapped_column(String(36))
+    parent_run_id: Mapped[str] = mapped_column(String(36))
+    kind: Mapped[str] = mapped_column(String(20))

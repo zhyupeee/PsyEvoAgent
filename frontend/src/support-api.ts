@@ -20,6 +20,7 @@ export const sessionSchema = z.object({
   id: z.string(),
   version: z.number(),
   title: z.string(),
+  status: z.enum(['active', 'archived', 'deleted']),
 })
 export const runSchema = z.object({
   run_id: z.string(),
@@ -38,6 +39,9 @@ export const runSchema = z.object({
   stop_reason: z.string().nullable().optional(),
   output: z.object({ text: z.string() }).nullable().optional(),
   input_text: z.string().nullable().optional(),
+  input_id: z.string().nullable().optional(),
+  input_version: z.number().nullable().optional(),
+  is_current: z.boolean().optional(),
 })
 export type Run = z.infer<typeof runSchema>
 export const terminal = (run: Run) =>

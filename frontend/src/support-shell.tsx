@@ -9,6 +9,7 @@ import { getIdentity, identitySchema } from './account-api'
 import { z } from 'zod'
 import { Brand } from './brand'
 import { preferencesQuery } from './support-api'
+import { privateChangeOrigin, privateChangeSchema } from './history-page'
 
 export function SupportPage({ children }: { children: ReactNode }) {
   const [client] = useState(
@@ -34,6 +35,22 @@ function Shell({ children }: { children: ReactNode }) {
     queryFn: ({ signal }) => getIdentity(signal),
     refetchInterval: 30000,
   })
+  useEffect(() => {
+    const channel = new BroadcastChannel('psyevo-private-change')
+    channel.onmessage = (event: MessageEvent<unknown>) => {
+      const change = privateChangeSchema.safeParse(event.data)
+      if (!change.success || change.data.origin === privateChangeOrigin) return
+      if (change.data.type !== 'session-updated') window.location.reload()
+    }
+    const restore = (event: PageTransitionEvent) => {
+      if (event.persisted) window.location.reload()
+    }
+    window.addEventListener('pageshow', restore)
+    return () => {
+      channel.close()
+      window.removeEventListener('pageshow', restore)
+    }
+  }, [])
   useEffect(() => {
     if (identity.data === null) void navigate({ to: '/login', replace: true })
   }, [identity.data, navigate])
@@ -75,6 +92,24 @@ function OwnerScope({
       client.clear()
     }
   }, [client, identity])
+  useEffect(() => {
+    const channel = new BroadcastChannel('psyevo-private-change')
+    channel.onmessage = (event: MessageEvent<unknown>) => {
+      const change = privateChangeSchema.safeParse(event.data)
+      if (!change.success || change.data.origin === privateChangeOrigin) return
+      if (change.data.type !== 'session-updated') return
+      const { sessionId } = change.data
+      void client.invalidateQueries({
+        predicate: ({ queryKey }) =>
+          queryKey[0] === 'sessions' ||
+          (['session', 'current-run', 'history'].includes(
+            String(queryKey[0]),
+          ) &&
+            queryKey[1] === sessionId),
+      })
+    }
+    return () => channel.close()
+  }, [client])
   return (
     <QueryClientProvider client={client}>
       <Layout>{children}</Layout>

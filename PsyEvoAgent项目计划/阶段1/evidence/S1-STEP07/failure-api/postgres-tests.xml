@@ -1,0 +1,579 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="61" time="44.117" timestamp="2026-09-27T11:56:16.263580+08:00" hostname="zyp"><testcase classname="tests.test_email_identity" name="test_email_lifecycle" time="6.065" /><testcase classname="tests.test_email_identity" name="test_challenge_expiry_attempts_resend_quotas_and_concurrency" time="0.245" /><testcase classname="tests.test_email_identity" name="test_local_cleanup_is_transactional_and_preserves_email_accounts" time="0.219" /><testcase classname="tests.test_history" name="test_feedback_idempotency_optional_reason_and_scope" time="0.716" /><testcase classname="tests.test_history" name="test_delete_real_content_events_grants_feedback_and_replay" time="1.081" /><testcase classname="tests.test_history" name="test_delete_failure_is_durable_retryable_and_never_reopens" time="0.612" /><testcase classname="tests.test_history" name="test_revision_regeneration_branch_context_and_idempotency" time="0.686"><failure message="ValueError: Shared caches and callbacks are not enabled">client = &lt;starlette.testclient.TestClient object at 0x00000222C50879E0&gt;
+
+    def test_revision_regeneration_branch_context_and_idempotency(client: TestClient) -&gt; None:
+        sid, rid, body = create(client)
+        start(client, rid, body)
+        old = current(client, sid)
+        path = f"/sessions/{sid}/messages/{old['input_id']}/revisions"
+        revised = {"content": "更正后的合成输入", "expected_version": old["input_version"]}
+        assert post(client, path, revised).status_code == 409
+        client.post(f"/api/v1/runs/{rid}/cancel", json={"expected_version": 2})
+        key = uuid4().hex
+        response = post(client, path, revised, key)
+        assert response.status_code == 201, response.text
+        branch = response.json()
+        assert post(client, path, revised, key).json()["run_id"] == branch["run_id"]
+        assert branch["input_version"] == 2 and branch["parent_run_id"] == rid
+        start(
+            client,
+            branch["run_id"],
+            {
+                "expected_version": 1,
+                "expected_session_version": 1,
+                "input": {"source_message_id": branch["input_id"]},
+                "client_message_id": uuid4().hex,
+            },
+        )
+        chosen = claim(engine(client))
+        assert chosen and chosen[0] == branch["run_id"]
+        fake = ScriptedModel(responses=[], outcomes=[message()])
+&gt;       asyncio.run(execute(engine(client), chosen[0], chosen[1], fake))
+
+tests\test_history.py:179: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\base_events.py:691: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+app\run_worker.py:136: in execute
+    runtime = SupportRuntime(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;app.support.SupportRuntime object at 0x00000222C50ED430&gt;
+model = ScriptedModel(metadata={'lc_versions': {'langchain-core': '1.6.4'}}, responses=[], outcomes=[AIMessage(content='{"text...[], invalid_tool_calls=[], usage_metadata={'input_tokens': 30, 'output_tokens': 20, 'total_tokens': 50})], captures=[])
+profile = ModelProfile(provider='local-fake', model_ref='local-scripted/1', adapter_version='1.6.4', parameters=(('sdk_retries',...own', cancellation='unknown', retries='unknown', evidence_ref=None, price_version='fake-price/1', currency='SYNTHETIC')
+authorize = &lt;function execute.&lt;locals&gt;.&lt;lambda&gt; at 0x00000222C51C39C0&gt;
+sdk_retries = 0
+record_call = &lt;function execute.&lt;locals&gt;.&lt;lambda&gt; at 0x00000222C516B2E0&gt;
+
+    def __init__(
+        self,
+        model: FakeMessagesListChatModel,
+        *,
+        profile: ModelProfile,
+        authorize: Callable[[SupportInput], bool],
+        sdk_retries: int = 0,
+        record_call: Callable[[CallReceipt], None] | None = None,
+    ) -&gt; None:
+        if not isinstance(model, FakeMessagesListChatModel) or sdk_retries != 0:
+            raise ValueError("Only local fake adapters with zero SDK retries are enabled")
+        if profile.adapter_version != version("langchain-core"):
+            raise ValueError("Adapter version mismatch")
+        if model.cache is not False or model.callbacks or model.verbose:
+&gt;           raise ValueError("Shared caches and callbacks are not enabled")
+E           ValueError: Shared caches and callbacks are not enabled
+
+app\support.py:240: ValueError</failure></testcase><testcase classname="tests.test_history" name="test_history_search_archive_versions_and_source_revoke" time="0.856" /><testcase classname="tests.test_history" name="test_delete_inflight_fences_late_output_and_preserves_usage" time="1.400"><failure message="assert 0 == 1&#10; +  where 0 = ScriptedModel(metadata={'lc_versions': {'langchain-core': '1.6.4'}}, responses=[], outcomes=[AIMessage(content='{&quot;text..._tool_calls=[], usage_metadata={'input_tokens': 30, 'output_tokens': 20, 'total_tokens': 50})], delay=0.3, captures=[]).calls">client = &lt;starlette.testclient.TestClient object at 0x00000222C5006240&gt;
+
+    def test_delete_inflight_fences_late_output_and_preserves_usage(client: TestClient) -&gt; None:
+        sid, rid, body = create(client)
+        start(client, rid, body)
+        chosen = claim(engine(client))
+        assert chosen is not None
+        fake = ScriptedModel(responses=[], outcomes=[message()], delay=0.3)
+    
+        async def race() -&gt; None:
+            task = asyncio.create_task(execute(engine(client), rid, chosen[1], fake))
+            for _ in range(100):
+                if fake.calls:
+                    break
+                await asyncio.sleep(0.01)
+            assert fake.calls == 1
+            response = await asyncio.to_thread(remove, client, sid)
+            assert response.json()["status"] == "completed", response.text
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
+    
+&gt;       asyncio.run(race())
+
+tests\test_history.py:265: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\base_events.py:691: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    async def race() -&gt; None:
+        task = asyncio.create_task(execute(engine(client), rid, chosen[1], fake))
+        for _ in range(100):
+            if fake.calls:
+                break
+            await asyncio.sleep(0.01)
+&gt;       assert fake.calls == 1
+E       assert 0 == 1
+E        +  where 0 = ScriptedModel(metadata={'lc_versions': {'langchain-core': '1.6.4'}}, responses=[], outcomes=[AIMessage(content='{"text..._tool_calls=[], usage_metadata={'input_tokens': 30, 'output_tokens': 20, 'total_tokens': 50})], delay=0.3, captures=[]).calls
+
+tests\test_history.py:257: AssertionError</failure></testcase><testcase classname="tests.test_history" name="test_history_feedback_revision_delete_are_owner_scoped" time="0.636" /><testcase classname="tests.test_pages" name="test_current_turn_recovery_and_revoked_source" time="0.597" /><testcase classname="tests.test_pages" name="test_current_turn_owner_and_deleted_session" time="0.240" /><testcase classname="tests.test_pages" name="test_current_turn_excludes_deleted_run" time="0.476" /><testcase classname="tests.test_pages" name="test_exercise_independent_of_model_and_unreviewed_content_gate" time="0.130" /><testcase classname="tests.test_registration" name="test_register_login_defaults_and_legacy_account" time="1.644" /><testcase classname="tests.test_runs" name="test_draft_start_replay_and_persisted_output" time="0.980" /><testcase classname="tests.test_runs" name="test_disabled_provider_replays_persisted_start" time="0.247" /><testcase classname="tests.test_runs" name="test_cancel_terminal_and_no_late_output[draft]" time="0.269" /><testcase classname="tests.test_runs" name="test_cancel_terminal_and_no_late_output[queued]" time="0.600" /><testcase classname="tests.test_runs" name="test_cancel_terminal_and_no_late_output[running]" time="0.468" /><testcase classname="tests.test_runs" name="test_parallel_start_and_cas_race" time="0.436" /><testcase classname="tests.test_runs" name="test_replay_and_snapshot_reauthorize[source_deleted]" time="0.536" /><testcase classname="tests.test_runs" name="test_replay_and_snapshot_reauthorize[source_version]" time="0.866" /><testcase classname="tests.test_runs" name="test_replay_and_snapshot_reauthorize[grant_revoked]" time="0.627" /><testcase classname="tests.test_runs" name="test_replay_and_snapshot_reauthorize[owner]" time="0.592" /><testcase classname="tests.test_runs" name="test_replay_and_snapshot_reauthorize[message_deleted]" time="0.720" /><testcase classname="tests.test_runs" name="test_replay_and_snapshot_reauthorize[message_version]" time="0.525" /><testcase classname="tests.test_runs" name="test_cursor_handshake_expiry_and_snapshot" time="1.290" /><testcase classname="tests.test_runs" name="test_deadline_recovery_logout_and_disabled_provider" time="0.526" /><testcase classname="tests.test_runs" name="test_deadline_expires_after_claim_before_execute" time="0.377" /><testcase classname="tests.test_runs" name="test_deadline_expires_during_model_call" time="0.530" /><testcase classname="tests.test_runs" name="test_start_rejects_nul_message[False]" time="0.460" /><testcase classname="tests.test_runs" name="test_start_rejects_nul_message[True]" time="0.175" /><testcase classname="tests.test_runs" name="test_worker_output_gate_and_unknown_cost[unsafe]" time="0.568" /><testcase classname="tests.test_runs" name="test_worker_output_gate_and_unknown_cost[unknown_usage]" time="0.504" /><testcase classname="tests.test_runs" name="test_worker_output_gate_and_unknown_cost[cancel]" time="0.559" /><testcase classname="tests.test_runs" name="test_interaction_dedupe_union_idle_and_clock_drift" time="0.514" /><testcase classname="tests.test_runs" name="test_send_convenience_client_id_and_csrf" time="0.306" /><testcase classname="tests.test_runs" name="test_message_sent_recorded_at_client_id_limit[123]" time="0.313" /><testcase classname="tests.test_runs" name="test_message_sent_recorded_at_client_id_limit[124]" time="0.292" /><testcase classname="tests.test_runs" name="test_message_sent_recorded_at_client_id_limit[128]" time="0.319" /><testcase classname="tests.test_runs" name="test_inflight_stop_persists_unknown_charge[cancel]" time="0.777" /><testcase classname="tests.test_runs" name="test_inflight_stop_persists_unknown_charge[logout]" time="0.486" /><testcase classname="tests.test_runs" name="test_inflight_stop_persists_unknown_charge[delete_source]" time="0.432" /><testcase classname="tests.test_runs" name="test_start_failure_is_atomic_and_no_disabled_live_execution" time="0.212" /><testcase classname="tests.test_runs" name="test_optional_event_storage_failure_does_not_block_support" time="0.509" /><testcase classname="tests.test_step03" name="test_identity_purpose_versions_and_storage" time="1.831"><failure message="assert 409 == 200&#10; +  where 409 = &lt;Response [409 Conflict]&gt;.status_code">def test_identity_purpose_versions_and_storage() -&gt; None:
+        url = os.environ["PSYEVO_TEST_DATABASE_URL"]
+    
+        async def check() -&gt; None:
+            app = create_app(
+                Settings(environment="test", database_url=SecretStr(url), browser_origin=ORIGIN)
+            )
+            async with app.router.lifespan_context(app):
+                with Session(app.state.engine) as db, db.begin():
+                    a = User(
+                        email="a-" + uuid4().hex + "@example.com",
+                        password_hash=password_hash("synthetic-password-a"),
+                    )
+                    b = User(
+                        email="b-" + uuid4().hex + "@example.com",
+                        password_hash=password_hash("synthetic-password-b"),
+                    )
+                    db.add_all([a, b])
+                    db.flush()
+                    aid, bid, aname, bname = a.id, b.id, a.email, b.email
+                    db.add_all([Preferences(owner_id=aid), Preferences(owner_id=bid)])
+                transport = httpx.ASGITransport(app)
+                async with (
+                    httpx.AsyncClient(transport=transport, base_url=ORIGIN) as ca,
+                    httpx.AsyncClient(transport=transport, base_url=ORIGIN) as cb,
+                ):
+                    assert (await ca.get("/api/v1/me/preferences")).status_code == 401
+                    assert (
+                        await ca.post(
+                            "/api/v1/auth/login",
+                            json={"email": aname, "password": "synthetic-password-a"},
+                        )
+                    ).status_code == 403
+                    for client, username, password in [
+                        (ca, aname, "synthetic-password-a"),
+                        (cb, bname, "synthetic-password-b"),
+                    ]:
+                        client.headers["Origin"] = ORIGIN
+                        login = await client.post(
+                            "/api/v1/auth/login", json={"email": username, "password": password}
+                        )
+                        assert login.status_code == 200, login.text
+                        assert all(
+                            flag in login.headers["set-cookie"].lower()
+                            for flag in ["httponly", "secure", "samesite=strict"]
+                        )
+                        client.headers["X-CSRF-Token"] = login.json()["csrf_token"]
+                    ca.headers["Idempotency-Key"] = uuid4().hex
+                    assert (
+                        await ca.post("/api/v1/sessions", json={}, headers={"X-CSRF-Token": "wrong"})
+                    ).status_code == 403
+                    leak = await ca.post(
+                        "/api/v1/sessions", json={"owner_id": bid, "title": "private-marker"}
+                    )
+                    assert (
+                        leak.status_code == 422
+                        and "private-marker" not in leak.text
+                        and bid not in leak.text
+                    )
+                    assert set(leak.json()) == {"code", "message", "request_id", "retryable"}
+                    created = await ca.post("/api/v1/sessions", json={})
+                    assert created.status_code == 201, created.text
+                    sid = created.json()["id"]
+                    assert created.headers["cache-control"] == "no-store"
+                    assert (await ca.post("/api/v1/sessions", json={})).json()["id"] == sid
+                    assert (
+                        await ca.post("/api/v1/sessions", json={"title": "different"})
+                    ).status_code == 409
+                    for method, path, data in [
+                        ("GET", f"/sessions/{sid}", None),
+                        ("PATCH", f"/sessions/{sid}", {"title": "stolen", "expected_version": 1}),
+                    ]:
+                        denied = await cb.request(method, "/api/v1" + path, json=data)
+                        assert denied.status_code == 404
+                    p = (await ca.get("/api/v1/me/preferences")).json()
+                    assert p["age_band"] == "unknown" and p["age_source"] == "not_provided"
+                    for age in ["adult", "minor", "unknown"]:
+                        updated = await ca.patch(
+                            "/api/v1/me/preferences",
+                            json={"age_band": age, "expected_version": p["version"]},
+                        )
+                        assert updated.status_code == 200
+                        p = updated.json()
+                        assert p["age_band"] == age
+                        assert p["age_source"] == (
+                            "not_provided" if age == "unknown" else "self_reported"
+                        )
+                        for purpose in ["optional_profile", "saved_memory", "research"]:
+                            ca.headers["Idempotency-Key"] = uuid4().hex
+                            denied = await ca.post(
+                                "/api/v1/consents",
+                                json={
+                                    "purpose": purpose,
+                                    "decision": "granted",
+                                    "notice_version": "synthetic-notice/1",
+                                },
+                            )
+                            assert denied.status_code == 422
+                    results = await asyncio.gather(
+                        *[
+                            ca.patch(
+                                "/api/v1/me/preferences",
+                                json={"age_band": "adult", "expected_version": p["version"]},
+                            )
+                            for _ in range(2)
+                        ]
+                    )
+                    assert sorted(r.status_code for r in results) == [200, 409]
+                    for purpose in ["optional_profile", "saved_memory", "research"]:
+                        ca.headers["Idempotency-Key"] = uuid4().hex
+                        r = await ca.post(
+                            "/api/v1/consents",
+                            json={
+                                "purpose": purpose,
+                                "decision": "declined",
+                                "notice_version": "synthetic-notice/1",
+                            },
+                        )
+                        assert r.status_code == 201
+                        assert r.json()["effective_scope"] == []
+                    ca.headers["Idempotency-Key"] = uuid4().hex
+                    draft_body = {
+                        "context_type": "conversation",
+                        "session_id": sid,
+                        "expected_session_version": 1,
+                    }
+                    draft = await ca.post("/api/v1/run-drafts", json=draft_body)
+                    assert draft.status_code == 201
+                    rid = draft.json()["id"]
+                    assert draft.json()["status"] == "draft"
+                    # STEP05 now registers start; invalid payload still cannot execute a model.
+                    assert (await ca.post(f"/api/v1/runs/{rid}/start", json={})).status_code == 422
+                    assert (await cb.get(f"/api/v1/runs/{rid}")).status_code == 404
+                    ca.headers["Idempotency-Key"] = uuid4().hex
+                    c = await ca.post(
+                        "/api/v1/consents",
+                        json={
+                            "purpose": "service_context",
+                            "decision": "granted",
+                            "scope": ["current_run"],
+                            "notice_version": "synthetic-notice/1",
+                        },
+                    )
+                    assert c.status_code == 201
+                    cid = c.json()["id"]
+                    ca.headers["Idempotency-Key"] = uuid4().hex
+                    grant_body = {
+                        "run_id": rid,
+                        "source_type": "conversation",
+                        "source_id": sid,
+                        "source_version": 1,
+                        "purpose": "current_run",
+                    }
+                    g = await ca.post("/api/v1/context-grants", json=grant_body)
+                    assert g.status_code == 201, g.text
+                    gid = g.json()["id"]
+                    assert g.json()["active"]
+                    assert (await cb.get(f"/api/v1/context-grants/{gid}")).status_code == 404
+                    assert (
+                        await cb.request(
+                            "DELETE", f"/api/v1/consents/{cid}", json={"expected_version": 1}
+                        )
+                    ).status_code == 404
+                    assert (
+                        await ca.patch(
+                            f"/api/v1/sessions/{sid}", json={"title": "changed", "expected_version": 1}
+                        )
+                    ).status_code == 200
+                    assert not (await ca.get(f"/api/v1/context-grants/{gid}")).json()["active"]
+                    assert (await ca.post("/api/v1/context-grants", json=grant_body)).status_code == 403
+                    ca.headers["Idempotency-Key"] = uuid4().hex
+                    grant_body["source_version"] = 2
+                    g2 = await ca.post("/api/v1/context-grants", json=grant_body)
+                    assert g2.status_code == 201
+                    gid2 = g2.json()["id"]
+                    assert (
+                        await ca.request(
+                            "DELETE", f"/api/v1/consents/{cid}", json={"expected_version": 1}
+                        )
+                    ).status_code == 200
+                    # Historical consent decisions no longer gate experiment source links.
+                    assert (await ca.get(f"/api/v1/context-grants/{gid2}")).json()["active"]
+                    ca.headers["Idempotency-Key"] = uuid4().hex
+                    assert (await ca.post("/api/v1/context-grants", json=grant_body)).status_code == 201
+                    assert (await ca.get("/api/v1/auth/session")).status_code == 200
+                    ca.headers["Idempotency-Key"] = uuid4().hex
+                    assert (await ca.post("/api/v1/sessions", json={})).status_code == 201
+                    with Session(app.state.engine) as db, db.begin():
+                        source = db.get(Conversation, sid)
+                        assert source is not None and source.owner_id == aid
+                        source.deleted_at, source.status = now(), "deleted"
+                        source.version += 1
+                        deletion = DeletionJob(
+                            owner_id=aid,
+                            target=sid,
+                            scope=["conversation"],
+                            status="failed_retryable",
+                            completed_steps=["online_blocked"],
+                            error_code="synthetic_cleanup_failure",
+                        )
+                        db.add(deletion)
+                        db.flush()
+                        deletion_id = deletion.id
+                        assert db.get(Run, rid) is not None
+                        assert db.get(ContextGrant, gid) is not None
+                        assert db.get(Consent, cid) is not None
+                    assert (await ca.get(f"/api/v1/sessions/{sid}")).status_code == 404
+                    assert (await ca.get(f"/api/v1/runs/{rid}")).status_code == 404
+                    stale_cookie = ca.cookies.get("psyevo_session")
+                    assert (await ca.post("/api/v1/auth/logout")).status_code == 204
+                    ca.cookies.set("psyevo_session", str(stale_cookie))
+                    assert (await ca.get("/api/v1/auth/session")).status_code == 401
+                    with Session(app.state.engine) as db, db.begin():
+                        auth = db.scalar(select(IdentitySession).where(IdentitySession.owner_id == bid))
+                        assert auth is not None
+                        auth.expires_at = now() - timedelta(seconds=1)
+                    assert (await cb.get("/api/v1/auth/session")).status_code == 401
+    
+            # New engine/application proves persisted identity, preferences and deletion state.
+            restarted = create_app(
+                Settings(environment="test", database_url=SecretStr(url), browser_origin=ORIGIN)
+            )
+            async with restarted.router.lifespan_context(restarted):
+                with Session(restarted.state.engine) as db:
+                    job = db.get(DeletionJob, deletion_id)
+                    assert job is not None and job.status == "failed_retryable"
+                    assert job.completed_steps == ["online_blocked"]
+                    pref = db.scalar(select(Preferences).where(Preferences.owner_id == aid))
+                    assert pref is not None and pref.age_band == "adult"
+                async with httpx.AsyncClient(
+                    transport=httpx.ASGITransport(restarted),
+                    base_url=ORIGIN,
+                    headers={"Origin": ORIGIN},
+                ) as client:
+                    login = await client.post(
+                        "/api/v1/auth/login",
+                        json={"email": aname, "password": "synthetic-password-a"},
+                    )
+                    assert login.status_code == 200
+                    assert (await client.get(f"/api/v1/sessions/{sid}")).status_code == 404
+                    assert (await client.get(f"/api/v1/runs/{rid}")).status_code == 404
+    
+&gt;       asyncio.run(check())
+
+tests\test_step03.py:275: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\base_events.py:691: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    async def check() -&gt; None:
+        app = create_app(
+            Settings(environment="test", database_url=SecretStr(url), browser_origin=ORIGIN)
+        )
+        async with app.router.lifespan_context(app):
+            with Session(app.state.engine) as db, db.begin():
+                a = User(
+                    email="a-" + uuid4().hex + "@example.com",
+                    password_hash=password_hash("synthetic-password-a"),
+                )
+                b = User(
+                    email="b-" + uuid4().hex + "@example.com",
+                    password_hash=password_hash("synthetic-password-b"),
+                )
+                db.add_all([a, b])
+                db.flush()
+                aid, bid, aname, bname = a.id, b.id, a.email, b.email
+                db.add_all([Preferences(owner_id=aid), Preferences(owner_id=bid)])
+            transport = httpx.ASGITransport(app)
+            async with (
+                httpx.AsyncClient(transport=transport, base_url=ORIGIN) as ca,
+                httpx.AsyncClient(transport=transport, base_url=ORIGIN) as cb,
+            ):
+                assert (await ca.get("/api/v1/me/preferences")).status_code == 401
+                assert (
+                    await ca.post(
+                        "/api/v1/auth/login",
+                        json={"email": aname, "password": "synthetic-password-a"},
+                    )
+                ).status_code == 403
+                for client, username, password in [
+                    (ca, aname, "synthetic-password-a"),
+                    (cb, bname, "synthetic-password-b"),
+                ]:
+                    client.headers["Origin"] = ORIGIN
+                    login = await client.post(
+                        "/api/v1/auth/login", json={"email": username, "password": password}
+                    )
+                    assert login.status_code == 200, login.text
+                    assert all(
+                        flag in login.headers["set-cookie"].lower()
+                        for flag in ["httponly", "secure", "samesite=strict"]
+                    )
+                    client.headers["X-CSRF-Token"] = login.json()["csrf_token"]
+                ca.headers["Idempotency-Key"] = uuid4().hex
+                assert (
+                    await ca.post("/api/v1/sessions", json={}, headers={"X-CSRF-Token": "wrong"})
+                ).status_code == 403
+                leak = await ca.post(
+                    "/api/v1/sessions", json={"owner_id": bid, "title": "private-marker"}
+                )
+                assert (
+                    leak.status_code == 422
+                    and "private-marker" not in leak.text
+                    and bid not in leak.text
+                )
+                assert set(leak.json()) == {"code", "message", "request_id", "retryable"}
+                created = await ca.post("/api/v1/sessions", json={})
+                assert created.status_code == 201, created.text
+                sid = created.json()["id"]
+                assert created.headers["cache-control"] == "no-store"
+                assert (await ca.post("/api/v1/sessions", json={})).json()["id"] == sid
+                assert (
+                    await ca.post("/api/v1/sessions", json={"title": "different"})
+                ).status_code == 409
+                for method, path, data in [
+                    ("GET", f"/sessions/{sid}", None),
+                    ("PATCH", f"/sessions/{sid}", {"title": "stolen", "expected_version": 1}),
+                ]:
+                    denied = await cb.request(method, "/api/v1" + path, json=data)
+                    assert denied.status_code == 404
+                p = (await ca.get("/api/v1/me/preferences")).json()
+                assert p["age_band"] == "unknown" and p["age_source"] == "not_provided"
+                for age in ["adult", "minor", "unknown"]:
+                    updated = await ca.patch(
+                        "/api/v1/me/preferences",
+                        json={"age_band": age, "expected_version": p["version"]},
+                    )
+                    assert updated.status_code == 200
+                    p = updated.json()
+                    assert p["age_band"] == age
+                    assert p["age_source"] == (
+                        "not_provided" if age == "unknown" else "self_reported"
+                    )
+                    for purpose in ["optional_profile", "saved_memory", "research"]:
+                        ca.headers["Idempotency-Key"] = uuid4().hex
+                        denied = await ca.post(
+                            "/api/v1/consents",
+                            json={
+                                "purpose": purpose,
+                                "decision": "granted",
+                                "notice_version": "synthetic-notice/1",
+                            },
+                        )
+                        assert denied.status_code == 422
+                results = await asyncio.gather(
+                    *[
+                        ca.patch(
+                            "/api/v1/me/preferences",
+                            json={"age_band": "adult", "expected_version": p["version"]},
+                        )
+                        for _ in range(2)
+                    ]
+                )
+                assert sorted(r.status_code for r in results) == [200, 409]
+                for purpose in ["optional_profile", "saved_memory", "research"]:
+                    ca.headers["Idempotency-Key"] = uuid4().hex
+                    r = await ca.post(
+                        "/api/v1/consents",
+                        json={
+                            "purpose": purpose,
+                            "decision": "declined",
+                            "notice_version": "synthetic-notice/1",
+                        },
+                    )
+                    assert r.status_code == 201
+                    assert r.json()["effective_scope"] == []
+                ca.headers["Idempotency-Key"] = uuid4().hex
+                draft_body = {
+                    "context_type": "conversation",
+                    "session_id": sid,
+                    "expected_session_version": 1,
+                }
+                draft = await ca.post("/api/v1/run-drafts", json=draft_body)
+                assert draft.status_code == 201
+                rid = draft.json()["id"]
+                assert draft.json()["status"] == "draft"
+                # STEP05 now registers start; invalid payload still cannot execute a model.
+                assert (await ca.post(f"/api/v1/runs/{rid}/start", json={})).status_code == 422
+                assert (await cb.get(f"/api/v1/runs/{rid}")).status_code == 404
+                ca.headers["Idempotency-Key"] = uuid4().hex
+                c = await ca.post(
+                    "/api/v1/consents",
+                    json={
+                        "purpose": "service_context",
+                        "decision": "granted",
+                        "scope": ["current_run"],
+                        "notice_version": "synthetic-notice/1",
+                    },
+                )
+                assert c.status_code == 201
+                cid = c.json()["id"]
+                ca.headers["Idempotency-Key"] = uuid4().hex
+                grant_body = {
+                    "run_id": rid,
+                    "source_type": "conversation",
+                    "source_id": sid,
+                    "source_version": 1,
+                    "purpose": "current_run",
+                }
+                g = await ca.post("/api/v1/context-grants", json=grant_body)
+                assert g.status_code == 201, g.text
+                gid = g.json()["id"]
+                assert g.json()["active"]
+                assert (await cb.get(f"/api/v1/context-grants/{gid}")).status_code == 404
+                assert (
+                    await cb.request(
+                        "DELETE", f"/api/v1/consents/{cid}", json={"expected_version": 1}
+                    )
+                ).status_code == 404
+&gt;               assert (
+                    await ca.patch(
+                        f"/api/v1/sessions/{sid}", json={"title": "changed", "expected_version": 1}
+                    )
+                ).status_code == 200
+E               assert 409 == 200
+E                +  where 409 = &lt;Response [409 Conflict]&gt;.status_code
+
+tests\test_step03.py:196: AssertionError</failure></testcase><testcase classname="tests.test_step03" name="test_grant_rechecks_current_facts[expired_grant]" time="0.062" /><testcase classname="tests.test_step03" name="test_grant_rechecks_current_facts[expired_consent]" time="0.050" /><testcase classname="tests.test_step03" name="test_grant_rechecks_current_facts[expired_run]" time="0.059" /><testcase classname="tests.test_step03" name="test_grant_rechecks_current_facts[terminal_run]" time="0.065" /><testcase classname="tests.test_step03" name="test_grant_rechecks_current_facts[deleted_source]" time="0.055" /><testcase classname="tests.test_step03" name="test_grant_rechecks_current_facts[revoked_grant]" time="0.053" /><testcase classname="tests.test_step03_migrations" name="test_step05_upgrade_preserves_runs_and_refuses_lossy_downgrade" time="1.264" /><testcase classname="tests.test_step03_migrations" name="test_default_configuration_migration_preserves_history" time="1.226" /><testcase classname="tests.test_step03_migrations" name="test_empty_upgrade_is_repeatable" time="0.738"><failure message="AssertionError: assert {'alembic_ver...l_codes', ...} == {'alembic_ver...l_codes', ...}&#10;  &#10;  Extra items in the left set:&#10;  'run_branches'&#10;  'feedback'&#10;  Use -v to get more diff">migration_url = 'postgresql+psycopg://psyevo:synthetic-check-only@127.0.0.1:49886/psyevo_synthetic_migration_37439b6387414c5e8e1153cf5469eaf1?connect_timeout=3'
+
+    def test_empty_upgrade_is_repeatable(migration_url: str) -&gt; None:
+        config = Config(str(BACKEND / "alembic.ini"))
+        command.upgrade(config, "head")
+        command.upgrade(config, "head")
+        command.check(config)
+        engine = make_engine(migration_url)
+        try:
+&gt;           assert set(inspect(engine).get_table_names()) == {
+                "alembic_version",
+                "users",
+                "email_codes",
+                "login_attempts",
+                "identity_sessions",
+                "user_preferences",
+                "consent_records",
+                "conversations",
+                "runs",
+                "context_grants",
+                "deletion_jobs",
+                "idempotency_records",
+                "run_executions",
+                "run_events",
+                "model_calls",
+                "messages",
+                "interaction_events",
+            }
+E           AssertionError: assert {'alembic_ver...l_codes', ...} == {'alembic_ver...l_codes', ...}
+E             
+E             Extra items in the left set:
+E             'run_branches'
+E             'feedback'
+E             Use -v to get more diff
+
+tests\test_step03_migrations.py:184: AssertionError</failure></testcase><testcase classname="tests.test_step03_migrations" name="test_previous_schema_upgrade_and_downgrade_preserve_data" time="1.718" /><testcase classname="tests.test_step03_migrations" name="test_failed_owner_constraint_upgrade_rolls_back_and_can_recover" time="0.802" /><testcase classname="tests.test_step03_migrations" name="test_no_expiry_migration_preserves_records_and_refuses_lossy_downgrade" time="0.793" /><testcase classname="tests.test_step03_migrations" name="test_email_migration_preserves_legacy_and_refuses_lossy_downgrade" time="0.734" /><testcase classname="tests.test_step03_migrations" name="test_login_attempt_migration_preserves_existing_lockout" time="0.799" /></testsuite></testsuites>

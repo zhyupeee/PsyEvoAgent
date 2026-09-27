@@ -5,7 +5,7 @@ from datetime import timedelta
 from typing import Any, Literal
 
 from fastapi import APIRouter, Request
-from pydantic import AwareDatetime, Field, field_validator, model_validator
+from pydantic import AwareDatetime, Field, field_validator, model_serializer, model_validator
 from sqlalchemy import Engine, delete, select, update
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -35,16 +35,33 @@ EVENT_WINDOW = 128
 
 
 class RunInput(Input):
-    message: str = Field(min_length=1, max_length=4000)
+    message: str | None = Field(default=None, min_length=1, max_length=4000)
+    source_message_id: str | None = Field(default=None, min_length=1, max_length=36)
+
+    @model_serializer
+    def fingerprint_fields(self) -> dict[str, str]:
+        # Adding the revision alternative must not change persisted STEP05 request hashes.
+        if self.message is not None:
+            return {"message": self.message}
+        assert self.source_message_id is not None
+        return {"source_message_id": self.source_message_id}
 
     @field_validator("message")
     @classmethod
-    def nonblank(cls, value: str) -> str:
+    def nonblank(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
         if not value.strip():
             raise ValueError("Blank message")
         if "\x00" in value:
             raise ValueError("Message contains NUL")
         return value
+
+    @model_validator(mode="after")
+    def one_input(self) -> "RunInput":
+        if (self.message is None) == (self.source_message_id is None):
+            raise ValueError("Exactly one input required")
+        return self
 
 
 class Start(Version):
@@ -56,7 +73,7 @@ class Start(Version):
 
 
 class Send(Start):
-    kind: Literal["message"] = "message"
+    kind: Literal["message", "regenerate"] = "message"
     expected_version: Literal[1] = 1
 
 
@@ -74,15 +91,13 @@ def sources_available(db: Session, run: Run, ex: RunExecution | None) -> bool:
         source is None
         or source.owner_id != run.owner_id
         or source.deleted_at
-        or source.status != "active"
+        or source.status not in {"active", "archived"}
     ):
         return False
-    if ex is None:
-        return True
     # Source versions are fixed at start; title/source edits conservatively invalidate output.
     if source.version != run.session_version:
         return False
-    if run.status != "draft":
+    if ex is not None and run.status != "draft":
         messages = db.scalars(select(Message).where(Message.run_id == run.id)).all()
         source_message = next((m for m in messages if m.role == "user"), None)
         if (
@@ -91,7 +106,13 @@ def sources_available(db: Session, run: Run, ex: RunExecution | None) -> bool:
             or any(m.deleted_at or m.owner_id != run.owner_id for m in messages)
         ):
             return False
-    for gid in ex.grant_ids:
+    # Branch drafts already contain persisted input and inherited grants before start.
+    grant_ids = (
+        ex.grant_ids
+        if ex is not None
+        else db.scalars(select(ContextGrant.id).where(ContextGrant.run_id == run.id)).all()
+    )
+    for gid in grant_ids:
         grant = db.get(ContextGrant, gid)
         if (
             grant is None
@@ -107,7 +128,7 @@ def sources_available(db: Session, run: Run, ex: RunExecution | None) -> bool:
             source is None
             or source.owner_id != run.owner_id
             or source.deleted_at
-            or source.status != "active"
+            or source.status not in {"active", "archived"}
             or source.version != grant.source_version
         ):
             return False
@@ -231,6 +252,12 @@ def start_run(
     if run.status != "draft" or run.version != body.expected_version:
         raise APIError(409, "version_conflict")
     source = owned(db, Conversation, run.session_id, identity.owner_id)
+    if run.kind in {"revision", "regenerate"}:
+        from app.history import last_input
+
+        latest = last_input(db, run.session_id)
+        if latest is None or latest.run_id != run.id:
+            raise APIError(409, "revision_conflict")
     if (
         source.version != body.expected_session_version
         or source.version != run.session_version
@@ -254,31 +281,55 @@ def start_run(
     ):
         raise APIError(409, "run_active")
     pref = db.scalar(select(Preferences).where(Preferences.owner_id == run.owner_id))
+    grant_ids = body.grant_ids
+    if run.kind in {"revision", "regenerate"}:
+        grant_ids = list(
+            dict.fromkeys(
+                [
+                    *grant_ids,
+                    *db.scalars(select(ContextGrant.id).where(ContextGrant.run_id == run.id)),
+                ]
+            )
+        )
     ex = RunExecution(
         owner_id=run.owner_id,
         run_id=run.id,
         identity_id=identity.id,
         request_hash=fingerprint,
-        grant_ids=body.grant_ids,
+        grant_ids=grant_ids,
         versions=VersionBinding().model_dump(),
         budget=Budget().model_dump(mode="json"),
         preference=pref.mode if pref else "listen",
         deadline_at=now() + timedelta(seconds=10),
     )
+    if len(grant_ids) > 8:
+        raise APIError(422, "too_many_grants")
     if not sources_available(db, run, ex):
         raise APIError(403, "grant_inactive")
-    db.add(ex)
-    run.status, run.version, run.source_message_version = "queued", run.version + 1, 1
-    run.updated_at = now()
-    db.add(
-        Message(
+    original = db.scalar(select(Message).where(Message.run_id == run.id, Message.role == "user"))
+    if original is not None:
+        if body.input.source_message_id != original.id or body.input.message is not None:
+            raise APIError(409, "revision_input_changed")
+        original.client_message_id = body.client_message_id
+    else:
+        if body.input.message is None:
+            raise APIError(422, "message_required")
+        original = Message(
             owner_id=run.owner_id,
             run_id=run.id,
             role="user",
             content=body.input.message,
             client_message_id=body.client_message_id,
+            version=1,
         )
+        db.add(original)
+    db.add(ex)
+    run.status, run.version, run.source_message_version = (
+        "queued",
+        run.version + 1,
+        original.version,
     )
+    run.updated_at = now()
     db.flush()
     try:
         with db.begin_nested():
@@ -327,6 +378,28 @@ def send(session_id: str, body: Send, request: Request, db: DB, auth: Auth) -> d
             if run.session_id != session_id:
                 raise APIError(409, "client_message_conflict")
             return start_run(db, run, body, request, auth)
+        if body.kind == "regenerate":
+            from app.history import fork_run
+
+            source = owned(db, Conversation, session_id, auth.owner_id)
+            if (
+                source.version != body.expected_session_version
+                or body.input.source_message_id is None
+            ):
+                raise APIError(409, "version_conflict")
+            message = owned(db, Message, body.input.source_message_id, auth.owner_id)
+            run = fork_run(db, source, message.id, message.version, None, "regenerate")
+            # Preserve the caller fingerprint while resolving its source to the new branch.
+            new_message = db.scalar(
+                select(Message).where(Message.run_id == run.id, Message.role == "user")
+            )
+            assert new_message is not None
+            resolved = body.model_copy(update={"input": RunInput(source_message_id=new_message.id)})
+            start_run(db, run, resolved, request, auth)
+            ex = execution(db, run)
+            assert ex is not None
+            ex.request_hash = digest(body.model_dump_json())
+            return run
         run = Run(
             owner_id=auth.owner_id,
             session_id=session_id,

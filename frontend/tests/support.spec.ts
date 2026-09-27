@@ -193,8 +193,12 @@ test('preferences: failure is not saved; persistence, mobile keyboard and title 
     'data-large',
     'true',
   )
+  await expect(page.getByLabel('想说的事')).toBeEnabled()
   await page.getByLabel('想说的事').focus()
   await page.keyboard.type('synthetic keyboard')
+  await expect(
+    page.getByRole('button', { name: '发送', exact: true }),
+  ).toBeEnabled()
   await page.keyboard.press('Tab')
   await expect(
     page.getByRole('button', { name: '发送', exact: true }),

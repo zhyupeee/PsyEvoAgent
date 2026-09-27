@@ -1,0 +1,181 @@
+"""Durable online tombstone before retryable serial cleanup; no new worker."""
+
+from typing import Any, Literal
+
+from fastapi import APIRouter, Request
+from sqlalchemy import delete, or_, select
+from sqlalchemy.orm import Session
+
+from app.api import DB, APIError, Auth, bump, create_once, owned
+from app.contracts import Version
+from app.models import (
+    ContextGrant,
+    Conversation,
+    DeletionJob,
+    Feedback,
+    Interaction,
+    Message,
+    Run,
+    RunBranch,
+    RunEvent,
+    now,
+)
+from app.runs import execution, lock_owner, terminal
+
+router = APIRouter(prefix="/api/v1")
+STEPS = ["online_blocked", "messages", "events", "feedback", "source_links"]
+
+
+def receipt(job: DeletionJob) -> dict[str, Any]:
+    return {
+        "deletion_id": job.id,
+        "target": job.target,
+        "version": job.version,
+        "status": job.status,
+        "completed_steps": job.completed_steps,
+        "remaining_steps": [step for step in STEPS if step not in job.completed_steps],
+        "retryable": job.status != "completed",
+        "error_code": job.error_code,
+        "not_applicable": {
+            "checkpoints": "No persistent checkpointer configured",
+            "backups": "No application backup service configured",
+            "external_provider": "Live provider disabled",
+        },
+        "retained": ["content-free tombstones", "idempotency hashes", "model usage metadata"],
+    }
+
+
+def affected_runs(db: Session, target: str) -> list[Run]:
+    return list(
+        db.scalars(
+            select(Run).where(
+                or_(
+                    Run.session_id == target,
+                    Run.id.in_(select(ContextGrant.run_id).where(ContextGrant.source_id == target)),
+                )
+            )
+        )
+    )
+
+
+def purge_step(db: Session, job: DeletionJob, step: str) -> None:
+    runs = affected_runs(db, job.target)
+    ids = [run.id for run in runs]
+    if step == "messages":
+        for message in db.scalars(select(Message).where(Message.run_id.in_(ids))):
+            message.content, message.deleted_at = "", now()
+            message.source_refs, message.consent_refs = [], []
+        source = db.get(Conversation, job.target)
+        assert source is not None
+        source.title, source.source_refs, source.consent_refs = "已删除的对话", [], []
+    elif step == "events":
+        db.execute(delete(RunEvent).where(RunEvent.run_id.in_(ids)))
+        db.execute(delete(Interaction).where(Interaction.run_id.in_(ids)))
+    elif step == "feedback":
+        db.execute(delete(Feedback).where(Feedback.run_id.in_(ids)))
+    elif step == "source_links":
+        for grant in db.scalars(
+            select(ContextGrant).where(
+                or_(ContextGrant.source_id == job.target, ContextGrant.run_id.in_(ids))
+            )
+        ):
+            grant.deleted_at, grant.revoked_at = now(), now()
+            grant.source_refs, grant.consent_refs = [], []
+        for run in runs:
+            run.source_refs, run.consent_refs = [], []
+            ex = execution(db, run)
+            if ex:
+                ex.grant_ids, ex.source_refs, ex.consent_refs = [], [], []
+        for edge in db.scalars(select(RunBranch).where(RunBranch.run_id.in_(ids))):
+            edge.deleted_at, edge.source_refs, edge.consent_refs = now(), [], []
+
+
+def cleanup(request: Request, job_id: str, owner: str) -> dict[str, Any]:
+    # Each completed step commits independently. A crash cannot undo online blocking.
+    for step in STEPS[1:]:
+        with Session(request.app.state.engine) as db, db.begin():
+            lock_owner(db, owner)
+            job = owned(db, DeletionJob, job_id, owner)
+            if step in job.completed_steps:
+                continue
+            try:
+                with db.begin_nested():
+                    purge_step(db, job, step)
+                    db.flush()
+            except Exception:
+                job.status, job.error_code = "failed_retryable", "cleanup_" + step
+                bump(job, job.version)
+                result = receipt(job)
+                return result
+            job.completed_steps = [*job.completed_steps, step]
+            job.status, job.error_code = "derivatives_purged", None
+            bump(job, job.version)
+    with Session(request.app.state.engine) as db, db.begin():
+        lock_owner(db, owner)
+        job = owned(db, DeletionJob, job_id, owner)
+        if job.status != "completed":
+            job.status, job.error_code = "completed", None
+            bump(job, job.version)
+        return receipt(job)
+
+
+class DeleteSession(Version):
+    confirmed: Literal[True]
+
+
+@router.delete("/sessions/{session_id}", status_code=202)
+def remove(
+    session_id: str, body: DeleteSession, request: Request, db: DB, auth: Auth
+) -> dict[str, Any]:
+    def build() -> DeletionJob:
+        source = owned(db, Conversation, session_id, auth.owner_id)
+        bump(source, body.expected_version)
+        source.deleted_at, source.status = now(), "deleted"
+        for run in affected_runs(db, source.id):
+            terminal(db, run, execution(db, run), "cancelled", "source_deleted")
+            run.deleted_at = now()
+        return DeletionJob(
+            owner_id=auth.owner_id,
+            target=source.id,
+            scope=["conversation_and_derived_runs"],
+            status="online_blocked",
+            completed_steps=["online_blocked"],
+        )
+
+    # Retrying an acknowledged request reuses the original receipt, even after deletion.
+    job = create_once(db, request, auth, DeletionJob, body.model_dump(), build)
+    job_id, owner = job.id, auth.owner_id
+    db.commit()
+    return cleanup(request, job_id, owner)
+
+
+@router.get("/deletion-jobs/{job_id}")
+def get_job(job_id: str, db: DB, auth: Auth) -> dict[str, Any]:
+    return receipt(owned(db, DeletionJob, job_id, auth.owner_id))
+
+
+@router.get("/deletion-jobs")
+def jobs(db: DB, auth: Auth) -> dict[str, Any]:
+    return {
+        "items": [
+            receipt(job)
+            for job in db.scalars(
+                select(DeletionJob)
+                .where(DeletionJob.owner_id == auth.owner_id)
+                .order_by(DeletionJob.created_at.desc())
+                .limit(100)
+            )
+        ]
+    }
+
+
+@router.post("/deletion-jobs/{job_id}/retry")
+def retry(job_id: str, body: Version, request: Request, db: DB, auth: Auth) -> dict[str, Any]:
+    job = owned(db, DeletionJob, job_id, auth.owner_id)
+    if job.status == "completed":
+        return receipt(job)
+    if job.version != body.expected_version:
+        raise APIError(409, "version_conflict")
+    owner = auth.owner_id
+    db.commit()
+    return cleanup(request, job_id, owner)

@@ -544,9 +544,32 @@ def get_session(resource_id: str, db: DB, auth: Auth) -> dict[str, Any]:
 
 @router.patch("/sessions/{resource_id}")
 def change_session(resource_id: str, body: SessionChange, db: DB, auth: Auth) -> dict[str, Any]:
+    from app.runs import TERMINAL
+
     row = owned(db, Conversation, resource_id, auth.owner_id)
+    affected = list(db.scalars(select(Run).where(Run.session_id == row.id)))
+    if any(run.status in {"queued", "running"} and not run.deleted_at for run in affected):
+        raise APIError(409, "run_active")
+    old_version = row.version
     bump(row, body.expected_version)
-    row.title = body.title
+    if body.title is not None:
+        row.title = body.title.strip()
+    if body.status is not None:
+        row.status = body.status
+    # Metadata-only edits preserve valid own historical snapshots, never stale sources.
+    for run in affected:
+        if run.session_version == old_version and not run.deleted_at and run.status in TERMINAL:
+            run.session_version = row.version
+    for grant in db.scalars(
+        select(ContextGrant).where(
+            ContextGrant.source_id == row.id,
+            ContextGrant.source_version == old_version,
+            ContextGrant.run_id.in_([run.id for run in affected if run.status in TERMINAL]),
+            ContextGrant.revoked_at.is_(None),
+            ContextGrant.deleted_at.is_(None),
+        )
+    ):
+        grant.source_version = row.version
     return resource(row)
 
 

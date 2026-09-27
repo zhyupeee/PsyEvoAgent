@@ -6,8 +6,8 @@ from fastapi import APIRouter, Request
 from sqlalchemy import select
 
 from app.api import DB, Auth, owned
-from app.models import Conversation, Message, Run
-from app.runs import snapshot
+from app.history import superseded_runs, turn
+from app.models import Conversation, Run
 
 router = APIRouter(prefix="/api/v1")
 
@@ -21,19 +21,14 @@ def current_run(session_id: str, db: DB, auth: Auth) -> dict[str, Any] | None:
             Run.session_id == session_id,
             Run.owner_id == auth.owner_id,
             Run.deleted_at.is_(None),
+            Run.id.not_in(superseded_runs()),
         )
         .order_by(Run.created_at.desc(), Run.id.desc())
         .limit(1)
     )
     if run is None:
         return None
-    result = snapshot(db, run)  # Recheck grants/deletion before returning either message.
-    message = db.scalar(
-        select(Message).where(
-            Message.run_id == run.id, Message.role == "user", Message.deleted_at.is_(None)
-        )
-    )
-    return {**result, "input_text": message.content if message else None}
+    return turn(db, run)
 
 
 @router.get("/resources/exercises/attention")

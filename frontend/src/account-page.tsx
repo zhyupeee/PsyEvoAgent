@@ -6,6 +6,7 @@ import {
   useQuery,
 } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { DeletionReceipts, notifyPrivateChange } from './history-page'
 import { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
 import {
@@ -86,6 +87,7 @@ function Account({ page }: { page: Page }) {
         if (!(error instanceof RequestError && error.status === 401))
           throw error
       }
+      notifyPrivateChange({ type: 'signed-out' })
       window.location.replace('/login')
     },
   })
@@ -195,6 +197,8 @@ function Account({ page }: { page: Page }) {
             ) : (
               <>
                 <Preferences csrf={identity.data.csrf_token} />
+                <Link to="/chat">管理和删除会话</Link>
+                <DeletionReceipts csrf={identity.data.csrf_token} />
                 <section className="mb-8 max-w-lg rounded-lg border border-line bg-white p-6">
                   <h2 className="mb-2 text-xl font-semibold">修改密码</h2>
                   <p className="mb-6 text-sm leading-6 text-muted">

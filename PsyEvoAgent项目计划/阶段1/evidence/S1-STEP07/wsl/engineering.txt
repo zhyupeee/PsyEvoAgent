@@ -1,0 +1,265 @@
+CHECK /home/zhyupe1118/psyevo-step07-20260927/backend/.venv/bin/python -I /home/zhyupe1118/psyevo-step07-20260927/scripts/probe_os_isolation.py
+{
+  "interfaces": [
+    "lo"
+  ],
+  "network_namespace": "net:[4026532720]",
+  "no_new_privileges": true,
+  "capabilities": "none",
+  "kernel_probes": [
+    {
+      "address": "203.0.113.1",
+      "type": "SOCK_STREAM",
+      "errno": 101
+    },
+    {
+      "address": "203.0.113.1",
+      "type": "SOCK_DGRAM",
+      "errno": 101
+    },
+    {
+      "address": "2001:db8::1",
+      "type": "SOCK_STREAM",
+      "errno": 101
+    },
+    {
+      "address": "2001:db8::1",
+      "type": "SOCK_DGRAM",
+      "errno": 101
+    }
+  ],
+  "native_curl_exit": 7,
+  "wsl_interop": "blocked",
+  "status": "passed"
+}
+
+CHECK /home/zhyupe1118/psyevo-step07-20260927/backend/.venv/bin/python --version
+Python 3.12.13
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/node-v22.19.0-linux-x64/bin/node --version
+v22.19.0
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm --version
+10.28.0
+
+CHECK uv --version
+uv 0.11.7 (x86_64-unknown-linux-gnu)
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm install --lockfile-only --frozen-lockfile --offline --ignore-scripts
+Done in 354ms using pnpm v10.28.0
+
+CHECK /home/zhyupe1118/psyevo-step07-20260927/backend/.venv/bin/python /home/zhyupe1118/psyevo-step07-20260927/scripts/probe_python_guard.py
+Python TCP and DNS guard probes passed
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/node-v22.19.0-linux-x64/bin/node /home/zhyupe1118/psyevo-step07-20260927/scripts/probe_node_guard.cjs
+Node TCP and DNS guard probes passed
+
+CHECK uv lock --check --offline
+Resolved 69 packages in 15ms
+
+CHECK /home/zhyupe1118/psyevo-step07-20260927/backend/.venv/bin/python -m ruff check .
+All checks passed!
+
+CHECK /home/zhyupe1118/psyevo-step07-20260927/backend/.venv/bin/python -m ruff format --check .
+51 files already formatted
+
+CHECK /home/zhyupe1118/psyevo-step07-20260927/backend/.venv/bin/python -m mypy
+Success: no issues found in 42 source files
+
+CHECK /home/zhyupe1118/psyevo-step07-20260927/backend/.venv/bin/python -m pytest -p no:cacheprovider --basetemp=/home/zhyupe1118/psyevo-step07-20260927/.artifacts/step02-20260927-123708/pytest
+..................................................................       [100%]
+66 passed, 65 deselected in 47.96s
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm lint
+
+> psyevoagent-frontend@0.1.0 lint /home/zhyupe1118/psyevo-step07-20260927/frontend
+> eslint . --max-warnings 0
+
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm typecheck
+
+> psyevoagent-frontend@0.1.0 typecheck /home/zhyupe1118/psyevo-step07-20260927/frontend
+> tsc --noEmit
+
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm test:unit
+
+> psyevoagent-frontend@0.1.0 test:unit /home/zhyupe1118/psyevo-step07-20260927/frontend
+> node --test ../scripts/start-backend.test.cjs && vitest run
+
+TAP version 13
+# Subtest: a fresh Windows terminal uses the existing database preparation entry
+ok 1 - a fresh Windows terminal uses the existing database preparation entry
+  ---
+  duration_ms: 3.559038
+  type: 'test'
+  ...
+# Subtest: an explicit database on win32 is inherited without local preparation
+ok 2 - an explicit database on win32 is inherited without local preparation
+  ---
+  duration_ms: 0.338551
+  type: 'test'
+  ...
+# Subtest: an explicit database on linux is inherited without local preparation
+ok 3 - an explicit database on linux is inherited without local preparation
+  ---
+  duration_ms: 0.129837
+  type: 'test'
+  ...
+# Subtest: missing configuration fails closed on linux in default
+ok 4 - missing configuration fails closed on linux in default
+  ---
+  duration_ms: 0.426069
+  type: 'test'
+  ...
+# Subtest: missing configuration fails closed on win32 in test
+ok 5 - missing configuration fails closed on win32 in test
+  ---
+  duration_ms: 0.187375
+  type: 'test'
+  ...
+# Subtest: missing configuration fails closed on win32 in production
+ok 6 - missing configuration fails closed on win32 in production
+  ---
+  duration_ms: 0.092998
+  type: 'test'
+  ...
+# Subtest: spawn failure is actionable and does not expose raw errors
+ok 7 - spawn failure is actionable and does not expose raw errors
+  ---
+  duration_ms: 0.271332
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 73.650243
+
+ RUN  v3.2.7 /home/zhyupe1118/psyevo-step07-20260927/frontend
+
+ ✓ src/health.test.ts (2 tests) 11ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  12:38:16
+   Duration  500ms (transform 60ms, setup 0ms, collect 43ms, tests 11ms, environment 0ms, prepare 136ms)
+
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm build
+
+> psyevoagent-frontend@0.1.0 build /home/zhyupe1118/psyevo-step07-20260927/frontend
+> vite build
+
+vite v7.3.6 building client environment for production...
+transforming...
+node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/util.js (400:0): A comment
+
+"// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+
+in "node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/regexes.js (74:0): A comment
+
+"/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+ * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+ * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+
+in "node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+✓ 355 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/assets/style-4IgGLHqB.css                            17.96 kB │ gzip:   4.75 kB
+dist/client/assets/chat.index-CWteE5zl.js                         0.20 kB │ gzip:   0.17 kB
+dist/client/assets/resources.index-PsXXrX_q.js                    0.22 kB │ gzip:   0.19 kB
+dist/client/assets/chat._sessionId-DA11aaVN.js                    0.26 kB │ gzip:   0.20 kB
+dist/client/assets/resources.exercises._exerciseId-DsxsY9HC.js    0.26 kB │ gzip:   0.22 kB
+dist/client/assets/me-DZr9W2De.js                                 0.28 kB │ gzip:   0.21 kB
+dist/client/assets/index-BD4PSR5u.js                              0.28 kB │ gzip:   0.22 kB
+dist/client/assets/login-D5hFD4Az.js                              0.28 kB │ gzip:   0.22 kB
+dist/client/assets/register-IdjbL61f.js                           0.28 kB │ gzip:   0.22 kB
+dist/client/assets/chat-DcZIfzQz.js                               0.29 kB │ gzip:   0.22 kB
+dist/client/assets/resources-DC_45kXN.js                          0.29 kB │ gzip:   0.22 kB
+dist/client/assets/brand-DOT3anfC.js                              0.36 kB │ gzip:   0.29 kB
+dist/client/assets/support-shell-Dgw75M-z.js                      2.48 kB │ gzip:   1.22 kB
+dist/client/assets/health-DCIiThOM.js                             3.62 kB │ gzip:   1.66 kB
+dist/client/assets/resources-page-_APZ62z-.js                     4.34 kB │ gzip:   1.70 kB
+dist/client/assets/queryClient-BMw-2MMu.js                        6.99 kB │ gzip:   2.17 kB
+dist/client/assets/chat-page-B--gGBBk.js                          7.60 kB │ gzip:   3.42 kB
+dist/client/assets/account-page-C9uh9y_8.js                      13.08 kB │ gzip:   4.70 kB
+dist/client/assets/support-api-CUkG-G8F.js                       25.33 kB │ gzip:   8.93 kB
+dist/client/assets/history-page-DgeD7-mx.js                      78.19 kB │ gzip:  20.99 kB
+dist/client/assets/index-1LcMZB7s.js                            436.35 kB │ gzip: 137.88 kB
+✓ built in 3.12s
+vite v7.3.6 building ssr environment for production...
+transforming...
+✓ 152 modules transformed.
+rendering chunks...
+dist/server/assets/start-HYkvq4Ni.js                              0.06 kB
+dist/server/assets/empty-plugin-adapters-BFgPZ6_d.js              0.13 kB
+dist/server/assets/chat.index-Beh44B3U.js                         0.40 kB
+dist/server/assets/resources.index-DsSb19FB.js                    0.44 kB
+dist/server/assets/me-B5f9EQmv.js                                 0.45 kB
+dist/server/assets/index-Du6u1_s2.js                              0.46 kB
+dist/server/assets/login-BGwV3Y2E.js                              0.46 kB
+dist/server/assets/register-CQ8poZQp.js                           0.46 kB
+dist/server/assets/chat-W56Ln_x2.js                               0.50 kB
+dist/server/assets/resources-W56Ln_x2.js                          0.50 kB
+dist/server/assets/chat._sessionId-lsGSOSQ8.js                    0.50 kB
+dist/server/assets/resources.exercises._exerciseId-BVfyth3D.js    0.51 kB
+dist/server/assets/brand-yk77jtlB.js                              0.67 kB
+dist/server/assets/_tanstack-start-manifest_v-DH1MsxBE.js         3.53 kB
+dist/server/assets/support-api-CbrmiQBN.js                        3.60 kB
+dist/server/assets/support-shell-PifoR07r.js                      4.21 kB
+dist/server/assets/health-BSrn5gNu.js                             5.15 kB
+dist/server/assets/router-Dra6hP6V.js                             6.73 kB
+dist/server/assets/resources-page-Dsmo1kv3.js                     7.10 kB
+dist/server/assets/chat-page-B8jszn09.js                         13.62 kB
+dist/server/assets/history-page-DtIvacKs.js                      22.70 kB
+dist/server/assets/account-page-BLr3NiSd.js                      23.72 kB
+dist/server/server.js                                           230.18 kB
+✓ built in 1.52s
+
+CHECK /home/zhyupe1118/psyevo-step02-lUiA7MJC/tools/pnpm/node_modules/.bin/pnpm test:e2e
+
+> psyevoagent-frontend@0.1.0 test:e2e /home/zhyupe1118/psyevo-step07-20260927/frontend
+> playwright test
+
+
+Running 5 tests using 1 worker
+
+  ✓  1 tests/account-recovery.spec.ts:3:1 › session service failure stays on home and retry restores login (1.9s)
+  ✓  2 tests/foundation.spec.ts:12:1 › real Start page and same-origin FastAPI gateway work twice with keyboard (1.1s)
+  ✓  3 tests/foundation.spec.ts:38:1 › slow request can be stopped and late success cannot overwrite it (1.3s)
+  ✓  4 tests/foundation.spec.ts:67:1 › errors focus the message, never display raw bodies, and allow retry (1.4s)
+  ✓  5 tests/foundation.spec.ts:83:1 › mobile reduced-motion layout fits and external browser requests are denied (268ms)
+
+  5 passed (7.3s)
+
+CHECK /home/zhyupe1118/psyevo-step07-20260927/backend/.venv/bin/python -B -X utf8 _check_docs.py
+阶段1: tasks=13, cases=21, steps=8
+阶段2: tasks=14, cases=19, steps=8
+阶段3: tasks=12, cases=19, steps=7
+阶段4: tasks=11, cases=19, steps=8
+阶段5: tasks=13, cases=21, steps=8
+阶段5A: tasks=6, cases=15, steps=7
+阶段6: tasks=12, cases=20, steps=7
+阶段7: tasks=11, cases=19, steps=8
+Documents=32; tasks=92; cases=153; AUD=17
+Steps=61; subitems=209; local links=2004
+Document checks: PASSED (0 errors)
+
+CHECK /home/zhyupe1118/psyevo-step07-20260927/backend/.venv/bin/python -B -X utf8 _check_s1_step01.py
+S1-STEP01 material checks: PASSED; 13 fixtures; 8 rejected mutations; 0 failures
+Product acceptance: 0 executed; all 4 referenced cases remain planned
+
+CHECK git diff --check
+
+CHECK git diff --cached --check
+
+CHECK git diff --check origin/feat/完成第一阶段step7...HEAD
+
+Receipt: /home/zhyupe1118/psyevo-step07-20260927/.artifacts/step02-20260927-123708/receipt.json

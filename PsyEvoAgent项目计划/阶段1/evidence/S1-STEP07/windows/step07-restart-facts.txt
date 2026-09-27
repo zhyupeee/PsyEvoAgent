@@ -1,0 +1,1 @@
+STEP07 restart: unique empty-reason feedback, unchanged preferences, distinct input versions and one model call per branch; deleted content/events absent, receipt durable

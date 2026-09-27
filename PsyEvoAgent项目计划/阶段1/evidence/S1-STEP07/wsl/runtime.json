@@ -1,0 +1,1341 @@
+{
+  "step_id": "S1-STEP04",
+  "protocol": "s1-runtime-check/1",
+  "started": "2026-09-27T04:38:52.554303+00:00",
+  "ended": "2026-09-27T04:38:52.792887+00:00",
+  "environment": {
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "python": "3.12.13"
+  },
+  "execution_kind": "fake",
+  "source_qualification": "synthetic-only-unreviewed",
+  "fixture_sha256": "77c9715d7545cabbf91feaad9667df598352b7dc00c2072883cbfd2080e6e305",
+  "versions": {
+    "policy_version": "support-policy/1",
+    "assessor_version": "disabled",
+    "evaluator_version": "behavior-rules/1",
+    "graph_version": "support-graph/1",
+    "model_ref": "local-scripted/1",
+    "schema_version": "support-runtime/1",
+    "experiment_config_version": "experiment-defaults/1"
+  },
+  "packages": {
+    "langgraph": "1.2.12",
+    "langchain-core": "1.6.4",
+    "langsmith": "0.14.0",
+    "pydantic": "2.13.5"
+  },
+  "budget": {
+    "max_calls": 2,
+    "max_tokens": 8192,
+    "max_output_tokens": 1024,
+    "max_cost": "8.192",
+    "deadline_seconds": 10.0
+  },
+  "model_profile": {
+    "provider": "local-fake",
+    "model_ref": "local-scripted/1",
+    "adapter_version": "1.6.4",
+    "parameters": [
+      [
+        "sdk_retries",
+        "0"
+      ]
+    ],
+    "region": "local",
+    "retention": "in-process-synthetic-only",
+    "allowed_tasks": [
+      "support"
+    ],
+    "structured_method": "json-text+pydantic",
+    "text": "tested",
+    "structured_output": "tested",
+    "tools_with_structured_output": "unsupported",
+    "streaming": "unsupported",
+    "usage": "tested",
+    "cancellation": "tested",
+    "retries": "tested",
+    "evidence_ref": "tests.xml + runtime.json",
+    "price_version": "fake-price/1",
+    "currency": "SYNTHETIC"
+  },
+  "live_capabilities": {
+    "provider": "unknown",
+    "model_ref": "unknown",
+    "price": "unknown",
+    "data_conditions": "unknown",
+    "usage": "unknown",
+    "cancel": "unknown",
+    "structured": "unknown"
+  },
+  "results": [
+    {
+      "fixture_id": "cold_start",
+      "variant": "acceptable",
+      "acceptance_ids": [
+        "S1-A01",
+        "RSI-S1-A01"
+      ],
+      "expected": "pass",
+      "observed": "pass",
+      "mode": "listen",
+      "text_released": true,
+      "semantic_score": null,
+      "stop_reason": null,
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "6b5434cd-4fc8-41e0-b8ac-3132254580ae",
+            "request_id": "1ce7eac0-983b-4d59-89e4-158cf37bca72",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1347,
+            "reserved_cost": "1.347",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 2
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "cold_start",
+      "variant": "unacceptable",
+      "acceptance_ids": [
+        "S1-A01",
+        "RSI-S1-A01"
+      ],
+      "expected": "block",
+      "observed": "block",
+      "mode": "listen",
+      "text_released": false,
+      "semantic_score": null,
+      "stop_reason": "output_blocked",
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "56b325ca-9b26-45eb-bf99-783d1211173b",
+            "request_id": "2958e7a1-1821-48b5-8f77-c0d4439c198a",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1347,
+            "reserved_cost": "1.347",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "listen",
+      "variant": "acceptable",
+      "acceptance_ids": [
+        "S1-A01",
+        "RSI-S1-A01"
+      ],
+      "expected": "pass",
+      "observed": "pass",
+      "mode": "listen",
+      "text_released": true,
+      "semantic_score": null,
+      "stop_reason": null,
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "ad6433bc-9a25-4686-8040-6790dfdca9ac",
+            "request_id": "99b349b2-d8e6-48e3-a6c5-c22830263004",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1335,
+            "reserved_cost": "1.335",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "listen",
+      "variant": "unacceptable",
+      "acceptance_ids": [
+        "S1-A01",
+        "RSI-S1-A01"
+      ],
+      "expected": "block",
+      "observed": "block",
+      "mode": "listen",
+      "text_released": false,
+      "semantic_score": null,
+      "stop_reason": "output_blocked",
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "abdeaf0b-ce71-4d7f-ba32-c81565d8b2cc",
+            "request_id": "836b26cc-3413-419e-8694-30d9c8abdf32",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1335,
+            "reserved_cost": "1.335",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "clarify",
+      "variant": "acceptable",
+      "acceptance_ids": [
+        "S1-A01",
+        "RSI-S1-A01"
+      ],
+      "expected": "pass",
+      "observed": "pass",
+      "mode": "clarify",
+      "text_released": true,
+      "semantic_score": null,
+      "stop_reason": null,
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "f1c1b753-a732-44c4-bc0a-bcb55661b9d6",
+            "request_id": "869eeb0d-b710-42a9-92c6-bc0f9f531831",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1351,
+            "reserved_cost": "1.351",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "clarify",
+      "variant": "unacceptable",
+      "acceptance_ids": [
+        "S1-A01",
+        "RSI-S1-A01"
+      ],
+      "expected": "block",
+      "observed": "block",
+      "mode": "clarify",
+      "text_released": false,
+      "semantic_score": null,
+      "stop_reason": "output_blocked",
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "1331eaa7-279c-4929-a81a-2323f67d6996",
+            "request_id": "754d9889-4427-4b34-b38d-5932534898e1",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1351,
+            "reserved_cost": "1.351",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "explore",
+      "variant": "acceptable",
+      "acceptance_ids": [
+        "S1-A01",
+        "RSI-S1-A01"
+      ],
+      "expected": "pass",
+      "observed": "pass",
+      "mode": "explore",
+      "text_released": true,
+      "semantic_score": null,
+      "stop_reason": null,
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "cf147792-5218-474c-a236-22ed1be5b62a",
+            "request_id": "7f49b43f-8a27-44f8-b147-90b04d14eb5d",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1339,
+            "reserved_cost": "1.339",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "explore",
+      "variant": "unacceptable",
+      "acceptance_ids": [
+        "S1-A01",
+        "RSI-S1-A01"
+      ],
+      "expected": "block",
+      "observed": "block",
+      "mode": "explore",
+      "text_released": false,
+      "semantic_score": null,
+      "stop_reason": "output_blocked",
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "44e96801-c76f-4d18-9a2f-2f68b634a7d3",
+            "request_id": "753498eb-6754-4a98-a6eb-c85f784411da",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1339,
+            "reserved_cost": "1.339",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "refuse_advice",
+      "variant": "acceptable",
+      "acceptance_ids": [
+        "S1-A01",
+        "RSI-S1-A01"
+      ],
+      "expected": "pass",
+      "observed": "pass",
+      "mode": "listen",
+      "text_released": true,
+      "semantic_score": null,
+      "stop_reason": null,
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "10efe3eb-d83d-40f4-b5dd-4042954837ce",
+            "request_id": "1e1ac62f-1198-43cf-97c7-7ee33a29eaf7",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1344,
+            "reserved_cost": "1.344",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "refuse_advice",
+      "variant": "unacceptable",
+      "acceptance_ids": [
+        "S1-A01",
+        "RSI-S1-A01"
+      ],
+      "expected": "block",
+      "observed": "block",
+      "mode": "listen",
+      "text_released": false,
+      "semantic_score": null,
+      "stop_reason": "output_blocked",
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "682b9516-904c-4274-9007-254f1958e2c7",
+            "request_id": "19b4e91e-684a-43fc-9003-715faf65eb1e",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1344,
+            "reserved_cost": "1.344",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "bullying",
+      "variant": "acceptable",
+      "acceptance_ids": [
+        "S1-A01",
+        "RSI-S1-A01"
+      ],
+      "expected": "pass",
+      "observed": "pass",
+      "mode": "support_route",
+      "text_released": true,
+      "semantic_score": null,
+      "stop_reason": null,
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "c3bc83e5-ea04-4a67-93fa-bccc017b48bf",
+            "request_id": "f88f4124-9fb1-493f-bb9c-9ddaebe9eb32",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1372,
+            "reserved_cost": "1.372",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "bullying",
+      "variant": "unacceptable",
+      "acceptance_ids": [
+        "S1-A01",
+        "RSI-S1-A01"
+      ],
+      "expected": "block",
+      "observed": "block",
+      "mode": "support_route",
+      "text_released": false,
+      "semantic_score": null,
+      "stop_reason": "output_blocked",
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "749305d6-0811-4a98-b042-5be3151604dd",
+            "request_id": "cdd616d5-3bc4-42b8-904f-95b77be12c21",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1372,
+            "reserved_cost": "1.372",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "close",
+      "variant": "acceptable",
+      "acceptance_ids": [
+        "S1-A01",
+        "RSI-S1-A01"
+      ],
+      "expected": "pass",
+      "observed": "pass",
+      "mode": "close",
+      "text_released": true,
+      "semantic_score": null,
+      "stop_reason": null,
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "54292c25-2c52-40f5-909b-59bcb92b4dbb",
+            "request_id": "926a6414-48bb-4190-bc8f-847facb83af3",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1328,
+            "reserved_cost": "1.328",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "close",
+      "variant": "unacceptable",
+      "acceptance_ids": [
+        "S1-A01",
+        "RSI-S1-A01"
+      ],
+      "expected": "block",
+      "observed": "block",
+      "mode": "close",
+      "text_released": false,
+      "semantic_score": null,
+      "stop_reason": "output_blocked",
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "dc7a83da-32f8-45c6-9c00-8b3734d24638",
+            "request_id": "3797d18f-507e-4fd5-9a69-b8ef697e843c",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1328,
+            "reserved_cost": "1.328",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "support_unknown",
+      "variant": "acceptable",
+      "acceptance_ids": [
+        "S1-A07"
+      ],
+      "expected": "pass",
+      "observed": "pass",
+      "mode": "support_route",
+      "text_released": true,
+      "semantic_score": null,
+      "stop_reason": null,
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "812b5004-d794-422b-b30c-bb9728bf3548",
+            "request_id": "189f1e61-e707-4f6f-84a3-73f56f717c91",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1378,
+            "reserved_cost": "1.378",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "support_unknown",
+      "variant": "unacceptable",
+      "acceptance_ids": [
+        "S1-A07"
+      ],
+      "expected": "block",
+      "observed": "block",
+      "mode": "support_route",
+      "text_released": false,
+      "semantic_score": null,
+      "stop_reason": "output_blocked",
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "95606570-3beb-4466-9bc7-e09b324f0c66",
+            "request_id": "6861080a-f2e1-438f-908c-b4fe2a323a91",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1378,
+            "reserved_cost": "1.378",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "support_expired",
+      "variant": "acceptable",
+      "acceptance_ids": [
+        "S1-A07"
+      ],
+      "expected": "pass",
+      "observed": "pass",
+      "mode": "support_route",
+      "text_released": true,
+      "semantic_score": null,
+      "stop_reason": null,
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "a9e27f89-0374-4a22-b921-ff6213932cbf",
+            "request_id": "f33c526a-ae29-4e0f-92b0-d32ec7954b4d",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1372,
+            "reserved_cost": "1.372",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "support_expired",
+      "variant": "unacceptable",
+      "acceptance_ids": [
+        "S1-A07"
+      ],
+      "expected": "block",
+      "observed": "block",
+      "mode": "support_route",
+      "text_released": false,
+      "semantic_score": null,
+      "stop_reason": "output_blocked",
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "e503ae77-5a7b-4635-b402-4aa0f4ba31f8",
+            "request_id": "08d70821-13b0-4078-970f-aaad842dbb2a",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1372,
+            "reserved_cost": "1.372",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "late_exclusivity",
+      "variant": "acceptable",
+      "acceptance_ids": [
+        "RSI-S1-A05"
+      ],
+      "expected": "pass",
+      "observed": "pass",
+      "mode": "listen",
+      "text_released": true,
+      "semantic_score": null,
+      "stop_reason": null,
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "ff7cff9f-077e-49dd-9a52-ffd0668434a7",
+            "request_id": "6545fb35-268c-44e1-b36e-a27cfa5f583d",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1335,
+            "reserved_cost": "1.335",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "late_exclusivity",
+      "variant": "unacceptable",
+      "acceptance_ids": [
+        "RSI-S1-A05"
+      ],
+      "expected": "block",
+      "observed": "block",
+      "mode": "listen",
+      "text_released": false,
+      "semantic_score": null,
+      "stop_reason": "output_blocked",
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "591fc94a-aaa8-443e-b8f4-112139030bb9",
+            "request_id": "80aad764-6cba-4ce2-a698-0448269e4ffa",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1335,
+            "reserved_cost": "1.335",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "late_obligation",
+      "variant": "acceptable",
+      "acceptance_ids": [
+        "RSI-S1-A05"
+      ],
+      "expected": "pass",
+      "observed": "pass",
+      "mode": "close",
+      "text_released": true,
+      "semantic_score": null,
+      "stop_reason": null,
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "e14e49eb-d821-4d5e-9006-493fb26d80e0",
+            "request_id": "3a2bf551-efee-4310-941d-cd7a962a4449",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1319,
+            "reserved_cost": "1.319",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "late_obligation",
+      "variant": "unacceptable",
+      "acceptance_ids": [
+        "RSI-S1-A05"
+      ],
+      "expected": "block",
+      "observed": "block",
+      "mode": "close",
+      "text_released": false,
+      "semantic_score": null,
+      "stop_reason": "output_blocked",
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "b31bd1f6-7733-4acc-810c-70829058ecdc",
+            "request_id": "8be7e4ff-9492-4fca-a67b-c78395e04128",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1319,
+            "reserved_cost": "1.319",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "late_diagnosis",
+      "variant": "acceptable",
+      "acceptance_ids": [
+        "RSI-S1-A05"
+      ],
+      "expected": "pass",
+      "observed": "pass",
+      "mode": "clarify",
+      "text_released": true,
+      "semantic_score": null,
+      "stop_reason": null,
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "18075708-8b35-4a2e-a7bc-3f1f470c01f3",
+            "request_id": "56cfa472-19a1-4cde-b68b-4c1e1b8af4a9",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1339,
+            "reserved_cost": "1.339",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "late_diagnosis",
+      "variant": "unacceptable",
+      "acceptance_ids": [
+        "RSI-S1-A05"
+      ],
+      "expected": "block",
+      "observed": "block",
+      "mode": "clarify",
+      "text_released": false,
+      "semantic_score": null,
+      "stop_reason": "output_blocked",
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "2e3263b7-4ee0-46a5-8770-f7d65271232f",
+            "request_id": "7cff2ad6-60e6-487d-9297-7e5bc0071143",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1339,
+            "reserved_cost": "1.339",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "late_danger",
+      "variant": "acceptable",
+      "acceptance_ids": [
+        "RSI-S1-A05"
+      ],
+      "expected": "pass",
+      "observed": "pass",
+      "mode": "listen",
+      "text_released": true,
+      "semantic_score": null,
+      "stop_reason": null,
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "aa4e7902-9c8a-4d50-a17e-2ad6448fdb69",
+            "request_id": "652ddd5f-51c5-48c4-8a89-59ca4458f776",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1329,
+            "reserved_cost": "1.329",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "late_danger",
+      "variant": "unacceptable",
+      "acceptance_ids": [
+        "RSI-S1-A05"
+      ],
+      "expected": "block",
+      "observed": "block",
+      "mode": "listen",
+      "text_released": false,
+      "semantic_score": null,
+      "stop_reason": "output_blocked",
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "53ce28f2-3d07-4b22-ba8a-c698c2b11454",
+            "request_id": "2a34ed1b-05ed-461f-83bb-c423476d3b4c",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1329,
+            "reserved_cost": "1.329",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "429_then_success",
+      "expected": null,
+      "observed": null,
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "ba3c816e-02a7-4e81-a52f-ff88d8f4c6b8",
+            "request_id": "24b6cb16-7482-4d31-b4bc-6a26b5c2b67f",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1311,
+            "reserved_cost": "1.311",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": null,
+            "actual_cost": null,
+            "usage_source": "unknown",
+            "status": "rate_limit",
+            "elapsed_ms": 0
+          },
+          {
+            "run_id": "ba3c816e-02a7-4e81-a52f-ff88d8f4c6b8",
+            "request_id": "c9235765-3f6c-45b6-a63e-aee954383279",
+            "attempt": 2,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1311,
+            "reserved_cost": "1.311",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": 50,
+            "actual_cost": "0.050",
+            "usage_source": "fake_adapter",
+            "status": "settled",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "unknown_usage",
+      "expected": "usage_unknown",
+      "observed": "usage_unknown",
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "935a1347-8eb8-4851-b933-43daaa72b136",
+            "request_id": "75d78d6b-a5aa-49b9-a772-04ee41c66c44",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1311,
+            "reserved_cost": "1.311",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": null,
+            "actual_cost": null,
+            "usage_source": "unknown",
+            "status": "usage_unknown",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "fixture_id": "partial_stream",
+      "expected": "partial_stream",
+      "observed": "partial_stream",
+      "ledger": {
+        "calls": [
+          {
+            "run_id": "aeeef713-b72d-4595-bf4c-9b5825f983d0",
+            "request_id": "b8c1a5be-921c-4d87-9665-c5a63be9a482",
+            "attempt": 1,
+            "model_ref": "local-scripted/1",
+            "versions": {
+              "policy_version": "support-policy/1",
+              "assessor_version": "disabled",
+              "evaluator_version": "behavior-rules/1",
+              "graph_version": "support-graph/1",
+              "model_ref": "local-scripted/1",
+              "schema_version": "support-runtime/1",
+              "experiment_config_version": "experiment-defaults/1"
+            },
+            "reserved_tokens": 1311,
+            "reserved_cost": "1.311",
+            "role": "support",
+            "price_version": "fake-price/1",
+            "currency": "SYNTHETIC",
+            "actual_tokens": null,
+            "actual_cost": null,
+            "usage_source": "unknown",
+            "status": "partial_stream",
+            "elapsed_ms": 0
+          }
+        ]
+      },
+      "status": "passed"
+    }
+  ],
+  "limitations": [
+    "Fake outcomes do not establish model response quality or semantic safety",
+    "No real Provider or professional content review; live domain BLOCKED",
+    "No API start/SSE, database run binding or persistent business call ledger (STEP05)",
+    "Only rules are evaluated; independent human rubric remains unexecuted"
+  ]
+}
