@@ -1,4 +1,14 @@
-# 本地工程开发（S1-STEP02/03/04/05）
+# 本地工程开发（S1-STEP02/03/04/05/06）
+
+## S1-STEP06 对话、资源与偏好页面
+
+`/chat`、`/chat/$sessionId`、`/resources`、`/resources/exercises/$exerciseId`和`/me`偏好已接现有API。普通开发仍使用本页已有Windows/WSL进程，不启动假Worker；真实Provider默认disabled，发送显示未确认/服务不可用。练习静态合成内容未经专业审阅，仅在既有隔离test环境返回；development只显示待审阅。页面没有长期记忆、历史管理、反馈、删除或练习历史。
+
+根目录执行`uv run --directory backend --offline --no-sync python -X utf8 ../scripts/check_step06.py --web-port 3106 --api-port 8106 --tls-port 3446`。脚本扩展现有STEP03/05门禁，用随机独立PostgreSQL、独立fake Worker、真实同源页面检查发送响应丢失重试、停止/断流/刷新、偏好失败与持久化、手机键盘、独立练习和账号隔离；数据库重启后直接核对偏好版本与唯一发送/调用。测试截图、JUnit与收据写入`.artifacts/psyevo-step06-*/`，不访问开发库。
+
+新增`PSYEVO_STEP06_ARTIFACTS`只由检查器注入，读取者是`frontend/tests/support.spec.ts`，指定截图目录；不是产品配置。没有新增产品环境读取器或.env加载。API静态练习检查复用`settings.environment`，不依赖support_mode，因此模型disabled仍可在隔离合成域验证。WSL仍以`check_step02_isolated.sh --step04`运行非数据库工程/Support及内核出口门禁，数据库业务验收单列。
+
+当前证据见[STEP06记录](PsyEvoAgent项目计划/阶段1/evidence/S1-STEP06/README.md)。下方历史时点说明不代表当前页面仍未实现。
 
 ## S1-STEP05 持久run与真实网关验收
 
@@ -46,7 +56,7 @@ pnpm dev
 
 打开 `http://127.0.0.1:3000`，未登录时进入登录页，可转到注册页。脚本显式读取根目录 `.env.local.json` 的 `postgres_password`，该文件由 `.gitignore` 排除，不能提交或分享；API 本身仍只读进程变量，不自动读取环境文件。脚本向子进程注入开发库连接及 `PSYEVO_ENV=development`，退出时恢复调用终端原变量；可选 `-PrepareOnly` 只准备数据库和迁移。已有开发数据卷但配置丢失时拒绝生成新密码，应恢复原配置，不能删卷解决。启动脚本不启动前端、Worker或远程代理。
 
-`pnpm backend` 只用于已显式设置 `PSYEVO_DATABASE_URL` 的终端；缺少变量时会立即退出并提示正确入口，避免启动一个健康检查为 200、账号接口却为 503 的 API。Windows 日常开发使用上面的 `scripts/start-dev.ps1`，WSL 按下文显式设置连接变量。
+Windows 也可直接在 `frontend/` 执行 `pnpm backend`：未设置 `PSYEVO_DATABASE_URL` 且环境未指定或为 `development` 时，`scripts/start-backend.cjs` 自动调用上述 `scripts/start-dev.ps1`，读取已有本地配置、等待 PostgreSQL 就绪、完成增量迁移并启动 API。每次新开终端都可使用，无需手动恢复变量；首次配置仍需运行上面的 `-Initialize` 命令。已有显式数据库变量时直接继承并启动 API，不覆盖连接、不自动迁移该数据库；WSL 仍按下文设置变量，test/production 缺变量时拒绝回退到开发库。可传 `pnpm backend --port 8001` 等 `app.dev` 参数。启动回归运行 `node --test scripts/start-backend.test.cjs`（仓库根目录），无需数据库。
 
 首页若显示服务暂时不可用，先检查 API 终端及数据库配置：`/api/v1/health` 仅证明工程服务存活，不能证明账号数据库可用；`/api/v1/auth/session` 返回 `503 database_not_configured` 表示 API 没有加载连接配置。按上述入口重启后，未登录请求应返回 401，页面可点击“重试”恢复。现有 `55433` 的 `psyevo_synthetic_check` 验收库不用于日常开发。以下手动命令仍可用于 WSL 或显式配置场景。
 
@@ -110,6 +120,8 @@ backend/.venv/Scripts/python.exe -X utf8 scripts/check_step03.py
 业务浏览器使用 `pnpm exec playwright test --config playwright.step03.config.ts`，需明确隔离数据库、合成账号与`PSYEVO_TEST_MAIL_DIR`，通常由上述门禁统一准备。邮件替身仅在`tests.mail_support:create_test_app`使用，强制test环境、隔离库和.artifacts内收件目录；正常API无读取验证码接口。原 `pnpm test:e2e` 仍为 STEP02 健康页回归。STEP03 门禁继承 Python/Node/浏览器外连保护，**不替代 Linux/WSL 的内核隔离工程入口**。测试输出为合成开发证据，不代表后续功能或完整业务验收。
 
 当前有注册登录、账号页、PostgreSQL身份与来源关联，以及独立工程健康页和Worker探针；没有Agent或真实模型调用。STEP02 的 Windows 与 WSL Ubuntu 完整工程检查均已通过；WSL 另验证内核级出口隔离，见阶段1实施记录。
+
+2026-09-25 启动入口修复专项验证：7项不连接数据库的启动回归通过，并接入 `pnpm test:unit` / `pnpm check`；Windows 未设置连接变量时，`pnpm backend --port 8127` 实际复用本地配置、完成数据库准备及增量迁移、启动 API，健康接口返回200，未登录会话接口返回401。临时 API 验证后停止，保留原数据库和数据卷。本次未执行WSL实机启动或完整业务验收，不替代阶段历史收据。
 
 ## 工具与依赖准备
 

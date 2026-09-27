@@ -1,0 +1,35 @@
+
+Running 4 tests using 1 worker
+
+  ok 1 tests\support.spec.ts:29:1 › chat: real send, lost acknowledgement retry, snapshot reload, account isolation (10.1s)
+  x  2 tests\support.spec.ts:86:1 › stop reflects backend terminal even when completion wins; stream loss recovers without send (5.0s)
+  ok 3 tests\support.spec.ts:115:1 › preferences: failure is not saved; persistence, mobile keyboard and title display (5.6s)
+  ok 4 tests\support.spec.ts:168:1 › independent exercise: no model requests, skip, exit, refresh, unknown resources (4.5s)
+
+
+  1) tests\support.spec.ts:86:1 › stop reflects backend terminal even when completion wins; stream loss recovers without send 
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected value: undefined
+    Received array: ["completed", "cancelled"]
+
+      107 |   const response = await page.request.get(`/api/v1/sessions/${sid}/current-run`)
+      108 |   const run = await response.json()
+    > 109 |   expect(['completed', 'cancelled']).toContain(run.status)
+          |                                      ^
+      110 |   await expect(page.getByRole('status')).toContainText(
+      111 |     run.status === 'completed' ? '已完成' : '已停止',
+      112 |   )
+        at D:\PsyEvoAgent\frontend\tests\support.spec.ts:109:38
+
+    Error Context: test-results\support-stop-reflects-back-0f563--loss-recovers-without-send\error-context.md
+
+  1 failed
+    tests\support.spec.ts:86:1 › stop reflects backend terminal even when completion wins; stream loss recovers without send 
+  3 passed (35.2s)
+[WebServer] INFO:     Started server process [13304]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8106 (Press CTRL+C to quit)

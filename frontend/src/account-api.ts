@@ -33,6 +33,7 @@ export async function request<T>(
     body?: unknown
     csrf?: string
     signal?: AbortSignal
+    key?: string
   } = {},
 ): Promise<T> {
   const response = await fetch(`/api/v1${path}`, {
@@ -43,6 +44,7 @@ export async function request<T>(
     headers: {
       'Content-Type': 'application/json',
       ...(options.csrf ? { 'X-CSRF-Token': options.csrf } : {}),
+      ...(options.key ? { 'Idempotency-Key': options.key } : {}),
     },
     body: options.body === undefined ? undefined : JSON.stringify(options.body),
   })

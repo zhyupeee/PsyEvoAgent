@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "backend": "node ../scripts/require-dev-database.cjs && cd ../backend && uv run --no-sync python -m app.dev",
+    "backend": "node ../scripts/start-backend.cjs",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
@@ -17,7 +17,7 @@
     "format:check": "prettier --check .",
     "test": "pnpm run test:unit",
     "check": "pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run format:check",
-    "test:unit": "vitest run",
+    "test:unit": "node --test ../scripts/start-backend.test.cjs && vitest run",
     "test:e2e": "playwright test"
   },
   "dependencies": {

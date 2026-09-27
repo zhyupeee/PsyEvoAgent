@@ -19,6 +19,7 @@ from app.config import Settings, load_settings
 from app.database import make_engine
 from app.mail import Mailer, SMTPMailer
 from app.models import opaque_id
+from app.pages import router as pages_router
 from app.run_stream import Connections
 from app.run_stream import router as stream_router
 from app.runs import router as runs_router
@@ -56,6 +57,7 @@ def create_app(settings: Settings | None = None, mailer: Mailer | None = None) -
     application.include_router(router)
     application.include_router(runs_router)
     application.include_router(stream_router)
+    application.include_router(pages_router)
     application.state.run_connections = Connections()
 
     @application.middleware("http")

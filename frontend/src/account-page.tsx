@@ -15,6 +15,7 @@ import {
   RequestError,
 } from './account-api'
 import { Brand } from './brand'
+import { Preferences } from './preferences'
 
 const control =
   'min-h-11 rounded-md border border-line px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-50'
@@ -177,14 +178,23 @@ function Account({ page }: { page: Page }) {
             {page === 'home' ? (
               <>
                 <p className="mb-8 leading-8">
-                  账号已就绪。对话等支持功能正在开发，完成后将在这里开放。
+                  账号已就绪。可以进入对话页面、查看支持资源或调整偏好。
                 </p>
+                <div className="mb-6 flex flex-wrap gap-4">
+                  <Link to="/chat" className={button}>
+                    进入对话
+                  </Link>
+                  <Link to="/resources" className={control}>
+                    支持资源
+                  </Link>
+                </div>
                 <Link to="/me" className={`${button} inline-flex items-center`}>
                   管理账号
                 </Link>
               </>
             ) : (
               <>
+                <Preferences csrf={identity.data.csrf_token} />
                 <section className="mb-8 max-w-lg rounded-lg border border-line bg-white p-6">
                   <h2 className="mb-2 text-xl font-semibold">修改密码</h2>
                   <p className="mb-6 text-sm leading-6 text-muted">
@@ -213,7 +223,7 @@ function Account({ page }: { page: Page }) {
         ) : null}
       </main>
       <footer className="mx-auto max-w-6xl border-t border-line px-5 py-6 text-sm leading-7 text-muted sm:px-8">
-        PsyEvoAgent · 实验应用。当前已开放账号功能，对话支持尚在开发。
+        PsyEvoAgent · 实验应用。真实对话服务与练习内容仍待配置、审阅。
       </footer>
     </div>
   )

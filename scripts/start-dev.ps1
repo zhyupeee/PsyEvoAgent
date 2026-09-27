@@ -1,4 +1,8 @@
-param([switch]$Initialize, [switch]$PrepareOnly)
+param(
+    [switch]$Initialize,
+    [switch]$PrepareOnly,
+    [Parameter(ValueFromRemainingArguments = $true)][string[]]$BackendArgs
+)
 
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
@@ -43,7 +47,7 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'Database migration failed. Check local credentials and database availability; no reset was performed.' }
         Write-Host 'Development database ready on 127.0.0.1:55432; migrations complete.'
         if (!$PrepareOnly) {
-            & uv run --no-sync python -m app.dev
+            & uv run --no-sync python -m app.dev @BackendArgs
             if ($LASTEXITCODE -ne 0) { throw 'Development API stopped with an error.' }
         }
     } finally { Pop-Location }

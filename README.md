@@ -1,5 +1,7 @@
 # PsyEvoAgent
 
+2026-09-25当前进度：**S1-STEP06隔离合成页面交付完成**。新增对话发送/停止/快照恢复、独立练习与偏好。Windows通过53项PostgreSQL/API/迁移、65项后端、4项本步页面及既有浏览器/HTTPS/网关回归；数据库重启直查和WSL内核隔离工程门禁通过，见[STEP06记录](PsyEvoAgent项目计划/阶段1/evidence/S1-STEP06/README.md)。真实Provider、专业内容审阅与SMTP保持BLOCKED；未审练习在正常开发环境关闭。最早未完成STEP07历史修订、删除、反馈，本轮未实施；下方均为历史时点记录。
+
 2026-09-24当前进度：**S1-STEP05隔离合成工程交付完成**。持久run启动/幂等、公共SSE/游标快照、取消CAS、独立fake Worker与互动去重已落地。Windows通过42项真实PostgreSQL/API/迁移、65项后端及11项浏览器/HTTPS检查；WSL内核隔离工程门禁通过。真实Provider、内容审阅和SMTP继续BLOCKED；未实现STEP06聊天页面或STEP07删除清理，未公开发布。最早未完成步骤为STEP06，详见[本步证据](PsyEvoAgent项目计划/阶段1/evidence/S1-STEP05/README.md)。下方历次实施摘要保留历史时点。
 
 > 当前按[内部实验执行约定](EXPERIMENT.md)推进：可通过指定HTTPS地址分享；目标注册先验证邮箱，登录后直接进入，无年龄或用途确认，不设公众资格、真人告知或期限审批前置。业务不设固定TTL。邮箱身份已实现；真实 SMTP 尚未配置，验证范围见阶段1 STEP03.5 记录。

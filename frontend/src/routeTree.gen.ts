@@ -10,15 +10,26 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ChatRouteImport } from './routes/chat'
 import { Route as HealthRouteImport } from './routes/health'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MeRouteImport } from './routes/me'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ResourcesRouteImport } from './routes/resources'
+import { Route as ChatIndexRouteImport } from './routes/chat.index'
+import { Route as ChatSessionIdRouteImport } from './routes/chat.$sessionId'
 import { Route as MePrivacyRouteImport } from './routes/me.privacy'
+import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
+import { Route as ResourcesExercisesExerciseIdRouteImport } from './routes/resources.exercises.$exerciseId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatRoute = ChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HealthRoute = HealthRouteImport.update({
@@ -41,19 +52,51 @@ const RegisterRoute = RegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResourcesRoute = ResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatIndexRoute = ChatIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ChatRoute,
+} as any)
+const ChatSessionIdRoute = ChatSessionIdRouteImport.update({
+  id: '/$sessionId',
+  path: '/$sessionId',
+  getParentRoute: () => ChatRoute,
+} as any)
 const MePrivacyRoute = MePrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
   getParentRoute: () => MeRoute,
 } as any)
+const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ResourcesRoute,
+} as any)
+const ResourcesExercisesExerciseIdRoute =
+  ResourcesExercisesExerciseIdRouteImport.update({
+    id: '/exercises/$exerciseId',
+    path: '/exercises/$exerciseId',
+    getParentRoute: () => ResourcesRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/chat': typeof ChatRouteWithChildren
   '/health': typeof HealthRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRouteWithChildren
   '/register': typeof RegisterRoute
+  '/resources': typeof ResourcesRouteWithChildren
+  '/chat/$sessionId': typeof ChatSessionIdRoute
   '/me/privacy': typeof MePrivacyRoute
+  '/chat/': typeof ChatIndexRoute
+  '/resources/': typeof ResourcesIndexRoute
+  '/resources/exercises/$exerciseId': typeof ResourcesExercisesExerciseIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -61,38 +104,78 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/me': typeof MeRouteWithChildren
   '/register': typeof RegisterRoute
+  '/chat/$sessionId': typeof ChatSessionIdRoute
   '/me/privacy': typeof MePrivacyRoute
+  '/chat': typeof ChatIndexRoute
+  '/resources': typeof ResourcesIndexRoute
+  '/resources/exercises/$exerciseId': typeof ResourcesExercisesExerciseIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/chat': typeof ChatRouteWithChildren
   '/health': typeof HealthRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRouteWithChildren
   '/register': typeof RegisterRoute
+  '/resources': typeof ResourcesRouteWithChildren
+  '/chat/$sessionId': typeof ChatSessionIdRoute
   '/me/privacy': typeof MePrivacyRoute
+  '/chat/': typeof ChatIndexRoute
+  '/resources/': typeof ResourcesIndexRoute
+  '/resources/exercises/$exerciseId': typeof ResourcesExercisesExerciseIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/health' | '/login' | '/me' | '/register' | '/me/privacy'
+  fullPaths:
+    | '/'
+    | '/chat'
+    | '/health'
+    | '/login'
+    | '/me'
+    | '/register'
+    | '/resources'
+    | '/chat/$sessionId'
+    | '/me/privacy'
+    | '/chat/'
+    | '/resources/'
+    | '/resources/exercises/$exerciseId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/health' | '/login' | '/me' | '/register' | '/me/privacy'
-  id:
-    | '__root__'
+  to:
     | '/'
     | '/health'
     | '/login'
     | '/me'
     | '/register'
+    | '/chat/$sessionId'
     | '/me/privacy'
+    | '/chat'
+    | '/resources'
+    | '/resources/exercises/$exerciseId'
+  id:
+    | '__root__'
+    | '/'
+    | '/chat'
+    | '/health'
+    | '/login'
+    | '/me'
+    | '/register'
+    | '/resources'
+    | '/chat/$sessionId'
+    | '/me/privacy'
+    | '/chat/'
+    | '/resources/'
+    | '/resources/exercises/$exerciseId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ChatRoute: typeof ChatRouteWithChildren
   HealthRoute: typeof HealthRoute
   LoginRoute: typeof LoginRoute
   MeRoute: typeof MeRouteWithChildren
   RegisterRoute: typeof RegisterRoute
+  ResourcesRoute: typeof ResourcesRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -102,6 +185,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat': {
+      id: '/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof ChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/health': {
@@ -132,6 +222,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/resources': {
+      id: '/resources'
+      path: '/resources'
+      fullPath: '/resources'
+      preLoaderRoute: typeof ResourcesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat/': {
+      id: '/chat/'
+      path: '/'
+      fullPath: '/chat/'
+      preLoaderRoute: typeof ChatIndexRouteImport
+      parentRoute: typeof ChatRoute
+    }
+    '/chat/$sessionId': {
+      id: '/chat/$sessionId'
+      path: '/$sessionId'
+      fullPath: '/chat/$sessionId'
+      preLoaderRoute: typeof ChatSessionIdRouteImport
+      parentRoute: typeof ChatRoute
+    }
     '/me/privacy': {
       id: '/me/privacy'
       path: '/privacy'
@@ -139,8 +250,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MePrivacyRouteImport
       parentRoute: typeof MeRoute
     }
+    '/resources/': {
+      id: '/resources/'
+      path: '/'
+      fullPath: '/resources/'
+      preLoaderRoute: typeof ResourcesIndexRouteImport
+      parentRoute: typeof ResourcesRoute
+    }
+    '/resources/exercises/$exerciseId': {
+      id: '/resources/exercises/$exerciseId'
+      path: '/exercises/$exerciseId'
+      fullPath: '/resources/exercises/$exerciseId'
+      preLoaderRoute: typeof ResourcesExercisesExerciseIdRouteImport
+      parentRoute: typeof ResourcesRoute
+    }
   }
 }
+
+interface ChatRouteChildren {
+  ChatSessionIdRoute: typeof ChatSessionIdRoute
+  ChatIndexRoute: typeof ChatIndexRoute
+}
+
+const ChatRouteChildren: ChatRouteChildren = {
+  ChatSessionIdRoute: ChatSessionIdRoute,
+  ChatIndexRoute: ChatIndexRoute,
+}
+
+const ChatRouteWithChildren = ChatRoute._addFileChildren(ChatRouteChildren)
 
 interface MeRouteChildren {
   MePrivacyRoute: typeof MePrivacyRoute
@@ -152,12 +289,28 @@ const MeRouteChildren: MeRouteChildren = {
 
 const MeRouteWithChildren = MeRoute._addFileChildren(MeRouteChildren)
 
+interface ResourcesRouteChildren {
+  ResourcesIndexRoute: typeof ResourcesIndexRoute
+  ResourcesExercisesExerciseIdRoute: typeof ResourcesExercisesExerciseIdRoute
+}
+
+const ResourcesRouteChildren: ResourcesRouteChildren = {
+  ResourcesIndexRoute: ResourcesIndexRoute,
+  ResourcesExercisesExerciseIdRoute: ResourcesExercisesExerciseIdRoute,
+}
+
+const ResourcesRouteWithChildren = ResourcesRoute._addFileChildren(
+  ResourcesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ChatRoute: ChatRouteWithChildren,
   HealthRoute: HealthRoute,
   LoginRoute: LoginRoute,
   MeRoute: MeRouteWithChildren,
   RegisterRoute: RegisterRoute,
+  ResourcesRoute: ResourcesRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
