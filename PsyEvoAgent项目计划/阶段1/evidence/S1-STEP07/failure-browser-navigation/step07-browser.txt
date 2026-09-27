@@ -1,0 +1,35 @@
+
+Running 3 tests using 1 worker
+
+  ok 1 tests\history.spec.ts:43:1 › optional feedback: failure, empty reason, lost acknowledgement and real receipt (6.0s)
+  ok 2 tests\history.spec.ts:86:1 › rename search archive restore, revision and regenerate preserve separate history (8.8s)
+  x  3 tests\history.spec.ts:136:1 › confirmed deletion clears two tabs, retries lost response, survives logout and back (12.2s)
+
+
+  1) tests\history.spec.ts:136:1 › confirmed deletion clears two tabs, retries lost response, survives logout and back 
+
+    Error: page.goto: net::ERR_ABORTED at http://127.0.0.1:3107/login
+    Call log:
+      - navigating to "http://127.0.0.1:3107/login", waiting until "load"
+
+
+      3 |
+      4 | async function login(page: Page) {
+    > 5 |   await page.goto('/login')
+        |              ^
+      6 |   await page
+      7 |     .getByLabel('邮箱', { exact: true })
+      8 |     .fill('step07-browser@example.com')
+        at login (D:\PsyEvoAgent\frontend\tests\history.spec.ts:5:14)
+        at D:\PsyEvoAgent\frontend\tests\history.spec.ts:191:9
+
+    Error Context: test-results\history-confirmed-deletion-e0d11-se-survives-logout-and-back\error-context.md
+
+  1 failed
+    tests\history.spec.ts:136:1 › confirmed deletion clears two tabs, retries lost response, survives logout and back 
+  2 passed (34.1s)
+[WebServer] INFO:     Started server process [15124]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8107 (Press CTRL+C to quit)

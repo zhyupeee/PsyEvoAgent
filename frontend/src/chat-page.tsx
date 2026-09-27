@@ -5,6 +5,14 @@ import { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
 import { getIdentity, request } from './account-api'
 import {
+  BranchActions,
+  DeletionReceipts,
+  FeedbackForm,
+  SessionActions,
+  SessionList,
+  TurnHistory,
+} from './history-page'
+import {
   preferencesQuery,
   runSchema,
   sessionSchema,
@@ -41,6 +49,7 @@ export function ChatPage({ sessionId }: { sessionId?: string }) {
           现实支持
         </Link>
       </header>
+      <SessionList />
       {sessionId ? (
         <Conversation
           key={sessionId}
@@ -68,6 +77,7 @@ export function ChatPage({ sessionId }: { sessionId?: string }) {
           <Link to="/resources">也可以先看看支持资源 →</Link>
         </section>
       )}
+      <DeletionReceipts csrf={identity.data?.csrf_token ?? ''} />
     </div>
   )
 }
@@ -81,6 +91,7 @@ function Conversation({
   csrf: string
 }) {
   const client = useQueryClient()
+  const [blocking, setBlocking] = useState(false)
   const preferences = useQuery(preferencesQuery)
   const session = useQuery({
     queryKey: ['session', sessionId],
@@ -101,7 +112,7 @@ function Conversation({
         ? 3000
         : false,
   })
-  const run = current.isError ? null : current.data
+  const run = current.isError || blocking ? null : current.data
   const active = !!run && ['queued', 'running'].includes(run.status)
   const [connection, setConnection] = useState('')
   const runId = run?.run_id
@@ -268,102 +279,147 @@ function Conversation({
   return (
     <>
       <h1 className="chat-title">
-        {preferences.data?.display_preferences.hide_titles
+        {blocking || preferences.data?.display_preferences.hide_titles
           ? '对话'
           : (session.data?.title ?? '正在读取…')}
       </h1>
-      <div className="message-area" aria-label="当前轮次">
-        {!run?.input_text && !run?.output ? (
-          <p className="text-muted">
-            想说的可以写在下面。每条最多 4000
-            字；可在“我的”里选择先倾听或一起想办法。
-          </p>
-        ) : null}
-        {run?.input_text ? (
-          <p className="message user-message">{run.input_text}</p>
-        ) : null}
-        {run?.output ? (
-          <p className="message assistant-message">{run.output.text}</p>
-        ) : null}
-        <p role="status">
-          {run ? labels[run.status] : ''}
-          {active ? ` · ${connection}` : ''}
+      {session.data ? (
+        <SessionActions
+          session={session.data}
+          csrf={csrf}
+          active={!!run && !terminal(run)}
+          onBlocking={() => setBlocking(true)}
+        />
+      ) : null}
+      {blocking ? (
+        <p role="alert">
+          内容已隐藏。请在删除处理记录中核对结果，未确认时可重试原删除请求。
         </p>
-        {run && ['failed', 'interrupted'].includes(run.status) ? (
-          <p role="alert">
-            未完成响应。输入保留在当前轮次，可核对状态后再次发送。
-          </p>
-        ) : null}
-      </div>
-      <form
-        className="composer"
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (!send.isPending && !active) void form.handleSubmit()
-        }}
-      >
-        <form.Field name="message">
-          {(field) => (
-            <label>
-              想说的事
-              <textarea
-                maxLength={4000}
-                rows={4}
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                aria-describedby="message-limit"
-              />
-              <span id="message-limit" className="text-sm text-muted">
-                {field.state.value.length} / 4000 · Enter 换行
-              </span>
-            </label>
-          )}
-        </form.Field>
-        {send.isError ? (
-          <p role="alert">
-            发送未确认，输入已保留。服务可能尚未配置；重试原消息不会重复创建运行。
-          </p>
-        ) : null}
-        {cancel.isError ? (
-          <p role="alert">停止未确认，请查询状态后重试。</p>
-        ) : null}
-        <div className="flex flex-wrap gap-3">
-          {active ? (
-            <button
-              type="button"
-              disabled={cancel.isPending}
-              onClick={() => cancel.mutate()}
-            >
-              {cancel.isPending ? '正在确认停止…' : '停止生成'}
-            </button>
-          ) : (
-            <form.Subscribe selector={(state) => state.values.message}>
-              {(message) => (
-                <button
-                  className="primary"
-                  disabled={send.isPending || !session.data || !message.trim()}
-                >
-                  {send.isPending
-                    ? '正在提交…'
-                    : send.isError
-                      ? '重试原消息'
-                      : '发送'}
-                </button>
-              )}
-            </form.Subscribe>
-          )}
-          <button type="button" onClick={() => void current.refetch()}>
-            查询运行状态
-          </button>
-          <Link
-            to="/resources/exercises/$exerciseId"
-            params={{ exerciseId: 'attention' }}
-            search={{ from: sessionId }}
+      ) : (
+        <>
+          {session.data?.status === 'archived' ? (
+            <p>此对话已归档，恢复后可继续发送。</p>
+          ) : null}
+          <div className="message-area" aria-label="当前轮次">
+            {!run?.input_text && !run?.output ? (
+              <p className="text-muted">
+                想说的可以写在下面。每条最多 4000
+                字；可在“我的”里选择先倾听或一起想办法。
+              </p>
+            ) : null}
+            {run?.input_text ? (
+              <p className="message user-message">{run.input_text}</p>
+            ) : null}
+            {run?.output ? (
+              <p className="message assistant-message">{run.output.text}</p>
+            ) : null}
+            <p role="status">
+              {run ? labels[run.status] : ''}
+              {active ? ` · ${connection}` : ''}
+            </p>
+            {run && ['failed', 'interrupted'].includes(run.status) ? (
+              <p role="alert">
+                未完成响应。输入保留在当前轮次，可核对状态后再次发送。
+              </p>
+            ) : null}
+          </div>
+          {run && terminal(run) ? (
+            <FeedbackForm key={run.run_id} runId={run.run_id} csrf={csrf} />
+          ) : null}
+          {run?.input_id && !active && session.data?.status === 'active' ? (
+            <BranchActions
+              key={run.run_id}
+              run={run}
+              sessionId={sessionId}
+              sessionVersion={session.data.version}
+              csrf={csrf}
+            />
+          ) : null}
+          <TurnHistory sessionId={sessionId} currentId={run?.run_id} />
+          <form
+            className="composer"
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (
+                !send.isPending &&
+                !active &&
+                session.data?.status === 'active' &&
+                !(run?.status === 'draft' && run.input_id)
+              )
+                void form.handleSubmit()
+            }}
           >
-            独立练习
-          </Link>
-        </div>
-      </form>
+            <form.Field name="message">
+              {(field) => (
+                <label>
+                  想说的事
+                  <textarea
+                    disabled={!session.data || !csrf}
+                    maxLength={4000}
+                    rows={4}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    aria-describedby="message-limit"
+                  />
+                  <span id="message-limit" className="text-sm text-muted">
+                    {field.state.value.length} / 4000 · Enter 换行
+                  </span>
+                </label>
+              )}
+            </form.Field>
+            {send.isError ? (
+              <p role="alert">
+                发送未确认，输入已保留。服务可能尚未配置；重试原消息不会重复创建运行。
+              </p>
+            ) : null}
+            {cancel.isError ? (
+              <p role="alert">停止未确认，请查询状态后重试。</p>
+            ) : null}
+            <div className="flex flex-wrap gap-3">
+              {active ? (
+                <button
+                  type="button"
+                  disabled={cancel.isPending}
+                  onClick={() => cancel.mutate()}
+                >
+                  {cancel.isPending ? '正在确认停止…' : '停止生成'}
+                </button>
+              ) : (
+                <form.Subscribe selector={(state) => state.values.message}>
+                  {(message) => (
+                    <button
+                      className="primary"
+                      disabled={
+                        send.isPending ||
+                        !session.data ||
+                        !message.trim() ||
+                        session.data.status !== 'active' ||
+                        !!(run?.status === 'draft' && run.input_id)
+                      }
+                    >
+                      {send.isPending
+                        ? '正在提交…'
+                        : send.isError
+                          ? '重试原消息'
+                          : '发送'}
+                    </button>
+                  )}
+                </form.Subscribe>
+              )}
+              <button type="button" onClick={() => void current.refetch()}>
+                查询运行状态
+              </button>
+              <Link
+                to="/resources/exercises/$exerciseId"
+                params={{ exerciseId: 'attention' }}
+                search={{ from: sessionId }}
+              >
+                独立练习
+              </Link>
+            </div>
+          </form>
+        </>
+      )}
     </>
   )
 }

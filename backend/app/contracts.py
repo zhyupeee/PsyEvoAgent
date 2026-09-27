@@ -1,7 +1,7 @@
 import re
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class Input(BaseModel):
@@ -83,7 +83,16 @@ class SessionCreate(Input):
 
 
 class SessionChange(Version):
-    title: str = Field(min_length=1, max_length=120)
+    title: str | None = Field(default=None, min_length=1, max_length=120, pattern=r"^[^\x00]*$")
+    status: Literal["active", "archived"] | None = None
+
+    @model_validator(mode="after")
+    def changed(self) -> "SessionChange":
+        if self.title is None and self.status is None:
+            raise ValueError("No change")
+        if self.title is not None and not self.title.strip():
+            raise ValueError("Blank title")
+        return self
 
 
 class DraftCreate(Input):

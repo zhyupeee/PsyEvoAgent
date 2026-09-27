@@ -17,6 +17,8 @@ from starlette.responses import Response
 from app.api import APIError, router
 from app.config import Settings, load_settings
 from app.database import make_engine
+from app.deletion import router as deletion_router
+from app.history import router as history_router
 from app.mail import Mailer, SMTPMailer
 from app.models import opaque_id
 from app.pages import router as pages_router
@@ -58,6 +60,8 @@ def create_app(settings: Settings | None = None, mailer: Mailer | None = None) -
     application.include_router(runs_router)
     application.include_router(stream_router)
     application.include_router(pages_router)
+    application.include_router(deletion_router)
+    application.include_router(history_router)
     application.state.run_connections = Connections()
 
     @application.middleware("http")

@@ -1,0 +1,2 @@
+tests\test_history.py:280: error: Unsupported operand types for < ("int" and "object")  [operator]
+Found 1 error in 1 file (checked 41 source files)

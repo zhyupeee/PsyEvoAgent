@@ -18,10 +18,12 @@ from app.models import (
     Consent,
     ContextGrant,
     Conversation,
+    Feedback,
     IdentitySession,
     LoginAttempt,
     Preferences,
     Run,
+    RunBranch,
     RunExecution,
     User,
     now,
@@ -199,6 +201,8 @@ def test_empty_upgrade_is_repeatable(migration_url: str) -> None:
             "model_calls",
             "messages",
             "interaction_events",
+            "feedback",
+            "run_branches",
         }
     finally:
         engine.dispose()
@@ -314,7 +318,8 @@ def test_no_expiry_migration_preserves_records_and_refuses_lossy_downgrade(
             command.downgrade(config, "c1756470d092")
         with engine.connect() as connection:
             assert (
-                connection.scalar(text("SELECT version_num FROM alembic_version")) == "d642b94fcbb5"
+                connection.scalar(text("SELECT version_num FROM alembic_version"))
+                == "h007_history_feedback"
             )
         command.check(config)
     finally:
@@ -373,5 +378,46 @@ def test_login_attempt_migration_preserves_existing_lockout(migration_url: str) 
             assert attempt.failed_logins == 4 and attempt.locked_until == deadline
         with pytest.raises(RuntimeError, match="login throttle history"):
             command.downgrade(config, "f033_email_identity")
+    finally:
+        engine.dispose()
+
+
+@pytest.mark.parametrize("kind", ["feedback", "branch"])
+def test_step07_upgrade_preserves_history_and_refuses_loss(migration_url: str, kind: str) -> None:
+    config = Config(str(BACKEND / "alembic.ini"))
+    command.upgrade(config, "d642b94fcbb5")
+    engine = make_engine(migration_url)
+    try:
+        with Session(engine) as db, db.begin():
+            user = User(email="step07-migration@example.com", password_hash="synthetic")
+            db.add(user)
+            db.flush()
+            source = Conversation(owner_id=user.id, title="保留原始会话")
+            db.add(source)
+            db.flush()
+            run = Run(owner_id=user.id, session_id=source.id, session_version=1, status="completed")
+            db.add(run)
+            db.flush()
+            uid, sid, rid = user.id, source.id, run.id
+        command.upgrade(config, "head")
+        command.upgrade(config, "head")
+        command.check(config)
+        with Session(engine) as db, db.begin():
+            retained = db.get(Conversation, sid)
+            assert (
+                retained is not None and retained.title == "保留原始会话" and retained.version == 1
+            )
+            if kind == "feedback":
+                db.add(
+                    Feedback(owner_id=uid, run_id=rid, helpfulness="helpful", category="general")
+                )
+            else:
+                new = Run(owner_id=uid, session_id=sid, session_version=1)
+                db.add(new)
+                db.flush()
+                db.add(RunBranch(owner_id=uid, run_id=new.id, parent_run_id=rid, kind="revision"))
+        with pytest.raises(RuntimeError, match="STEP07 history"):
+            command.downgrade(config, "d642b94fcbb5")
+        command.check(config)
     finally:
         engine.dispose()

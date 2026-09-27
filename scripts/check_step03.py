@@ -24,7 +24,10 @@ parser.add_argument("--api-port", type=int, default=8000)
 parser.add_argument("--tls-port", type=int, default=3443)
 parser.add_argument("--step05", action="store_true", help="Also verify durable fake runs and gateway SSE")
 parser.add_argument("--step06", action="store_true", help="Also verify chat, preferences and independent exercise UI")
+parser.add_argument("--step07", action="store_true", help="Also verify history, revisions, deletion and feedback")
 args = parser.parse_args()
+if args.step07:
+    args.step06 = True
 if args.step06:
     args.step05 = True
 if any(not 1024 <= port <= 65535 for port in (args.web_port, args.api_port, args.tls_port)):
@@ -33,7 +36,7 @@ if len({args.web_port, args.api_port, args.tls_port}) != 3:
     parser.error("Web, API and TLS ports must be distinct")
 BACKEND = ROOT / "backend"
 IMAGE = "postgres:16.13-bookworm@sha256:472efd9a66f2b2f1a5aeb18b28de74332e6ef88c2b93a1a5d812fb6db67a5f60"
-NAME = ("psyevo-step06-" if args.step06 else "psyevo-step05-" if args.step05 else "psyevo-step03-") + uuid4().hex[:12]
+NAME = ("psyevo-step07-" if args.step07 else "psyevo-step06-" if args.step06 else "psyevo-step05-" if args.step05 else "psyevo-step03-") + uuid4().hex[:12]
 RUN = ROOT / ".artifacts" / NAME
 RUN.mkdir(parents=True)
 ENV = {
@@ -95,6 +98,11 @@ if args.step06:
     RECEIPT["acceptance_ids"] = ["S1-A02", "S1-A03", "RSI-S1-A08", "S1-A05", "S1-A11"]
     RECEIPT["limitations"] = ["Synthetic UI acceptance; live Provider/content review/SMTP BLOCKED", "No STEP07 history/deletion/feedback", "Language guards are not kernel isolation"]
     ENV["PSYEVO_STEP06_ARTIFACTS"] = str(RUN)
+if args.step07:
+    RECEIPT["step_id"] = "S1-STEP07"
+    RECEIPT["acceptance_ids"] = ["S1-A04", "S1-A06", "S1-A08", "RSI-S1-A03", "RSI-S1-A07", "RSI-S1-A08"]
+    RECEIPT["limitations"] = ["Isolated synthetic accounts/fake model; live Provider/content review/SMTP remain unresolved", "No STEP08 live integration or stage handoff", "No persistent checkpoints or application backup configured; content-free tombstones and usage metadata retained", "Language guards are not kernel isolation"]
+    ENV["PSYEVO_STEP07_ARTIFACTS"] = str(RUN)
 
 
 def run(label: str, args: list[str], cwd: Path = ROOT, timeout: int = 240) -> str:
@@ -240,6 +248,8 @@ engine.dispose()
     run("https-browser", [PNPM, "exec", "playwright", "test", "--config", "playwright.https.config.ts"], ROOT / "frontend")
     if args.step05:
         run("seed-step05", [sys.executable, "-c", seed.replace("admin@example.com", "step05-browser@example.com").replace("synthetic-admin-password", "synthetic-browser-password").replace("browser-b@example.com", "step05-unused@example.com")], BACKEND)
+        if args.step07:
+            run("seed-step07", [sys.executable, "-c", seed.replace("admin@example.com", "step07-browser@example.com").replace("synthetic-admin-password", "synthetic-browser-password").replace("browser-b@example.com", "step07-unused@example.com")], BACKEND)
         ENV.update(PSYEVO_SUPPORT_MODE="fake", PSYEVO_BROWSER_ORIGIN=f"http://127.0.0.1:{args.web_port}")
         with (RUN / "support-worker.txt").open("w", encoding="utf-8") as worker_log:
             worker = subprocess.Popen([sys.executable, "-m", "app.worker", "--support"], cwd=BACKEND, env=ENV, stdout=worker_log, stderr=subprocess.STDOUT)
@@ -247,6 +257,8 @@ engine.dispose()
                 run("step05-gateway", [PNPM, "exec", "playwright", "test", "--config", "playwright.step05.config.ts"], ROOT / "frontend")
                 if args.step06:
                     run("step06-browser", [PNPM, "exec", "playwright", "test", "--config", "playwright.step06.config.ts"], ROOT / "frontend")
+                if args.step07:
+                    run("step07-browser", [PNPM, "exec", "playwright", "test", "--config", "playwright.step07.config.ts"], ROOT / "frontend")
                 if worker.poll() is not None:
                     raise RuntimeError("Support worker exited before gateway acceptance completed")
             finally:
@@ -345,6 +357,42 @@ print("STEP06 restart: preferences persisted; lost-ack retry produced one input/
 engine.dispose()
 '''
         run("step06-restart-facts", [sys.executable, "-c", verify_pages], BACKEND)
+    if args.step07:
+        verify_history = '''
+from sqlalchemy import select, func
+from sqlalchemy.orm import Session
+from app.config import load_settings
+from app.database import make_engine
+from app.models import User, Preferences, Message, Run, RunBranch, Feedback, DeletionJob, Conversation, RunEvent, ModelCall
+engine = make_engine(load_settings().database_url.get_secret_value())
+with Session(engine) as db:
+    user = db.scalar(select(User).where(User.email == "step07-browser@example.com"))
+    assert user is not None
+    feedback = list(db.scalars(select(Feedback).where(Feedback.owner_id == user.id)))
+    assert len(feedback) == 1 and feedback[0].comment == "" and feedback[0].category == "misunderstood"
+    assert feedback[0].source_refs == []
+    pref = db.scalar(select(Preferences).where(Preferences.owner_id == user.id))
+    assert pref is not None and pref.mode == "listen" and pref.version == 1
+    branches = list(db.scalars(select(RunBranch).where(RunBranch.owner_id == user.id)))
+    assert len(branches) == 2
+    revised = list(db.scalars(select(Message).where(Message.owner_id == user.id, Message.content == "STEP07修订后的独立输入")))
+    assert sorted(m.version for m in revised) == [2, 3]
+    for row in revised:
+        run = db.get(Run, row.run_id)
+        assert run is not None and run.status == "completed"
+        assert db.scalar(select(func.count()).select_from(ModelCall).where(ModelCall.run_id == run.id)) == 1
+    jobs = list(db.scalars(select(DeletionJob).where(DeletionJob.owner_id == user.id)))
+    assert len(jobs) == 1 and jobs[0].status == "completed"
+    source = db.get(Conversation, jobs[0].target)
+    assert source is not None and source.deleted_at and source.status == "deleted"
+    for run in db.scalars(select(Run).where(Run.session_id == source.id)):
+        assert run.deleted_at
+        assert all(m.content == "" and m.deleted_at for m in db.scalars(select(Message).where(Message.run_id == run.id)))
+        assert db.scalar(select(func.count()).select_from(RunEvent).where(RunEvent.run_id == run.id)) == 0
+print("STEP07 restart: unique empty-reason feedback, unchanged preferences, distinct input versions and one model call per branch; deleted content/events absent, receipt durable")
+engine.dispose()
+'''
+        run("step07-restart-facts", [sys.executable, "-c", verify_history], BACKEND)
     run("documents", [sys.executable, "-B", "-X", "utf8", "_check_docs.py"])
     run("diff", ["git", "diff", "--check"])
     RECEIPT["passed"] = True

@@ -1,0 +1,47 @@
+
+Running 5 tests using 1 worker
+
+  ok 1 tests\support.spec.ts:31:1 › chat: real send, lost acknowledgement retry, snapshot reload, account isolation (13.6s)
+  ok 2 tests\support.spec.ts:88:1 › confirmed lost start clears pending send and preserves a revised next message (9.8s)
+  ok 3 tests\support.spec.ts:125:1 › stop reflects backend terminal even when completion wins; stream loss recovers without send (6.4s)
+  x  4 tests\support.spec.ts:157:1 › preferences: failure is not saved; persistence, mobile keyboard and title display (12.5s)
+  ok 5 tests\support.spec.ts:210:1 › independent exercise: no model requests, skip, exit, refresh, unknown resources (7.4s)
+
+
+  1) tests\support.spec.ts:157:1 › preferences: failure is not saved; persistence, mobile keyboard and title display 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('button', { name: '发送', exact: true })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('button', { name: '发送', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: '发送', exact: true })
+        - locator resolved to <button disabled class="primary">发送</button>
+        13 × unexpected value "inactive"
+           - locator resolved to <button class="primary">发送</button>
+        - unexpected value "inactive"
+
+
+      199 |   await expect(
+      200 |     page.getByRole('button', { name: '发送', exact: true }),
+    > 201 |   ).toBeFocused()
+          |     ^
+      202 |   expect(
+      203 |     await page.evaluate(
+      204 |       () => document.documentElement.scrollWidth <= innerWidth,
+        at D:\PsyEvoAgent\frontend\tests\support.spec.ts:201:5
+
+    Error Context: test-results\support-preferences-failur-b1433--keyboard-and-title-display\error-context.md
+
+  1 failed
+    tests\support.spec.ts:157:1 › preferences: failure is not saved; persistence, mobile keyboard and title display 
+  4 passed (1.1m)
+[WebServer] INFO:     Started server process [45712]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8107 (Press CTRL+C to quit)
