@@ -1,0 +1,227 @@
+{
+  "step_id": "S2-STEP01",
+  "started_at": "2026-09-29T14:39:26.449525+00:00",
+  "execution_kind": "local_static_synthetic_contract_check",
+  "status": "passed",
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Windows"
+  },
+  "model_calls": 0,
+  "database_calls": 0,
+  "product_cases": {
+    "RSI-S2-A02": "planned",
+    "RSI-S2-A03": "planned",
+    "RSI-S2-A04": "planned"
+  },
+  "limitations": [
+    "Not product/API/DB authorization or model-input validation",
+    "Authored annotation expectations, not an executed Assessor",
+    "No clinical calibration, LangMem, Worker or memory persistence"
+  ],
+  "bindings": [
+    {
+      "fixture_id": "own-current_run",
+      "expected": "valid",
+      "observed": "valid",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "own-candidate_extraction",
+      "expected": "valid",
+      "observed": "valid",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "own-personalization",
+      "expected": "valid",
+      "observed": "valid",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "own-dependency_assessment",
+      "expected": "valid",
+      "observed": "valid",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "own-evaluation",
+      "expected": "valid",
+      "observed": "valid",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "same-experience-other-owner",
+      "expected": "owner_mismatch",
+      "observed": "owner_mismatch",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "forged-actor",
+      "expected": "owner_mismatch",
+      "observed": "owner_mismatch",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "memory-is-not-profile",
+      "expected": "purpose_mismatch",
+      "observed": "purpose_mismatch",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "profile-is-not-memory",
+      "expected": "purpose_mismatch",
+      "observed": "purpose_mismatch",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "extraction-is-not-retrieval",
+      "expected": "purpose_mismatch",
+      "observed": "purpose_mismatch",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "evaluation-is-not-profile",
+      "expected": "purpose_mismatch",
+      "observed": "purpose_mismatch",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "wrong-source-type",
+      "expected": "source_missing",
+      "observed": "source_missing",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "wrong-source-id",
+      "expected": "source_binding",
+      "observed": "source_binding",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "old-source-version",
+      "expected": "source_version",
+      "observed": "source_version",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "old-grant-version",
+      "expected": "grant_version",
+      "observed": "grant_version",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "old-config-version",
+      "expected": "config_version",
+      "observed": "config_version",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "deleted-source",
+      "expected": "source_deleted",
+      "observed": "source_deleted",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "revoked-grant",
+      "expected": "grant_inactive",
+      "observed": "grant_inactive",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "ended-scope",
+      "expected": "grant_inactive",
+      "observed": "grant_inactive",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "disabled-candidate_extraction",
+      "expected": "purpose_disabled",
+      "observed": "purpose_disabled",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "disabled-personalization",
+      "expected": "purpose_disabled",
+      "observed": "purpose_disabled",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "disabled-dependency_assessment",
+      "expected": "purpose_disabled",
+      "observed": "purpose_disabled",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "disabled-evaluation",
+      "expected": "purpose_disabled",
+      "observed": "purpose_disabled",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "profile-disabled-memory-independent",
+      "expected": "valid",
+      "observed": "valid",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "profile-disabled-support-independent",
+      "expected": "valid",
+      "observed": "valid",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "history-declined",
+      "expected": "valid",
+      "observed": "valid",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "history-revoked",
+      "expected": "valid",
+      "observed": "valid",
+      "kind": "synthetic-reference-comparison"
+    },
+    {
+      "fixture_id": "missing-grant",
+      "expected": "grant_missing",
+      "observed": "grant_missing",
+      "kind": "synthetic-reference-comparison"
+    }
+  ],
+  "rejected_mutations": [
+    "duplicate_case",
+    "owner_forgery",
+    "source_version",
+    "purpose_substitution",
+    "config_disabled",
+    "missing_reference_version",
+    "text_reference",
+    "missing_dimension",
+    "unknown_as_zero",
+    "missing_counter",
+    "missing_alternatives",
+    "conflict_without_counter",
+    "invented_score",
+    "false_product_pass",
+    "fabricated_granted"
+  ],
+  "dimensions": 11,
+  "annotation_examples": 33,
+  "profile_scenarios": 5,
+  "failed_checks": 0,
+  "versions": {
+    "schema_version": "s2-fixtures/1",
+    "contract_version": "s2-source-contract/1",
+    "annotation_version": "s2-annotation/1"
+  },
+  "ended_at": "2026-09-29T14:39:26.641153+00:00",
+  "sha256": {
+    "_check_s2_step01.py": "bbdfd5237e8e45c7db9109f30dbc272259487164a10e260ccab066389bc25f24",
+    "PsyEvoAgent项目计划/阶段2/fixtures/S2-STEP01/scenarios.json": "80c7fcddfd5c9736ab1d9fd373589b22e7b9dec9b1d4c45422125074d77b77ca",
+    "PsyEvoAgent项目计划/阶段2/01-阶段目标与功能设计.md": "ac98cd6fe1869914eee178583b267ee4ae17a72c79f5c4843af43ced8df6925f",
+    "PsyEvoAgent项目计划/阶段2/02-技术方案与实施计划.md": "c14b4a67079c1a040dd126ffa3999f8004af5e922c59d546f742d880d3351915",
+    "PsyEvoAgent项目计划/阶段2/03-测试与验收标准.md": "7dcdf8dda9a13bd4b261f9e570314388585f59257320a76f57c6f00d40f75d5b",
+    "PsyEvoAgent项目计划/阶段2/04-分步实施与检查清单.md": "2c05f0c9ab91eb1a9b2a867524070e2c1003f5c59d214f7eff7ed274aeea48d5"
+  }
+}

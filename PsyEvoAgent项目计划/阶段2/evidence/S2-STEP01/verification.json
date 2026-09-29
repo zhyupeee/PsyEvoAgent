@@ -1,0 +1,88 @@
+{
+  "step_id": "S2-STEP01",
+  "status": "passed",
+  "environment": {
+    "platform": "Windows",
+    "python": "3.12.13"
+  },
+  "commands": [
+    {
+      "command": [
+        "D:\\PsyEvoAgent\\backend\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "--config",
+        "backend/pyproject.toml",
+        "_check_s2_step01.py"
+      ],
+      "exit_code": 0,
+      "log": "lint.txt"
+    },
+    {
+      "command": [
+        "D:\\PsyEvoAgent\\backend\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "format",
+        "--check",
+        "--config",
+        "backend/pyproject.toml",
+        "_check_s2_step01.py"
+      ],
+      "exit_code": 0,
+      "log": "format.txt"
+    },
+    {
+      "command": [
+        "D:\\PsyEvoAgent\\backend\\.venv\\Scripts\\python.exe",
+        "-X",
+        "utf8",
+        "_check_s2_step01.py",
+        "--receipt"
+      ],
+      "exit_code": 0,
+      "log": "contract.txt"
+    },
+    {
+      "command": [
+        "D:\\PsyEvoAgent\\backend\\.venv\\Scripts\\python.exe",
+        "-X",
+        "utf8",
+        "_check_docs.py"
+      ],
+      "exit_code": 0,
+      "log": "documents.txt"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": "diff.txt"
+    }
+  ],
+  "execution_kind": "local-static-contract-and-document-checks",
+  "ended_at": "2026-09-29T14:42:11.746231+00:00",
+  "sha256": {
+    "_check_s2_step01.py": "ad5772f60be571c27c2c7e5f84670a8d01f22a9f655c692446d78dd9081cf355",
+    "AGENTS.md": "93668ce774d8a510f3dbe02e994bed6f4f9a850ab3e952741a4c3a707ab47994",
+    "README.md": "c51b2e14d7f1c4e390711e5a17f5f94987188d2939fe7610b0c2862ce799ba38",
+    "DEVELOPMENT.md": "f64b4838e2f4f988785b26f5f6175895d082e7780fce5508e089b65c0c31c546",
+    "PsyEvoAgent项目计划/阶段2/01-阶段目标与功能设计.md": "ac98cd6fe1869914eee178583b267ee4ae17a72c79f5c4843af43ced8df6925f",
+    "PsyEvoAgent项目计划/阶段2/02-技术方案与实施计划.md": "9c0ab9cd2f3acebc882598828cd9aaa983a95488c2923308d1af0e1272974e2d",
+    "PsyEvoAgent项目计划/阶段2/03-测试与验收标准.md": "7dcdf8dda9a13bd4b261f9e570314388585f59257320a76f57c6f00d40f75d5b",
+    "PsyEvoAgent项目计划/阶段2/04-分步实施与检查清单.md": "2c05f0c9ab91eb1a9b2a867524070e2c1003f5c59d214f7eff7ed274aeea48d5",
+    "PsyEvoAgent项目计划/阶段2/fixtures/S2-STEP01/scenarios.json": "80c7fcddfd5c9736ab1d9fd373589b22e7b9dec9b1d4c45422125074d77b77ca",
+    "PsyEvoAgent项目计划/阶段2/evidence/S2-STEP01/README.md": "3f40c8713e03e0331ce55766225f3556fac9eb44ef6c2179d4785984730058fc"
+  },
+  "lock_sha256": {
+    "backend/uv.lock": "a95d96ff888218ec16a6543c495f5c7a7300bebf0d1cfdba8a619507f15cb097",
+    "backend/pyproject.toml": "f271a4e7ea273de81ad30b407c17d7c8fd2bc9365849dc43c1ffde4ad545e8a9",
+    "frontend/pnpm-lock.yaml": "f807e328e31376a36450cb23fcb4aea6aaaaf222490dff57aa4c92d92becf238",
+    "frontend/package.json": "daedec6fdb8abcd57f36eca18d226d4755217bd17538b996ec43ee5973635716"
+  },
+  "contract_hashes_match": true
+}

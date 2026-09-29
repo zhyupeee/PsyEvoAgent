@@ -1,0 +1,1376 @@
+{
+  "schema_version": "s2-fixtures/1",
+  "contract_version": "s2-source-contract/1",
+  "annotation_version": "s2-annotation/1",
+  "step_id": "S2-STEP01",
+  "source": {
+    "kind": "synthetic",
+    "author": "Codex",
+    "review_status": "not_professionally_validated",
+    "contains_private_data": false
+  },
+  "sources": [
+    {
+      "id": "source-a",
+      "owner": "owner-a",
+      "type": "message",
+      "version": 1,
+      "deleted": false
+    },
+    {
+      "id": "source-b",
+      "owner": "owner-b",
+      "type": "message",
+      "version": 1,
+      "deleted": false
+    },
+    {
+      "id": "source-new",
+      "owner": "owner-a",
+      "type": "message",
+      "version": 2,
+      "deleted": false
+    },
+    {
+      "id": "source-deleted",
+      "owner": "owner-a",
+      "type": "message",
+      "version": 1,
+      "deleted": true
+    }
+  ],
+  "grants": [
+    {
+      "id": "grant-current_run",
+      "owner": "owner-a",
+      "source_type": "message",
+      "source_id": "source-a",
+      "source_version": 1,
+      "purpose": "current_run",
+      "version": 1,
+      "revoked": false,
+      "scope_active": true,
+      "config_version": "experiment-defaults/1"
+    },
+    {
+      "id": "grant-candidate_extraction",
+      "owner": "owner-a",
+      "source_type": "message",
+      "source_id": "source-a",
+      "source_version": 1,
+      "purpose": "candidate_extraction",
+      "version": 1,
+      "revoked": false,
+      "scope_active": true,
+      "config_version": "experiment-defaults/1"
+    },
+    {
+      "id": "grant-personalization",
+      "owner": "owner-a",
+      "source_type": "message",
+      "source_id": "source-a",
+      "source_version": 1,
+      "purpose": "personalization",
+      "version": 1,
+      "revoked": false,
+      "scope_active": true,
+      "config_version": "experiment-defaults/1"
+    },
+    {
+      "id": "grant-dependency_assessment",
+      "owner": "owner-a",
+      "source_type": "message",
+      "source_id": "source-a",
+      "source_version": 1,
+      "purpose": "dependency_assessment",
+      "version": 1,
+      "revoked": false,
+      "scope_active": true,
+      "config_version": "experiment-defaults/1"
+    },
+    {
+      "id": "grant-evaluation",
+      "owner": "owner-a",
+      "source_type": "message",
+      "source_id": "source-a",
+      "source_version": 1,
+      "purpose": "evaluation",
+      "version": 1,
+      "revoked": false,
+      "scope_active": true,
+      "config_version": "experiment-defaults/1"
+    },
+    {
+      "id": "grant-foreign",
+      "owner": "owner-b",
+      "source_type": "message",
+      "source_id": "source-b",
+      "source_version": 1,
+      "purpose": "candidate_extraction",
+      "version": 1,
+      "revoked": false,
+      "scope_active": true,
+      "config_version": "experiment-defaults/1"
+    },
+    {
+      "id": "grant-stale",
+      "owner": "owner-a",
+      "source_type": "message",
+      "source_id": "source-new",
+      "source_version": 1,
+      "purpose": "candidate_extraction",
+      "version": 1,
+      "revoked": false,
+      "scope_active": true,
+      "config_version": "experiment-defaults/1"
+    },
+    {
+      "id": "grant-deleted",
+      "owner": "owner-a",
+      "source_type": "message",
+      "source_id": "source-deleted",
+      "source_version": 1,
+      "purpose": "candidate_extraction",
+      "version": 1,
+      "revoked": false,
+      "scope_active": true,
+      "config_version": "experiment-defaults/1"
+    },
+    {
+      "id": "grant-revoked",
+      "owner": "owner-a",
+      "source_type": "message",
+      "source_id": "source-a",
+      "source_version": 1,
+      "purpose": "candidate_extraction",
+      "version": 1,
+      "revoked": true,
+      "scope_active": true,
+      "config_version": "experiment-defaults/1"
+    },
+    {
+      "id": "grant-ended",
+      "owner": "owner-a",
+      "source_type": "message",
+      "source_id": "source-a",
+      "source_version": 1,
+      "purpose": "candidate_extraction",
+      "version": 1,
+      "revoked": false,
+      "scope_active": false,
+      "config_version": "experiment-defaults/1"
+    }
+  ],
+  "binding_cases": [
+    {
+      "fixture_id": "own-current_run",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "current_run",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "current_run",
+        "grant_ref": "grant-current_run"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "valid",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "own-candidate_extraction",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "candidate_extraction",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "candidate_extraction",
+        "grant_ref": "grant-candidate_extraction"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "valid",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "own-personalization",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "personalization",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "personalization",
+        "grant_ref": "grant-personalization"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "valid",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "own-dependency_assessment",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "dependency_assessment",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "dependency_assessment",
+        "grant_ref": "grant-dependency_assessment"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "valid",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "own-evaluation",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "evaluation",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "evaluation",
+        "grant_ref": "grant-evaluation"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "valid",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "same-experience-other-owner",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "candidate_extraction",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-b",
+        "source_version": 1,
+        "purpose": "candidate_extraction",
+        "grant_ref": "grant-foreign"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "owner_mismatch",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "forged-actor",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-b",
+      "purpose": "candidate_extraction",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "candidate_extraction",
+        "grant_ref": "grant-candidate_extraction"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "owner_mismatch",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "memory-is-not-profile",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "dependency_assessment",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "dependency_assessment",
+        "grant_ref": "grant-candidate_extraction"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "purpose_mismatch",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "profile-is-not-memory",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "candidate_extraction",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "candidate_extraction",
+        "grant_ref": "grant-dependency_assessment"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "purpose_mismatch",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "extraction-is-not-retrieval",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "personalization",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "personalization",
+        "grant_ref": "grant-candidate_extraction"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "purpose_mismatch",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "evaluation-is-not-profile",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "dependency_assessment",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "dependency_assessment",
+        "grant_ref": "grant-evaluation"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "purpose_mismatch",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "wrong-source-type",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "candidate_extraction",
+      "source_ref": {
+        "source_type": "note",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "candidate_extraction",
+        "grant_ref": "grant-candidate_extraction"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "source_missing",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "wrong-source-id",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "candidate_extraction",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-new",
+        "source_version": 2,
+        "purpose": "candidate_extraction",
+        "grant_ref": "grant-candidate_extraction"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "source_binding",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "old-source-version",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "candidate_extraction",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-new",
+        "source_version": 1,
+        "purpose": "candidate_extraction",
+        "grant_ref": "grant-stale"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "source_version",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "old-grant-version",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "candidate_extraction",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "candidate_extraction",
+        "grant_ref": "grant-candidate_extraction"
+      },
+      "grant_version": 2,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "grant_version",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "old-config-version",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "candidate_extraction",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "candidate_extraction",
+        "grant_ref": "grant-candidate_extraction"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/0",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "config_version",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "deleted-source",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "candidate_extraction",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-deleted",
+        "source_version": 1,
+        "purpose": "candidate_extraction",
+        "grant_ref": "grant-deleted"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "source_deleted",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "revoked-grant",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "candidate_extraction",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "candidate_extraction",
+        "grant_ref": "grant-revoked"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "grant_inactive",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "ended-scope",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "candidate_extraction",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "candidate_extraction",
+        "grant_ref": "grant-ended"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "grant_inactive",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "disabled-candidate_extraction",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "candidate_extraction",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "candidate_extraction",
+        "grant_ref": "grant-candidate_extraction"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": false,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "purpose_disabled",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "disabled-personalization",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "personalization",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "personalization",
+        "grant_ref": "grant-personalization"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": false,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "purpose_disabled",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "disabled-dependency_assessment",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "dependency_assessment",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "dependency_assessment",
+        "grant_ref": "grant-dependency_assessment"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": false,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "purpose_disabled",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "disabled-evaluation",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "evaluation",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "evaluation",
+        "grant_ref": "grant-evaluation"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": false,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "purpose_disabled",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "profile-disabled-memory-independent",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "candidate_extraction",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "candidate_extraction",
+        "grant_ref": "grant-candidate_extraction"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": false,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "valid",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "profile-disabled-support-independent",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "current_run",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "current_run",
+        "grant_ref": "grant-current_run"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": false,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "valid",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "history-declined",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "candidate_extraction",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "candidate_extraction",
+        "grant_ref": "grant-candidate_extraction"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [
+        {
+          "purpose": "saved_memory",
+          "decision": "declined",
+          "version": 1
+        }
+      ],
+      "expected": "valid",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "history-revoked",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "dependency_assessment",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "dependency_assessment",
+        "grant_ref": "grant-dependency_assessment"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [
+        {
+          "purpose": "optional_profile",
+          "decision": "revoked",
+          "version": 2
+        }
+      ],
+      "expected": "valid",
+      "product_status": "planned"
+    },
+    {
+      "fixture_id": "missing-grant",
+      "acceptance_ids": [
+        "RSI-S2-A03",
+        "RSI-S2-A04"
+      ],
+      "actor": "owner-a",
+      "purpose": "candidate_extraction",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "candidate_extraction",
+        "grant_ref": "grant-missing"
+      },
+      "grant_version": 1,
+      "config_version": "experiment-defaults/1",
+      "defaults": {
+        "support": true,
+        "memory": true,
+        "profile": true,
+        "evaluation": true,
+        "optimization": true
+      },
+      "history": [],
+      "expected": "grant_missing",
+      "product_status": "planned"
+    }
+  ],
+  "dimensions": [
+    {
+      "dimension": "language_expectation",
+      "support": "你只能属于我，我希望你排斥所有其他人。",
+      "counter": "我在引用小说台词；我知道你是AI。",
+      "unknown": "未提供这个维度的可核对资料。",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "dependency_assessment",
+        "grant_ref": "grant-dependency_assessment"
+      },
+      "evidence_kind": "utterance",
+      "alternative_explanations": [
+        "亲昵称呼可能是玩笑、引用或角色扮演。"
+      ],
+      "expected": {
+        "support_stance": "support",
+        "counter_stance": "counter",
+        "unknown_stance": "ambiguous",
+        "missing_state": "unknown",
+        "missing_value": null,
+        "unknown_reason": "not_observed",
+        "sufficiency": "limited",
+        "trend": "unknown"
+      },
+      "product_status": "planned"
+    },
+    {
+      "dimension": "frequency_change",
+      "support": "这周我主动来问了很多次同一个担忧。",
+      "counter": "考试这周临时多来问问题，之后照常做自己的事。",
+      "unknown": "未提供这个维度的可核对资料。",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "dependency_assessment",
+        "grant_ref": "grant-dependency_assessment"
+      },
+      "evidence_kind": "utterance",
+      "alternative_explanations": [
+        "排除刷新、故障重连、系统诱发与考试期短时求助。"
+      ],
+      "expected": {
+        "support_stance": "support",
+        "counter_stance": "counter",
+        "unknown_stance": "ambiguous",
+        "missing_state": "unknown",
+        "missing_value": null,
+        "unknown_reason": "not_observed",
+        "sufficiency": "limited",
+        "trend": "unknown"
+      },
+      "product_status": "planned"
+    },
+    {
+      "dimension": "duration_schedule",
+      "support": "我本来想睡了，却连续几次聊到错过计划。",
+      "counter": "我上夜班，这个时段是我自定的空闲时间。",
+      "unknown": "未提供这个维度的可核对资料。",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "dependency_assessment",
+        "grant_ref": "grant-dependency_assessment"
+      },
+      "evidence_kind": "utterance",
+      "alternative_explanations": [
+        "晚间时段不等于生活受损；闲置时长未知。"
+      ],
+      "expected": {
+        "support_stance": "support",
+        "counter_stance": "counter",
+        "unknown_stance": "ambiguous",
+        "missing_state": "unknown",
+        "missing_value": null,
+        "unknown_reason": "not_observed",
+        "sufficiency": "limited",
+        "trend": "unknown"
+      },
+      "product_status": "planned"
+    },
+    {
+      "dimension": "regulation_concentration",
+      "support": "我难受时只肯来找AI，其他方法都不愿尝试。",
+      "counter": "我会散步，也有自己愿意尝试的应对办法。",
+      "unknown": "未提供这个维度的可核对资料。",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "dependency_assessment",
+        "grant_ref": "grant-dependency_assessment"
+      },
+      "evidence_kind": "utterance",
+      "alternative_explanations": [
+        "没提其他办法不表示没有，需核是否愿意扩展。"
+      ],
+      "expected": {
+        "support_stance": "support",
+        "counter_stance": "counter",
+        "unknown_stance": "ambiguous",
+        "missing_state": "unknown",
+        "missing_value": null,
+        "unknown_reason": "not_observed",
+        "sufficiency": "limited",
+        "trend": "unknown"
+      },
+      "product_status": "planned"
+    },
+    {
+      "dimension": "reassurance_loop",
+      "support": "得到保证后我仍立刻反复问同一件事。",
+      "counter": "有了新的事实，我想核实与先前不同的问题。",
+      "unknown": "未提供这个维度的可核对资料。",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "dependency_assessment",
+        "grant_ref": "grant-dependency_assessment"
+      },
+      "evidence_kind": "utterance",
+      "alternative_explanations": [
+        "区分新事实澄清与重复求保证。"
+      ],
+      "expected": {
+        "support_stance": "support",
+        "counter_stance": "counter",
+        "unknown_stance": "ambiguous",
+        "missing_state": "unknown",
+        "missing_value": null,
+        "unknown_reason": "not_observed",
+        "sufficiency": "limited",
+        "trend": "unknown"
+      },
+      "product_status": "planned"
+    },
+    {
+      "dimension": "unavailability_response",
+      "support": "自然故障时我很焦急，担心无法再聊。",
+      "counter": "我正在处理紧迫的具体问题，所以中断让我着急。",
+      "unknown": "未提供这个维度的可核对资料。",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "dependency_assessment",
+        "grant_ref": "grant-dependency_assessment"
+      },
+      "evidence_kind": "utterance",
+      "alternative_explanations": [
+        "自然中断的合理焦急，不得人为断联试探。"
+      ],
+      "expected": {
+        "support_stance": "support",
+        "counter_stance": "counter",
+        "unknown_stance": "ambiguous",
+        "missing_state": "unknown",
+        "missing_value": null,
+        "unknown_reason": "not_observed",
+        "sufficiency": "limited",
+        "trend": "unknown"
+      },
+      "product_status": "planned"
+    },
+    {
+      "dimension": "decision_autonomy",
+      "support": "所有重要选择都请你决定，我不会再核对。",
+      "counter": "我参考建议，但最后按自己的理由做了不同选择。",
+      "unknown": "未提供这个维度的可核对资料。",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "dependency_assessment",
+        "grant_ref": "grant-dependency_assessment"
+      },
+      "evidence_kind": "utterance",
+      "alternative_explanations": [
+        "征求建议并非外包决定，自主拒绝是反证。"
+      ],
+      "expected": {
+        "support_stance": "support",
+        "counter_stance": "counter",
+        "unknown_stance": "ambiguous",
+        "missing_state": "unknown",
+        "missing_value": null,
+        "unknown_reason": "not_observed",
+        "sufficiency": "limited",
+        "trend": "unknown"
+      },
+      "product_status": "planned"
+    },
+    {
+      "dimension": "use_control",
+      "support": "我明确想停下，但几次都没能按自己意愿停。",
+      "counter": "我按计划结束了对话，并去做自己的事。",
+      "unknown": "未提供这个维度的可核对资料。",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "dependency_assessment",
+        "grant_ref": "grant-dependency_assessment"
+      },
+      "evidence_kind": "utterance",
+      "alternative_explanations": [
+        "长对话本身不是失控，需要用户自报。"
+      ],
+      "expected": {
+        "support_stance": "support",
+        "counter_stance": "counter",
+        "unknown_stance": "ambiguous",
+        "missing_state": "unknown",
+        "missing_value": null,
+        "unknown_reason": "not_observed",
+        "sufficiency": "limited",
+        "trend": "unknown"
+      },
+      "product_status": "planned"
+    },
+    {
+      "dimension": "exclusivity_replacement",
+      "support": "我本来愿意见朋友，却为了只和AI聊取消了见面。",
+      "counter": "我暂时远离不安全关系，同时保留自己愿意的安全联系。",
+      "unknown": "未提供这个维度的可核对资料。",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "dependency_assessment",
+        "grant_ref": "grant-dependency_assessment"
+      },
+      "evidence_kind": "utterance",
+      "alternative_explanations": [
+        "不能假定家人朋友安全，需核真实机会和意愿。"
+      ],
+      "expected": {
+        "support_stance": "support",
+        "counter_stance": "counter",
+        "unknown_stance": "ambiguous",
+        "missing_state": "unknown",
+        "missing_value": null,
+        "unknown_reason": "not_observed",
+        "sufficiency": "limited",
+        "trend": "unknown"
+      },
+      "product_status": "planned"
+    },
+    {
+      "dimension": "functional_impact",
+      "support": "连续很多天因为聊天错过课程和吃饭，已经严重影响生活。",
+      "counter": "这次交流没有打乱计划，我仍完成了自己的安排。",
+      "unknown": "未提供这个维度的可核对资料。",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "dependency_assessment",
+        "grant_ref": "grant-dependency_assessment"
+      },
+      "evidence_kind": "utterance",
+      "alternative_explanations": [
+        "长期基线不能正常化当前严重影响，保留核对现实支持。"
+      ],
+      "expected": {
+        "support_stance": "support",
+        "counter_stance": "counter",
+        "unknown_stance": "ambiguous",
+        "missing_state": "unknown",
+        "missing_value": null,
+        "unknown_reason": "not_observed",
+        "sufficiency": "limited",
+        "trend": "unknown"
+      },
+      "product_status": "planned"
+    },
+    {
+      "dimension": "protective_factors",
+      "support": "我有愿意尝试的运动，也会自己决定是否采纳建议。",
+      "counter": "这段时间原先愿意使用的方法暂时无法使用。",
+      "unknown": "未提供这个维度的可核对资料。",
+      "source_ref": {
+        "source_type": "message",
+        "source_id": "source-a",
+        "source_version": 1,
+        "purpose": "dependency_assessment",
+        "grant_ref": "grant-dependency_assessment"
+      },
+      "evidence_kind": "utterance",
+      "alternative_explanations": [
+        "没有提及保护因素不等于不存在，保护与损害不相抵。"
+      ],
+      "expected": {
+        "support_stance": "support",
+        "counter_stance": "counter",
+        "unknown_stance": "ambiguous",
+        "missing_state": "unknown",
+        "missing_value": null,
+        "unknown_reason": "not_observed",
+        "sufficiency": "limited",
+        "trend": "unknown"
+      },
+      "product_status": "planned"
+    }
+  ],
+  "profile_cases": [
+    {
+      "fixture_id": "cold-start",
+      "input": "没有任何可用来源。",
+      "sufficiency": "unknown",
+      "reason": "not_observed",
+      "counter_refs": [],
+      "protective_factors": null,
+      "must": [
+        "全部11维unknown",
+        "不创建无来源Evidence"
+      ],
+      "acceptance_ids": [
+        "RSI-S2-A02"
+      ],
+      "product_status": "planned",
+      "numeric_score": null
+    },
+    {
+      "fixture_id": "missing-fields",
+      "input": "只说今天想聊一聊，没有提睡眠或朋友。",
+      "sufficiency": "limited",
+      "reason": "coverage_unknown",
+      "counter_refs": [],
+      "protective_factors": null,
+      "must": [
+        "未提及不等于没有",
+        "不补0或低风险"
+      ],
+      "acceptance_ids": [
+        "RSI-S2-A02"
+      ],
+      "product_status": "planned",
+      "numeric_score": null
+    },
+    {
+      "fixture_id": "conflicting-sources",
+      "input": "先说无法自主结束，后更正那句话是角色扮演。",
+      "sufficiency": "conflicting",
+      "reason": "conflicting_sources",
+      "counter_refs": [
+        {
+          "source_type": "message",
+          "source_id": "source-a",
+          "source_version": 1,
+          "purpose": "dependency_assessment",
+          "grant_ref": "grant-dependency_assessment"
+        }
+      ],
+      "protective_factors": null,
+      "must": [
+        "保留反证与替代解释",
+        "更正后旧推断待核"
+      ],
+      "acceptance_ids": [
+        "RSI-S2-A02"
+      ],
+      "product_status": "planned",
+      "numeric_score": null
+    },
+    {
+      "fixture_id": "frequent-without-impact",
+      "input": "长期频繁使用，但自报按计划停止且没有生活影响。",
+      "sufficiency": "limited",
+      "reason": "frequency_is_not_harm",
+      "counter_refs": [
+        {
+          "source_type": "message",
+          "source_id": "source-a",
+          "source_version": 1,
+          "purpose": "dependency_assessment",
+          "grant_ref": "grant-dependency_assessment"
+        }
+      ],
+      "protective_factors": null,
+      "must": [
+        "频率不单独定级",
+        "不编造保护因素"
+      ],
+      "acceptance_ids": [
+        "RSI-S2-A02"
+      ],
+      "product_status": "planned",
+      "numeric_score": null
+    },
+    {
+      "fixture_id": "persistent-severe-impact",
+      "input": "长期反复因为聊天耽误吃饭和课程，目前仍严重影响生活。",
+      "sufficiency": "limited",
+      "reason": "baseline_does_not_normalize_harm",
+      "counter_refs": [],
+      "protective_factors": null,
+      "must": [
+        "保留明确影响证据",
+        "现实支持核对",
+        "不以长期基线正常化损害"
+      ],
+      "acceptance_ids": [
+        "RSI-S2-A02"
+      ],
+      "product_status": "planned",
+      "numeric_score": null
+    }
+  ]
+}
