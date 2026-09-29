@@ -59,8 +59,10 @@ test('optional feedback: failure, empty reason, lost acknowledgement and real re
 }) => {
   await conversation(page, 'STEP07反馈合成输入')
   await page.getByText('反馈或纠正 · 可跳过', { exact: true }).click()
-  await page.getByLabel('这次回答').selectOption('unhelpful')
-  await page.getByLabel('反馈类型').selectOption('misunderstood')
+  await page.getByRole('combobox', { name: '这次回答' }).click()
+  await page.getByRole('option', { name: '不合适', exact: true }).click()
+  await page.getByRole('combobox', { name: '反馈类型' }).click()
+  await page.getByRole('option', { name: '这里误解了我', exact: true }).click()
   let attempts = 0
   const keys: string[] = []
   let id = ''
@@ -110,9 +112,10 @@ test('rename search archive restore, revision and regenerate preserve separate h
   await page.getByRole('button', { name: '归档对话', exact: true }).click()
   await expect(page.getByText('此对话已归档，恢复后可继续发送。')).toBeVisible()
   await page.getByRole('link', { name: '← 返回对话列表' }).click()
-  await page.getByLabel('会话范围').selectOption('archived')
+  await page.getByRole('combobox', { name: '会话范围' }).click()
+  await page.getByRole('option', { name: '已归档', exact: true }).click()
   await page.getByLabel('搜索标题').fill('STEP07检索')
-  await page.getByRole('button', { name: '搜索', exact: true }).click()
+  await page.getByLabel('搜索标题').press('Enter')
   await expect(
     page.getByRole('link', { name: 'STEP07检索对话', exact: true }),
   ).toBeVisible()
@@ -256,12 +259,61 @@ test('ordinary changes refresh the affected tab and preserve unrelated unsent fo
   await other.close()
 })
 
+test('sidebar deletion preserves the page and unrelated conversation draft', async ({
+  page,
+}) => {
+  await login(page, 'step07-unused@example.com')
+  await page.getByRole('button', { name: '开始一次对话' }).click()
+  await expect(page.getByLabel('想说的事')).toBeVisible()
+  const firstUrl = page.url()
+  await page.getByRole('button', { name: '新建对话', exact: true }).click()
+  await expect(page).not.toHaveURL(firstUrl)
+  await expect(page.getByLabel('想说的事')).toBeVisible()
+  const currentUrl = page.url()
+  await page.getByLabel('想说的事').fill('保留未发送的草稿')
+  const shell = await page.locator('.support-shell').elementHandle()
+  const documents: string[] = []
+  page.on('request', (request) => {
+    if (request.isNavigationRequest() && request.frame() === page.mainFrame())
+      documents.push(request.url())
+  })
+  const firstItem = page.locator('.session-list li').filter({
+    has: page.locator(`a[href="${new URL(firstUrl).pathname}"]`),
+  })
+  await firstItem.getByRole('button', { name: /^删除会话：/ }).click()
+  await page.getByRole('button', { name: '确认删除', exact: true }).click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await expect(firstItem).toHaveCount(0)
+  await expect(page).toHaveURL(currentUrl)
+  await expect(page.getByLabel('想说的事')).toHaveValue('保留未发送的草稿')
+  const currentItem = page.locator('.session-list li').filter({
+    has: page.locator(`a[href="${new URL(currentUrl).pathname}"]`),
+  })
+  await currentItem.getByRole('button', { name: /^删除会话：/ }).click()
+  await page.getByRole('button', { name: '确认删除', exact: true }).click()
+  await expect(page).toHaveURL(/\/chat$/)
+  await expect(page.getByRole('button', { name: '开始一次对话' })).toBeEnabled()
+  await expect(currentItem).toHaveCount(0)
+  expect(documents).toEqual([])
+  expect(await shell!.evaluate((node) => node.isConnected)).toBe(true)
+  await page.goto(currentUrl)
+  await expect(
+    page.getByRole('heading', { name: '对话暂不可用' }),
+  ).toBeVisible()
+})
+
 test('confirmed deletion clears two tabs, retries lost response, survives logout and back', async ({
   page,
   context,
 }) => {
   await conversation(page, 'STEP07删除后不再可见')
   const url = page.url()
+  const shell = await page.locator('.support-shell').elementHandle()
+  const documents: string[] = []
+  page.on('request', (request) => {
+    if (request.isNavigationRequest() && request.frame() === page.mainFrame())
+      documents.push(request.url())
+  })
   const other = await context.newPage()
   await other.goto(url)
   await expect(other.locator('.user-message')).toHaveText(
@@ -294,12 +346,20 @@ test('confirmed deletion clears two tabs, retries lost response, survives logout
   await expect(page).toHaveURL(/\/chat$/)
   expect(keys).toHaveLength(2)
   expect(keys[0]).toBe(keys[1])
+  expect(documents).toEqual([])
+  expect(await shell!.evaluate((node) => node.isConnected)).toBe(true)
   await expect(
     other.getByRole('heading', { name: '对话暂不可用' }),
   ).toBeVisible()
   await expect(other.locator('body')).not.toContainText('STEP07删除后不再可见')
+  const receiptsLoaded = page.waitForResponse(
+    (response) =>
+      response.url().endsWith('/api/v1/deletion-jobs') &&
+      response.status() === 200,
+  )
   await page.getByRole('link', { name: '删除处理记录', exact: true }).click()
   await expect(page).toHaveURL(/\/me\?section=data$/)
+  await receiptsLoaded
   await page.getByText('删除处理记录', { exact: true }).click()
   await expect(page.getByText('本应用在线内容清理完成').first()).toBeVisible()
   await expect(page.locator('body')).not.toContainText('STEP07删除后不再可见')

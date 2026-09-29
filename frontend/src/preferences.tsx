@@ -7,12 +7,19 @@ import { preferencesQuery, preferencesSchema } from './support-api'
 export function Preferences({ csrf }: { csrf: string }) {
   const query = useQuery(preferencesQuery)
   return (
-    <section className="support-content mb-8 rounded-lg border border-line bg-white p-6">
-      <h2 className="mb-4 text-xl font-semibold">交流与显示偏好</h2>
+    <section className="support-content card mb-8 grid gap-4">
+      <h2 className="text-xl font-semibold">交流与显示偏好</h2>
       {query.isError ? (
         <>
-          <p role="alert">偏好读取失败。</p>
-          <button onClick={() => void query.refetch()}>重新读取</button>
+          <p role="alert" className="text-danger">
+            偏好读取失败。
+          </p>
+          <button
+            className="btn justify-self-start"
+            onClick={() => void query.refetch()}
+          >
+            重新读取
+          </button>
         </>
       ) : query.data ? (
         <PreferenceForm
@@ -21,7 +28,7 @@ export function Preferences({ csrf }: { csrf: string }) {
           csrf={csrf}
         />
       ) : (
-        <p>正在读取偏好…</p>
+        <p className="text-muted">正在读取偏好…</p>
       )}
     </section>
   )
@@ -66,9 +73,10 @@ function PreferenceForm({
     >
       <form.Field name="mode">
         {(field) => (
-          <label>
+          <label className="grid gap-1 text-sm font-medium">
             交流方式
             <select
+              className="field max-w-xs"
               value={field.state.value}
               onChange={(e) =>
                 field.handleChange(
@@ -84,9 +92,10 @@ function PreferenceForm({
       </form.Field>
       <form.Field name="display_preferences.font_size">
         {(field) => (
-          <label>
+          <label className="grid gap-1 text-sm font-medium">
             字号
             <select
+              className="field max-w-xs"
               value={field.state.value}
               onChange={(e) =>
                 field.handleChange(
@@ -102,9 +111,10 @@ function PreferenceForm({
       </form.Field>
       <form.Field name="display_preferences.reduced_motion">
         {(field) => (
-          <label>
+          <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
+              className="h-4 w-4 accent-status"
               checked={field.state.value}
               onChange={(e) => field.handleChange(e.target.checked)}
             />{' '}
@@ -114,9 +124,10 @@ function PreferenceForm({
       </form.Field>
       <form.Field name="display_preferences.hide_titles">
         {(field) => (
-          <label>
+          <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
+              className="h-4 w-4 accent-status"
               checked={field.state.value}
               onChange={(e) => field.handleChange(e.target.checked)}
             />{' '}
@@ -128,14 +139,21 @@ function PreferenceForm({
         当前已保存版本：{saved.version}。改变交流方式从下一次发送生效。
       </p>
       {mutation.isError ? (
-        <p role="alert">未保存。可能存在版本冲突，请重新读取后再试。</p>
+        <p role="alert" className="text-sm text-danger">
+          未保存。可能存在版本冲突，请重新读取后再试。
+        </p>
       ) : null}
       <div className="flex flex-wrap gap-3">
-        <button type="submit" disabled={mutation.isPending}>
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={mutation.isPending}
+        >
           保存偏好
         </button>
         <button
           type="button"
+          className="btn"
           onClick={() =>
             void client.invalidateQueries({ queryKey: ['preferences'] })
           }

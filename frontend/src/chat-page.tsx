@@ -1,11 +1,22 @@
 import { useForm } from '@tanstack/react-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
+import {
+  ArrowUp,
+  ArrowRight,
+  MessageCircle,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Plus,
+  Square,
+} from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
 import { getIdentity, request } from './account-api'
 import { ChatTimeline, turnLabels } from './chat-timeline'
 import { modelFailure } from './model-settings'
+import { Button } from './components/ui/button'
+import { Textarea } from './components/ui/textarea'
 import {
   BranchActions,
   FeedbackForm,
@@ -22,9 +33,31 @@ import {
   titlePending,
 } from './support-api'
 
+const SIDEBAR_COLLAPSED_KEY = 'psyevo.chat-sidebar-collapsed'
+
 export function ChatPage({ sessionId }: { sessionId?: string }) {
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [blockedSessions, setBlockedSessions] = useState<Set<string>>(
+    () => new Set(),
+  )
+  const blockSession = (id: string) =>
+    setBlockedSessions((previous) => new Set(previous).add(id))
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
+    typeof window === 'undefined'
+      ? false
+      : window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true',
+  )
+  const toggleCollapsed = () =>
+    setSidebarCollapsed((value) => {
+      const next = !value
+      try {
+        window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next))
+      } catch {
+        // localStorage 不可用时折叠状态仅在本次会话内生效
+      }
+      return next
+    })
   const identity = useQuery({
     queryKey: ['identity'],
     queryFn: ({ signal }) => getIdentity(signal),
@@ -51,41 +84,88 @@ export function ChatPage({ sessionId }: { sessionId?: string }) {
   })
   return (
     <div
-      className="support-content chat-workspace"
+      className="support-content chat-workspace group/workspace relative flex min-h-0 w-full flex-1 overflow-hidden"
       data-sidebar-open={sidebarOpen}
+      data-sidebar-collapsed={sidebarCollapsed}
     >
-      <aside id="chat-sidebar" className="chat-sidebar" aria-label="会话列表">
-        <div className="sidebar-heading">
-          <p className="eyebrow">留给自己的空间</p>
-          <button
-            className="sidebar-toggle"
-            onClick={() => setSidebarOpen(false)}
-          >
-            收起会话
-          </button>
-        </div>
-        <button
-          className="primary"
-          disabled={create.isPending || !identity.data}
-          onClick={() => create.mutate()}
+      <div className="chat-sidebar-inner sidebar-rail" data-sidebar-motion>
+        <aside
+          id="chat-sidebar"
+          data-sidebar-motion
+          className="chat-sidebar sidebar-panel z-20 flex flex-col gap-4 overflow-y-auto border-r border-line bg-paper p-3 side:z-auto"
+          aria-label="会话列表"
         >
-          新建对话
-        </button>
-        {create.isError ? <p role="alert">未能建立对话，请重试。</p> : null}
-        <SessionList onSelect={() => setSidebarOpen(false)} />
-      </aside>
-      <div className="chat-layout">
-        <header className="support-header">
+          <div className="sidebar-heading flex items-center justify-between gap-2 px-1">
+            <p className="eyebrow">留给自己的空间</p>
+            <button
+              className="sidebar-toggle btn-ghost side:hidden"
+              onClick={() => setSidebarOpen(false)}
+            >
+              收起会话
+            </button>
+          </div>
+          <Button
+            className="primary btn-primary min-h-10 w-full gap-1.5 rounded-xl px-4 shadow-sm transition-all duration-150 hover:shadow-md hover:brightness-[1.04] active:translate-y-px active:shadow-sm"
+            disabled={create.isPending || !identity.data}
+            onClick={() => create.mutate()}
+          >
+            <span className="relative text-center leading-5">
+              <Plus
+                size={18}
+                className="absolute top-1/2 right-full mr-1.5 -translate-y-1/2"
+                aria-hidden="true"
+              />
+              新建对话
+            </span>
+          </Button>
+          {create.isError ? (
+            <p role="alert" className="text-sm text-danger">
+              未能建立对话，请重试。
+            </p>
+          ) : null}
+          <SessionList
+            csrf={identity.data?.csrf_token ?? ''}
+            currentSessionId={sessionId}
+            onBlocking={blockSession}
+            onSelect={() => setSidebarOpen(false)}
+          />
+        </aside>
+      </div>
+      <div className="chat-layout flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto bg-white [overflow-anchor:none]">
+        <header className="support-header flex min-h-14 flex-shrink-0 flex-wrap items-center gap-1 border-b border-line px-3 py-1.5">
           <button
-            className="sidebar-toggle"
+            className="sidebar-toggle btn-ghost side:hidden"
             aria-expanded={sidebarOpen}
             aria-controls="chat-sidebar"
             onClick={() => setSidebarOpen(!sidebarOpen)}
           >
             历史对话
           </button>
-          {sessionId ? <Link to="/chat">← 返回对话列表</Link> : <h1>对话</h1>}
-          <Link to="/resources" search={{ tab: 'support' }}>
+          <button
+            className="btn-icon hidden side:inline-flex"
+            aria-expanded={!sidebarCollapsed}
+            aria-controls="chat-sidebar"
+            aria-label={sidebarCollapsed ? '展开会话列表' : '折叠会话列表'}
+            onClick={toggleCollapsed}
+          >
+            {sidebarCollapsed ? (
+              <PanelLeftOpen size={18} aria-hidden="true" />
+            ) : (
+              <PanelLeftClose size={18} aria-hidden="true" />
+            )}
+          </button>
+          {sessionId ? (
+            <Link to="/chat" className="btn-ghost">
+              ← 返回对话列表
+            </Link>
+          ) : (
+            <h1 className="px-2 text-base font-semibold">对话</h1>
+          )}
+          <Link
+            to="/resources"
+            search={{ tab: 'support' }}
+            className="btn-ghost ml-auto"
+          >
             现实支持
           </Link>
         </header>
@@ -94,38 +174,62 @@ export function ChatPage({ sessionId }: { sessionId?: string }) {
             key={sessionId}
             sessionId={sessionId}
             csrf={identity.data?.csrf_token ?? ''}
+            blocking={blockedSessions.has(sessionId)}
+            onBlocking={() => blockSession(sessionId)}
           />
         ) : (
-          <>
-            <section className="chat-welcome">
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pt-8 pb-5 side:px-10">
+            <section className="chat-welcome m-auto flex w-full max-w-[680px] shrink-0 flex-col items-center py-12 text-center side:py-16">
+              <div
+                aria-hidden="true"
+                className="mb-7 grid h-16 w-16 place-items-center rounded-[22px] bg-accent/70 text-status"
+              >
+                <MessageCircle size={29} strokeWidth={1.5} />
+              </div>
               <div>
-                <p className="eyebrow">留一点空间，给此刻的自己</p>
-                <h2>今天，想聊些什么？</h2>
-                <p>
-                  可以从现在最在意的一件事说起。提供一般支持，不能替代专业咨询或诊断。
+                <p className="mb-3 text-xs font-medium tracking-[0.14em] text-muted">
+                  留一点空间，给此刻的自己
+                </p>
+                <h2 className="text-[clamp(1.75rem,3vw,2.5rem)] leading-snug font-semibold tracking-tight text-ink">
+                  今天，想聊些什么？
+                </h2>
+                <p className="mt-5 text-sm leading-7 text-muted side:text-base side:leading-8">
+                  不必想好怎么说，也不必急着找到答案。
+                  <br />
+                  从此刻最在意的一件小事开始。
                 </p>
               </div>
-              <div className="chat-welcome-actions">
+              <div className="chat-welcome-actions mt-8 flex flex-col items-center gap-3">
                 <button
-                  className="primary"
+                  className="primary btn btn-primary min-h-12 gap-3 rounded-full px-7 text-sm shadow-[0_3px_12px_-4px_rgba(37,121,198,0.4)]"
                   disabled={create.isPending || !identity.data}
                   onClick={() => create.mutate()}
                 >
                   开始一次对话
+                  <ArrowRight size={18} aria-hidden="true" />
                 </button>
                 {create.isError ? (
-                  <p role="alert">未能建立对话，请重试。</p>
+                  <p role="alert" className="text-sm text-danger">
+                    未能建立对话，请重试。
+                  </p>
                 ) : null}
-                <Link to="/resources">也可以先看看支持资源 →</Link>
+                <Link to="/resources" className="btn-ghost text-xs">
+                  也可以先看看支持资源 →
+                </Link>
               </div>
             </section>
 
-            <p className="secondary-link">
-              <Link to="/me" search={{ section: 'data' }}>
+            <footer className="secondary-link mx-auto flex w-full max-w-[760px] shrink-0 flex-col items-center gap-2 pt-6 text-center text-xs leading-5 text-muted">
+              <p>提供一般支持，不能替代专业咨询或诊断。</p>
+              <Link
+                to="/me"
+                search={{ section: 'data' }}
+                className="rounded px-2 py-1 text-muted transition-colors hover:text-ink"
+              >
                 删除处理记录
               </Link>
-            </p>
-          </>
+            </footer>
+          </div>
         )}
       </div>
     </div>
@@ -136,12 +240,15 @@ type Attempt = { text: string; id: string; draft?: string; grant?: string }
 function Conversation({
   sessionId,
   csrf,
+  blocking,
+  onBlocking,
 }: {
   sessionId: string
   csrf: string
+  blocking: boolean
+  onBlocking: () => void
 }) {
   const client = useQueryClient()
-  const [blocking, setBlocking] = useState(false)
   const preferences = useQuery(preferencesQuery)
   const session = useQuery({
     queryKey: ['session', sessionId],
@@ -350,28 +457,33 @@ function Conversation({
   })
   if (session.isError || current.isError)
     return (
-      <section>
-        <h1>对话暂不可用</h1>
-        <p role="alert">无法读取或无权访问，内容已隐藏。</p>
-        <button
-          onClick={() => {
-            void session.refetch()
-            void current.refetch()
-          }}
-        >
-          查询状态
-        </button>
+      <section className="grid flex-1 place-items-center p-8">
+        <div className="card grid max-w-[420px] justify-items-start gap-3">
+          <h1 className="text-lg font-semibold">对话暂不可用</h1>
+          <p role="alert" className="text-sm text-danger">
+            无法读取或无权访问，内容已隐藏。
+          </p>
+          <button
+            className="btn"
+            onClick={() => {
+              void session.refetch()
+              void current.refetch()
+            }}
+          >
+            查询状态
+          </button>
+        </div>
       </section>
     )
   return (
     <>
-      <div className="conversation-heading">
-        <h1 className="chat-title">
+      <div className="conversation-heading relative flex flex-shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-1 px-3 py-2 side:px-5">
+        <h1 className="chat-title min-w-0 flex-1 truncate text-lg font-semibold">
           {blocking || preferences.data?.display_preferences.hide_titles
             ? '对话'
             : (session.data?.title ?? '正在读取…')}
         </h1>
-        <div className="conversation-actions">
+        <div className="conversation-actions flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
           {!blocking ? (
             <TurnHistory sessionId={sessionId} currentId={run?.run_id} />
           ) : null}
@@ -380,32 +492,34 @@ function Conversation({
               session={session.data}
               csrf={csrf}
               active={!!run && !terminal(run)}
-              onBlocking={() => setBlocking(true)}
+              onBlocking={onBlocking}
             />
           ) : null}
         </div>
       </div>
       {blocking ? (
-        <p role="alert">
+        <p role="alert" className="px-5 py-3 text-sm text-danger">
           内容已隐藏。请在删除处理记录中核对结果，未确认时可重试原删除请求。
         </p>
       ) : (
         <>
           {session.data?.status === 'archived' ? (
-            <p>此对话已归档，恢复后可继续发送。</p>
+            <p className="px-5 pt-2 text-sm text-muted">
+              此对话已归档，恢复后可继续发送。
+            </p>
           ) : null}
           <ChatTimeline sessionId={sessionId} current={run}>
-            <p role="status">
+            <p role="status" className="mb-2 text-sm text-muted">
               {run ? turnLabels[run.status] : ''}
               {active ? ` · ${connection}` : ''}
             </p>
             {run && ['failed', 'interrupted'].includes(run.status) ? (
-              <p role="alert">
+              <p role="alert" className="mb-2 text-sm text-danger">
                 本次回答未完成，输入已保留。可以点击下方“重新生成”重试。
                 {run.stop_reason ? ` ${modelFailure(run.stop_reason)}` : ''}
               </p>
             ) : null}
-            <div className="response-tools">
+            <div className="response-tools mb-3 flex flex-wrap items-start gap-x-4 gap-y-2">
               {run && terminal(run) ? (
                 <FeedbackForm
                   key={`feedback-${run.run_id}`}
@@ -425,7 +539,7 @@ function Conversation({
             </div>
           </ChatTimeline>
           <form
-            className="composer"
+            className="composer mx-auto w-full max-w-[800px] flex-shrink-0 px-3 pb-3 side:px-5"
             onSubmit={(e) => {
               e.preventDefault()
               if (
@@ -437,81 +551,112 @@ function Conversation({
                 void form.handleSubmit()
             }}
           >
-            <form.Field name="message">
-              {(field) => (
-                <label>
-                  想说的事
-                  <textarea
-                    disabled={!session.data || !csrf}
-                    maxLength={4000}
-                    rows={2}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-describedby="message-limit"
-                  />
-                  <span id="message-limit" className="text-sm text-muted">
-                    {field.state.value.length} / 4000 · Enter 换行
-                  </span>
-                </label>
-              )}
-            </form.Field>
             {send.isError ? (
-              <p role="alert">
+              <p role="alert" className="mb-2 text-sm text-danger">
                 发送未确认，输入已保留。服务可能尚未配置；重试原消息不会重复创建运行。
               </p>
             ) : null}
             {cancel.isError ? (
-              <p role="alert">停止未确认，请检查发送状态后重试。</p>
+              <p role="alert" className="mb-2 text-sm text-danger">
+                停止未确认，请检查发送状态后重试。
+              </p>
             ) : null}
-            <div className="flex flex-wrap gap-3">
-              {active ? (
-                <button
-                  type="button"
-                  disabled={cancel.isPending}
-                  onClick={() => cancel.mutate()}
-                >
-                  {cancel.isPending ? '正在确认停止…' : '停止生成'}
-                </button>
-              ) : (
-                <form.Subscribe selector={(state) => state.values.message}>
-                  {(message) => (
-                    <button
-                      className="primary"
-                      disabled={
-                        send.isPending ||
-                        !session.data ||
-                        !message.trim() ||
-                        session.data.status !== 'active' ||
-                        !!(run?.status === 'draft' && run.input_id)
-                      }
-                    >
-                      {send.isPending
-                        ? '正在提交…'
-                        : send.isError
-                          ? '重试原消息'
-                          : '发送'}
-                    </button>
-                  )}
-                </form.Subscribe>
-              )}
-              {send.isError || cancel.isError ? (
-                <button
-                  type="button"
-                  disabled={recover.isPending}
-                  onClick={() => recover.mutate()}
-                >
-                  {recover.isPending ? '正在检查…' : '检查发送状态'}
-                </button>
-              ) : null}
-              <Link
-                to="/resources/exercises/$exerciseId"
-                params={{ exerciseId: 'attention' }}
-                search={{ from: sessionId }}
-              >
-                独立练习
-              </Link>
+            <div className="rounded-3xl border border-line bg-white px-4 pt-3 pb-2 shadow-sm transition focus-within:border-status focus-within:ring-2 focus-within:ring-accent">
+              <form.Field name="message">
+                {(field) => (
+                  <>
+                    <label htmlFor="chat-message-input" className="sr-only">
+                      想说的事
+                    </label>
+                    <Textarea
+                      id="chat-message-input"
+                      disabled={!session.data || !csrf}
+                      maxLength={4000}
+                      rows={2}
+                      placeholder="想说的事…"
+                      value={field.state.value}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value)
+                        e.target.style.height = 'auto'
+                        e.target.style.height =
+                          Math.min(e.target.scrollHeight, 200) + 'px'
+                      }}
+                      aria-describedby="message-limit"
+                      className="block max-h-[200px] min-h-[52px] w-full resize-none! rounded-none border-0 bg-transparent px-1 py-1 text-[0.95em] leading-normal outline-none focus:border-0 focus:shadow-none"
+                    />
+                    <div className="mt-1 flex items-center gap-3">
+                      <span id="message-limit" className="text-xs text-muted">
+                        {field.state.value.length} / 4000 · Enter 换行
+                      </span>
+                      <div className="ml-auto flex items-center gap-2">
+                        {send.isError || cancel.isError ? (
+                          <button
+                            type="button"
+                            className="btn-ghost text-xs"
+                            disabled={recover.isPending}
+                            onClick={() => recover.mutate()}
+                          >
+                            {recover.isPending ? '正在检查…' : '检查发送状态'}
+                          </button>
+                        ) : null}
+                        {active ? (
+                          <button
+                            type="button"
+                            aria-label={
+                              cancel.isPending ? '正在确认停止…' : '停止生成'
+                            }
+                            disabled={cancel.isPending}
+                            onClick={() => cancel.mutate()}
+                            className="grid h-9 w-9 place-items-center rounded-full bg-ink text-white transition enabled:hover:bg-ink/85 disabled:opacity-40"
+                          >
+                            <Square
+                              size={13}
+                              aria-hidden="true"
+                              fill="currentColor"
+                            />
+                          </button>
+                        ) : (
+                          <form.Subscribe
+                            selector={(state) => state.values.message}
+                          >
+                            {(message) => (
+                              <button
+                                className="primary grid h-9 w-9 place-items-center rounded-full bg-status text-white transition enabled:hover:bg-status-strong disabled:opacity-40"
+                                aria-label={
+                                  send.isPending
+                                    ? '正在提交…'
+                                    : send.isError
+                                      ? '重试原消息'
+                                      : '发送'
+                                }
+                                disabled={
+                                  send.isPending ||
+                                  !session.data ||
+                                  !message.trim() ||
+                                  session.data.status !== 'active' ||
+                                  !!(run?.status === 'draft' && run.input_id)
+                                }
+                              >
+                                <ArrowUp size={18} aria-hidden="true" />
+                              </button>
+                            )}
+                          </form.Subscribe>
+                        )}
+                      </div>
+                      <Link
+                        to="/resources/exercises/$exerciseId"
+                        params={{ exerciseId: 'attention' }}
+                        search={{ from: sessionId }}
+                        className="btn-ghost -order-1 px-2 text-xs"
+                      >
+                        独立练习
+                      </Link>
+                    </div>
+                  </>
+                )}
+              </form.Field>
             </div>
-            <p aria-live="polite" className="text-sm text-muted">
+            <p aria-live="polite" className="mt-1.5 px-2 text-xs text-muted">
               {recover.isPending
                 ? '正在检查发送状态…'
                 : recover.isError

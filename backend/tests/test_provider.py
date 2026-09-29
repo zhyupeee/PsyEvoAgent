@@ -130,6 +130,62 @@ def test_actual_sdk_private_stream_through_existing_graph() -> None:
     assert "我先听" not in json.dumps(asdict(receipt))
 
 
+@pytest.mark.parametrize(
+    "text",
+    ["a" * 4000, "a" * 4001, "a" * 6000, "倾听。" * 2000, "a" * 33000],
+    ids=["old-limit", "over-old-limit", "long-ascii", "long-chinese", "over-old-buffer"],
+)
+def test_long_complete_response_is_preserved(text: str) -> None:
+    from app.support import SupportResult
+
+    body = response(json.dumps({"text": text}, ensure_ascii=False), tokens=1010)
+    result, calls = asyncio.run(run_response(body))
+    assert isinstance(result, SupportResult)
+    assert calls == 1 and result.rule_verdict == "pass"
+    assert result.text == text and result.stop_reason is None
+    assert result.ledger.calls[0].actual_tokens == 1010
+
+
+@pytest.mark.parametrize("extra_bytes", [0, 1])
+def test_response_byte_limit_is_explicit(extra_bytes: int) -> None:
+    from app.support import MAX_RESPONSE_BYTES, SupportResult
+
+    envelope = json.dumps({"text": ""})
+    text = "a" * (MAX_RESPONSE_BYTES - len(envelope) + extra_bytes)
+    result, calls = asyncio.run(run_response(response(json.dumps({"text": text}))))
+    assert isinstance(result, SupportResult)
+    assert calls == 1
+    if extra_bytes:
+        assert result.stop_reason == "output_too_large" and result.text is None
+    else:
+        assert result.rule_verdict == "pass" and result.text == text
+
+
+def test_json_escaped_chinese_can_exceed_old_buffer() -> None:
+    from app.support import SupportResult
+
+    text = "倾听。" * 2000
+    encoded = json.dumps({"text": text}, ensure_ascii=True)
+    assert len(encoded.encode("utf-8")) > 32768
+    result, calls = asyncio.run(run_response(response(encoded, tokens=1010)))
+    assert isinstance(result, SupportResult)
+    assert calls == 1 and result.rule_verdict == "pass" and result.text == text
+
+
+def test_fine_grained_stream_with_terminal_metadata_is_not_truncated() -> None:
+    from app.support import SupportResult
+
+    text = "a" * 6000
+    encoded = json.dumps({"text": text})
+    body = b"".join(event({"content": char}) for char in encoded)
+    # Empty deltas, finish metadata and usage must not impose a character/token cap.
+    body += b"".join(event({"content": ""}) for _ in range(100))
+    body += response(text="", tokens=1010)
+    result, calls = asyncio.run(run_response(body))
+    assert isinstance(result, SupportResult)
+    assert calls == 1 and result.rule_verdict == "pass" and result.text == text
+
+
 @pytest.mark.parametrize("output_tokens,accepted", [(2638, True), (4097, False)])
 def test_development_output_budget_preserves_usage_enforcement(
     output_tokens: int, accepted: bool
@@ -270,7 +326,7 @@ def test_null_delta_after_valid_usage_fails_closed(usage: dict[str, int] | None)
         (b'{"error":{"message":"SECRET-SENTINEL"}}', 401, "provider_authentication"),
         (b'{"error":{"message":"SECRET-SENTINEL"}}', 429, "rate_limit"),
         (b'{"error":{"message":"SECRET-SENTINEL"}}', 500, "provider_error"),
-        (response(text="x" * 33000), 200, "partial_stream"),
+        (response(text="x" * 131073), 200, "output_too_large"),
         (response().replace(b'"prompt_tokens": 10, ', b""), 200, "partial_stream"),
     ],
     ids=[

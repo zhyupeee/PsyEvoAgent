@@ -34,8 +34,7 @@ const formSchema = z
     { message: '请填写 HTTPS API 地址和模型名称。' },
   )
 const key = ['model-settings']
-const inputStyle =
-  'min-h-11 rounded-md border border-line bg-white px-3 py-2 focus-visible:outline-2 focus-visible:outline-focus'
+const inputStyle = 'field'
 
 export function modelFailure(reason?: string | null) {
   switch (reason) {
@@ -57,6 +56,14 @@ export function modelFailure(reason?: string | null) {
       return 'API 地址无法安全连接，请使用可公开访问的 HTTPS 地址。'
     case 'schema_invalid':
       return '模型返回的内容格式不符合要求，请更换兼容模型。'
+    case 'output_too_large':
+      return '回答超出长度限制，未能完整显示。请尝试要求更简短的回答。'
+    case 'truncated':
+      return '模型未完整生成回答，可能已达到输出上限。请要求更简短的回答或调整输出上限。'
+    case 'partial_stream':
+      return '模型响应传输中断或不完整，请稍后重试。'
+    case 'usage_over_reservation':
+      return '模型报告的用量超出本次预算，请要求更简短的回答或调整输出上限。'
     case 'usage_unknown':
       return '模型未返回用量信息，暂时无法使用此接口。'
     case 'provider_key_required_for_address_change':
@@ -82,18 +89,25 @@ export function ModelSettings({ csrf }: { csrf: string }) {
     refetchInterval: 5000,
   })
   return (
-    <section className="settings-card">
-      <h2>模型配置</h2>
-      <p className="text-muted">选择为聊天和自动标题提供模型的方式。</p>
+    <section className="settings-card card mb-6 grid gap-4">
+      <h2 className="text-xl font-semibold">模型配置</h2>
+      <p className="text-sm text-muted">选择为聊天和自动标题提供模型的方式。</p>
       {query.data ? (
         <ModelForm saved={query.data} csrf={csrf} />
       ) : query.isError ? (
-        <p role="alert">
+        <p role="alert" className="text-sm text-danger">
           配置读取失败。
-          <button onClick={() => void query.refetch()}>重新读取</button>
+          <button
+            className="btn-ghost ml-1"
+            onClick={() => void query.refetch()}
+          >
+            重新读取
+          </button>
         </p>
       ) : (
-        <p role="status">正在读取模型配置…</p>
+        <p role="status" className="text-sm text-muted">
+          正在读取模型配置…
+        </p>
       )}
     </section>
   )
@@ -218,25 +232,27 @@ function ModelForm({ saved, csrf }: { saved: Saved; csrf: string }) {
       <form.Field name="mode">
         {(field) => (
           <fieldset disabled={busy} className="grid gap-3">
-            <legend>模型来源</legend>
-            <label>
+            <legend className="text-sm font-semibold">模型来源</legend>
+            <label className="flex items-center gap-2 text-sm">
               <input
                 type="radio"
                 name="model-mode"
+                className="h-4 w-4 accent-status"
                 checked={field.state.value === 'official'}
                 onChange={() => field.handleChange('official')}
               />{' '}
               官方提供
             </label>
-            <p className="text-muted">
+            <p className="text-sm text-muted">
               {saved.official.available
                 ? `当前模型：${saved.official.model}`
                 : '官方模型尚未配置或启用。'}
             </p>
-            <label>
+            <label className="flex items-center gap-2 text-sm">
               <input
                 type="radio"
                 name="model-mode"
+                className="h-4 w-4 accent-status"
                 checked={field.state.value === 'custom'}
                 onChange={() => field.handleChange('custom')}
               />{' '}
@@ -248,21 +264,26 @@ function ModelForm({ saved, csrf }: { saved: Saved; csrf: string }) {
       <form.Subscribe selector={(state) => state.values.mode}>
         {(mode) =>
           mode === 'custom' ? (
-            <fieldset disabled={busy} className="grid gap-4">
-              <legend>个人 API 配置</legend>
-              <p className="text-muted">
+            <fieldset
+              disabled={busy}
+              className="grid gap-4 rounded-xl border border-line p-4"
+            >
+              <legend className="px-1 text-sm font-semibold">
+                个人 API 配置
+              </legend>
+              <p className="text-sm text-muted">
                 支持 OpenAI Chat Completions
                 兼容接口。对话内容会发送给所填服务商，聊天和标题调用可能产生费用。Key
                 按账号加密保存。
               </p>
               {!saved.credential_storage_available ? (
-                <p role="alert">
+                <p role="alert" className="text-sm text-danger">
                   服务器尚未配置密钥加密存储，暂时无法保存个人 Key。
                 </p>
               ) : null}
               <form.Field name="base_url">
                 {(field) => (
-                  <label className="grid gap-1">
+                  <label className="grid gap-1 text-sm font-medium">
                     API Base URL
                     <input
                       className={inputStyle}
@@ -277,7 +298,7 @@ function ModelForm({ saved, csrf }: { saved: Saved; csrf: string }) {
               </form.Field>
               <form.Field name="model">
                 {(field) => (
-                  <label className="grid gap-1">
+                  <label className="grid gap-1 text-sm font-medium">
                     模型名称
                     <input
                       className={inputStyle}
@@ -291,7 +312,7 @@ function ModelForm({ saved, csrf }: { saved: Saved; csrf: string }) {
               </form.Field>
               <form.Field name="api_key">
                 {(field) => (
-                  <label className="grid gap-1">
+                  <label className="grid gap-1 text-sm font-medium">
                     API Key
                     <input
                       className={inputStyle}
@@ -310,12 +331,14 @@ function ModelForm({ saved, csrf }: { saved: Saved; csrf: string }) {
                   </label>
                 )}
               </form.Field>
-              <details>
-                <summary>高级设置</summary>
+              <details className="rounded-lg border border-line px-3 py-2">
+                <summary className="text-sm font-medium text-muted">
+                  高级设置
+                </summary>
                 <div className="grid gap-3 pt-3">
                   <form.Field name="deadline_seconds">
                     {(field) => (
-                      <label className="grid gap-1">
+                      <label className="grid gap-1 text-sm font-medium">
                         响应超时（秒）
                         <input
                           className={inputStyle}
@@ -333,7 +356,7 @@ function ModelForm({ saved, csrf }: { saved: Saved; csrf: string }) {
                   </form.Field>
                   <form.Field name="max_output_tokens">
                     {(field) => (
-                      <label className="grid gap-1">
+                      <label className="grid gap-1 text-sm font-medium">
                         最大输出 Token
                         <input
                           className={inputStyle}
@@ -356,11 +379,16 @@ function ModelForm({ saved, csrf }: { saved: Saved; csrf: string }) {
         }
       </form.Subscribe>
       <div className="flex flex-wrap gap-3">
-        <button type="submit" className="primary" disabled={busy}>
+        <button
+          type="submit"
+          className="primary btn btn-primary"
+          disabled={busy}
+        >
           {save.isPending ? '正在保存…' : '保存模型配置'}
         </button>
         <button
           type="button"
+          className="btn"
           disabled={busy}
           onClick={() => {
             setNotice('')
@@ -372,6 +400,7 @@ function ModelForm({ saved, csrf }: { saved: Saved; csrf: string }) {
         {saved.custom.has_key ? (
           <button
             type="button"
+            className="btn btn-danger"
             disabled={busy}
             onClick={() => setConfirmation(saved.version)}
           >
@@ -379,11 +408,15 @@ function ModelForm({ saved, csrf }: { saved: Saved; csrf: string }) {
           </button>
         ) : null}
       </div>
-      <p className="text-muted">
+      <p className="text-sm text-muted">
         测试将发送一次固定合成内容，不发送历史对话，可能产生费用；保存不会自动测试。
       </p>
       {confirmation !== null ? (
-        <div role="group" aria-label="确认删除个人配置" className="grid gap-2">
+        <div
+          role="group"
+          aria-label="确认删除个人配置"
+          className="grid gap-2 rounded-xl border border-line bg-paper/60 p-4 text-sm"
+        >
           <p>
             将删除保存的 Key
             并撤销相关运行中的任务。已生成的聊天内容不受影响。确认删除？
@@ -391,6 +424,7 @@ function ModelForm({ saved, csrf }: { saved: Saved; csrf: string }) {
           <div className="flex gap-3">
             <button
               type="button"
+              className="btn btn-danger"
               disabled={busy}
               onClick={() => remove.mutate()}
             >
@@ -398,6 +432,7 @@ function ModelForm({ saved, csrf }: { saved: Saved; csrf: string }) {
             </button>
             <button
               type="button"
+              className="btn"
               disabled={busy}
               onClick={() => setConfirmation(null)}
             >
@@ -406,7 +441,11 @@ function ModelForm({ saved, csrf }: { saved: Saved; csrf: string }) {
           </div>
         </div>
       ) : null}
-      {notice ? <p role="status">{notice}</p> : null}
+      {notice ? (
+        <p role="status" className="text-sm text-muted">
+          {notice}
+        </p>
+      ) : null}
     </form>
   )
 }

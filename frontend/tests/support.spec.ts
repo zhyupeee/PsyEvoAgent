@@ -38,10 +38,108 @@ test.beforeEach(async ({ context }) => {
   )
 })
 
+test('support navigation preserves the shell without flashing the identity check', async ({
+  page,
+}) => {
+  await login(page)
+  await expect(page.locator('.support-shell')).toBeVisible()
+  const monitor = await page.evaluateHandle(() => {
+    const shell = document.querySelector('.support-shell')
+    const state = { flashed: false, unmounted: false }
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        for (const node of record.addedNodes) {
+          if (node.textContent?.includes('正在确认登录状态'))
+            state.flashed = true
+        }
+        for (const node of record.removedNodes) {
+          if (shell && (node === shell || node.contains(shell)))
+            state.unmounted = true
+        }
+      }
+    })
+    observer.observe(document.body, { childList: true, subtree: true })
+    return { state, observer }
+  })
+  try {
+    for (let i = 0; i < 2; i++) {
+      const settings = page.getByRole('link', { name: '设置', exact: true })
+      const entryBounds = await settings.boundingBox()
+      const navBounds = await page.locator('.support-nav').boundingBox()
+      await page.getByRole('link', { name: '设置', exact: true }).click()
+      await expect(
+        page.getByRole('heading', { name: '设置', exact: true }),
+      ).toBeVisible()
+      expect(await settings.boundingBox()).toEqual(entryBounds)
+      expect(await page.locator('.support-nav').boundingBox()).toEqual(
+        navBounds,
+      )
+      await page.getByRole('link', { name: '账号安全', exact: true }).click()
+      await expect(
+        page.getByRole('heading', { name: '我的账号', exact: true }),
+      ).toBeVisible()
+      await page.getByRole('link', { name: '数据管理', exact: true }).click()
+      await expect(
+        page.getByRole('heading', { name: '对话与数据', exact: true }),
+      ).toBeVisible()
+      await page.getByRole('link', { name: '支持资源', exact: true }).click()
+      await expect(
+        page.getByRole('heading', { name: '支持资源', exact: true }),
+      ).toBeVisible()
+      await page.getByRole('link', { name: '现实支持', exact: true }).click()
+      await expect(
+        page.getByRole('heading', { name: '暂无已核实的校内值班信息' }),
+      ).toBeVisible()
+      await page.getByRole('link', { name: '练习', exact: true }).click()
+      await page.getByRole('link', { name: '查看练习' }).click()
+      await expect(page.getByRole('button', { name: '开始练习' })).toBeVisible()
+      await page.getByRole('link', { name: '退出练习，返回资源' }).click()
+      await page.getByRole('link', { name: '设置', exact: true }).click()
+      await expect(
+        page.getByRole('heading', { name: '设置', exact: true }),
+      ).toBeVisible()
+      await page.getByRole('link', { name: '对话', exact: true }).click()
+      await expect(
+        page.getByRole('heading', { name: '对话', exact: true }),
+      ).toBeVisible()
+    }
+    expect(await monitor.evaluate(({ state }) => state)).toEqual({
+      flashed: false,
+      unmounted: false,
+    })
+  } finally {
+    await monitor.evaluate(({ observer }) => observer.disconnect())
+    await monitor.dispose()
+  }
+})
+
+test('direct resource access still requires identity and recovers from identity errors', async ({
+  page,
+}) => {
+  await page.goto('/resources')
+  await expect(page).toHaveURL('/login')
+  await expect(page.locator('.support-shell')).toHaveCount(0)
+  await login(page)
+  await page.route('**/api/v1/auth/session', (route) =>
+    route.fulfill({ status: 503, json: { code: 'unavailable' } }),
+  )
+  await page.goto('/resources')
+  await expect(page.getByRole('alert')).toHaveText(
+    '无法确认登录状态，内容已隐藏。',
+  )
+  await expect(page.locator('.support-shell')).toHaveCount(0)
+  await page.unroute('**/api/v1/auth/session')
+  await page.getByRole('button', { name: '重试', exact: true }).click()
+  await expect(
+    page.getByRole('heading', { name: '支持资源', exact: true }),
+  ).toBeVisible()
+})
+
 test('multi-turn timeline: pagination, reload, switching and mobile sidebar', async ({
   page,
 }) => {
-  test.setTimeout(120000)
+  // This journey includes 21 sequential worker replies plus reloads and screenshots.
+  test.setTimeout(180000)
   await login(page, 'admin@example.com', 'synthetic-admin-password')
   await page.getByRole('button', { name: '开始一次对话' }).click()
   const inputs = Array.from(
@@ -176,7 +274,7 @@ test('chat: real send, lost acknowledgement retry, snapshot reload, account isol
   await screenshot(page, 'chat-desktop')
   await page.getByRole('link', { name: '← 返回对话列表' }).click()
   await page.getByLabel('搜索标题').fill('合成对话主题')
-  await page.getByRole('button', { name: '搜索', exact: true }).click()
+  await page.getByLabel('搜索标题').press('Enter')
   await page.locator(`.session-list a[href="${new URL(url).pathname}"]`).click()
   await expect(page).toHaveURL(url)
   const other = await context
@@ -449,7 +547,7 @@ test('navigation keeps core entry clear, settings drafts and exercise return acc
   await screenshot(page, 'navigation-settings-desktop')
   await page.getByRole('link', { name: '管理和删除会话 →' }).click()
   await page.getByLabel('搜索标题').fill('没有匹配的合成标题-navigation')
-  await page.getByRole('button', { name: '搜索', exact: true }).click()
+  await page.getByLabel('搜索标题').press('Enter')
   await expect(page.getByText('没有匹配的对话。')).toBeVisible()
   await page.getByRole('button', { name: '开始一次对话' }).click()
   await expect(page).toHaveURL(/\/chat\/.+/)

@@ -1,10 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import { SettingsPage } from '../account-page'
-import { SupportPage } from '../support-shell'
 
-export const Route = createFileRoute('/me')({
-  ssr: false,
+export const Route = createFileRoute('/_support/me')({
   validateSearch: z.object({
     section: z
       .enum(['preferences', 'models', 'security', 'data'])
@@ -16,9 +14,5 @@ export const Route = createFileRoute('/me')({
 
 function Page() {
   const { section } = Route.useSearch()
-  return (
-    <SupportPage>
-      <SettingsPage section={section} />
-    </SupportPage>
-  )
+  return <SettingsPage section={section} />
 }

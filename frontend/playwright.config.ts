@@ -2,7 +2,12 @@ import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests',
-  testMatch: ['foundation.spec.ts', 'account-recovery.spec.ts'],
+  testMatch: [
+    'foundation.spec.ts',
+    'account-recovery.spec.ts',
+    'feedback-ui.spec.ts',
+    'chat-regressions.spec.ts',
+  ],
   fullyParallel: false,
   workers: 1,
   reporter: 'list',
