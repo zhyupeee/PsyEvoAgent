@@ -431,3 +431,9 @@ API和前端终端都设置相同的 `PSYEVO_BROWSER_ORIGIN=https://<指定主�
 输出规则版本为`behavior-rules/2`；身份、来源、整稿发布、取消及普通run预算不变。第一阶段统一回归使用`backend/.venv/Scripts/python.exe -X utf8 scripts/check_step03.py --step07 --web-port 3197 --api-port 8197 --tls-port 3497`，额外需要模型设置检查的8110/3110空闲。所有服务顺序检查，避免多个Vite实例同时修改依赖优化缓存；`scripts/check_model_settings.py`每次生成新的`model-settings-check-*`产物目录。
 
 当前实现与验证状态见[本次修复记录](PsyEvoAgent项目计划/阶段1/evidence/S1-AUDIT-REPAIRS/README.md)，历史记录保持原时点。
+
+## 阶段2 STEP01合同检查（2026-09-29）
+
+在仓库根目录运行`backend/.venv/Scripts/python.exe -X utf8 _check_s2_step01.py --receipt`；WSL使用已有`backend/.venv/bin/python`。脚本仅用标准库读取本阶段合成JSON和01～04文档，不读取环境凭据、网络、数据库或模型，不需启动开发服务。`--receipt`写本步evidence下的独立时间戳文件，不覆盖历史结果；省略该参数则只检查。
+
+本步没有新产品配置读取方、依赖或迁移。来源/用途schema和后续扩展责任见[技术映射](PsyEvoAgent项目计划/阶段2/02-技术方案与实施计划.md#s2-step01-contract)，实际执行见[证据](PsyEvoAgent项目计划/阶段2/evidence/S2-STEP01/README.md)。`_check_docs.py`检查文档合同；两者都不代替新增来源API/DB/模型输入验收。

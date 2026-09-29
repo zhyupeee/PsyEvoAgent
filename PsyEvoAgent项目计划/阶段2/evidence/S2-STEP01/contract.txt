@@ -1,0 +1,4 @@
+PsyEvoAgent项目计划\阶段2\evidence\S2-STEP01\contract-check-20260929T144211-340db8ea.json
+S2-STEP01 contract material: passed 
+Expected: 28 bindings; 11 dimensions / 33 examples; 5 profile scenarios; 15 corruptions
+Stage2 product cases remain planned; no API/database/model execution by this checker
