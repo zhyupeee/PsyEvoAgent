@@ -1,5 +1,13 @@
 # PsyEvoAgent
 
+当前新增第一阶段同会话多轮聊天：会话侧栏、连续消息时间线与向上分页；后续回答可使用同会话有效前文，live聊天总预算32768 tokens。模型前文不等于阶段2长期记忆，新会话不读旧会话。实现合同见[同会话多轮](PsyEvoAgent项目计划/阶段1/02-技术方案与实施计划.md#s1-multiturn)，验证状态见[本次增量记录](PsyEvoAgent项目计划/阶段1/evidence/S1-MULTITURN/README.md)；下方STEP08记录保持历史时点。
+
+2026-09-28当前进度：**S1-STEP08 COMPLETED（内部实验工程验收）**。按用户确认范围，真实SMTP发送/收件确认、真实模型整稿网页旅程、74项数据库/API/迁移、92项后端、21项页面检查及重启直查通过，WSL内核隔离通过。21项工程矩阵及阶段2合同交接已冻结，见[最终收尾](PsyEvoAgent项目计划/阶段1/evidence/S1-STEP08/engineering-closeout.md)。专业心理支持评价/临床有效性与公共安全分块仍未验证，运行限制不自动扩大。最早未实施为S2-STEP01，本轮未进入阶段2。下方是历史时点。
+
+2026-09-27续作：`grok-4.7`真实内部流和整稿网页live链路已验证，复用原API/Worker/唯一Support图。最终70项数据库/API/迁移、83项后端、20项前置页面及1项live完整旅程、数据库重启直查通过；WSL内核隔离通过。专业内容、SMTP及可靠安全分块仍未满足，**STEP08整体BLOCKED，未进入阶段2**。实际结果见[STEP08续作](PsyEvoAgent项目计划/阶段1/evidence/S1-STEP08/continuation.md)。下方保留前一切片时点。
+
+2026-09-27本轮进度：**S1-STEP08.1部分实现，真实验收BLOCKED**。按用户指定base URL与grok-4.7新增显式内部流PoC，复用唯一Support图；密钥留空供本机填写。受控SDK测试与前置复验不替代live。网页live、安全分块及阶段交接尚未完成，见[STEP08记录](PsyEvoAgent项目计划/阶段1/evidence/S1-STEP08/README.md)及[启动说明](DEVELOPMENT.md)。下方保留历史交付时点。
+
 2026-09-27当前进度：**S1-STEP07隔离合成工程交付完成**。会话搜索/归档、输入修订/重新生成、可选反馈、确认删除/失败重试与缓存清理已落地。最终Windows门禁通过65项PostgreSQL/API/迁移、66项后端回归、3项本步页面及全部前置页面/HTTPS/SSE检查；数据库重启直查与WSL工程内核隔离通过，见[STEP07证据](PsyEvoAgent项目计划/阶段1/evidence/S1-STEP07/README.md)。真实Provider接入留STEP08.1，内容专业审阅与SMTP仍BLOCKED；最早未完成为STEP08，本轮未实施。下方记录保留历史时点。
 
 2026-09-25当前进度：**S1-STEP06隔离合成页面交付完成**。新增对话发送/停止/快照恢复、独立练习与偏好。Windows通过53项PostgreSQL/API/迁移、65项后端、4项本步页面及既有浏览器/HTTPS/网关回归；数据库重启直查和WSL内核隔离工程门禁通过，见[STEP06记录](PsyEvoAgent项目计划/阶段1/evidence/S1-STEP06/README.md)。真实Provider、专业内容审阅与SMTP保持BLOCKED；未审练习在正常开发环境关闭。最早未完成STEP07历史修订、删除、反馈，本轮未实施；下方均为历史时点记录。

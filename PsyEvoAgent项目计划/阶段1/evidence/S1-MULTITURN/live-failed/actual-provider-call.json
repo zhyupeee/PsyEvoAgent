@@ -1,0 +1,33 @@
+[
+  {
+    "run_id": "4e07f133-69cf-44a4-846b-329ec5268b42",
+    "status": "failed",
+    "stop_reason": "provider_error",
+    "call": {
+      "role": "support",
+      "run_id": "4e07f133-69cf-44a4-846b-329ec5268b42",
+      "status": "provider_error",
+      "attempt": 1,
+      "currency": "unknown",
+      "versions": {
+        "model_ref": "gemini-3.1-flash-lite-preview",
+        "provider_ref": "https://ai.hybgzs.com/v1",
+        "graph_version": "support-graph/1",
+        "policy_version": "support-policy/2",
+        "schema_version": "support-runtime/1",
+        "assessor_version": "disabled",
+        "evaluator_version": "behavior-rules/1",
+        "experiment_config_version": "experiment-defaults/1"
+      },
+      "model_ref": "gemini-3.1-flash-lite-preview",
+      "elapsed_ms": 7593,
+      "request_id": "8377fef6-d039-4e3a-af10-9e6b65d85c33",
+      "actual_cost": null,
+      "usage_source": "unknown",
+      "actual_tokens": null,
+      "price_version": "unknown",
+      "reserved_cost": null,
+      "reserved_tokens": 32768
+    }
+  }
+]

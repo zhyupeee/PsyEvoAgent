@@ -76,6 +76,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--reload-dir", type=Path, default=Path(__file__).resolve().parent)
+    parser.add_argument("--support-worker", action="store_true")
     parser.add_argument(
         "--stop-on-stdin-eof",
         action="store_true",
@@ -86,6 +87,10 @@ def main() -> None:
         from app.dev_instances import replace_previous
 
         replace_previous("backend", Path(__file__).resolve().parents[1], args.port)
+        if args.support_worker:
+            from app.dev_support import retire_legacy_workers
+
+            retire_legacy_workers(Path(__file__).resolve().parents[1])
     shutdown = threading.Event()
 
     def request_stop(signum: int, frame: FrameType | None) -> None:
@@ -102,8 +107,42 @@ def main() -> None:
 
     context = multiprocessing.get_context("spawn")
     stop = context.Event()
+    worker_stop, worker_ready = context.Event(), context.Event()
+    worker: BaseProcess | None = None
+
+    def start_worker() -> BaseProcess | None:
+        if not args.support_worker:
+            return None
+        from app.dev_support import serve_worker
+
+        worker_stop.clear()
+        worker_ready.clear()
+        child = context.Process(target=serve_worker, args=(worker_stop, worker_ready, os.getpid()))
+        child.start()
+        if not worker_ready.wait(timeout=15):
+            worker_stop.set()
+            child.join(timeout=2)
+            if child.is_alive():
+                child.terminate()
+                child.join(timeout=5)
+            child.close()
+            raise RuntimeError("Support worker did not become ready")
+        return child
+
+    def stop_worker() -> None:
+        if worker is not None:
+            worker_stop.set()
+            worker.join(timeout=135)
+            if worker.is_alive():
+                worker.terminate()
+                worker.join(timeout=5)
+                raise RuntimeError("Support worker failed to drain")
+            worker.close()
+
+    worker = start_worker()
     process = context.Process(target=serve, args=(args.port, stop))
     process.start()
+    process_closed = False
     try:
         for changes in watch(
             args.reload_dir,
@@ -123,18 +162,31 @@ def main() -> None:
                     pass
             if shutdown.is_set():
                 break
+            if worker is not None and not worker.is_alive():
+                raise RuntimeError("Support worker stopped; restart backend")
             if changes:
                 stop_server(process, stop)
                 process.close()
+                process_closed = True
+                stop_worker()
+                worker = None
                 if shutdown.is_set():
-                    break
+                    # Recreate no child; the closed process is already reaped.
+                    print("dev.stopped", flush=True)
+                    return
                 stop.clear()
+                worker = start_worker()
                 process = context.Process(target=serve, args=(args.port, stop))
                 process.start()
+                process_closed = False
                 print("dev.reloaded", flush=True)
     finally:
-        stop_server(process, stop)
-        process.close()
+        try:
+            if not process_closed:
+                stop_server(process, stop)
+                process.close()
+        finally:
+            stop_worker()
     print("dev.stopped", flush=True)
 
 

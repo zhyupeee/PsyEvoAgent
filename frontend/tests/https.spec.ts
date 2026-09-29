@@ -11,13 +11,17 @@ test('configured HTTPS origin, secure cookie, icons and rejected alternate origi
       : route.abort('blockedbyclient'),
   )
   await register(page, `browser-https-${Date.now()}@example.com`)
-  await expect(page.getByRole('heading', { name: '欢迎回来。' })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: '对话', exact: true }),
+  ).toBeVisible()
   expect(page.url()).toMatch(/^https:/)
   expect(
     (await context.cookies()).find((c) => c.name === 'psyevo_session')?.secure,
   ).toBe(true)
   await page.reload()
-  await expect(page.getByRole('heading', { name: '欢迎回来。' })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: '对话', exact: true }),
+  ).toBeVisible()
   expect((await context.request.get('/favicon.ico')).status()).toBe(200)
   expect((await context.request.get('/brand/icon-180.png')).status()).toBe(200)
   const result = await context.request.post('/api/v1/auth/registration-codes', {
@@ -25,7 +29,7 @@ test('configured HTTPS origin, secure cookie, icons and rejected alternate origi
     data: { email: 'must-not-exist@example.com' },
   })
   expect(result.status()).toBe(403)
-  await page.goto('/me')
+  await page.goto('/me?section=security')
   await page.getByRole('button', { name: '退出账号' }).click()
   await expect(page).toHaveURL('/login')
 })

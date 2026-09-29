@@ -39,7 +39,7 @@ export function notifyPrivateChange(
   channel.close()
 }
 
-export function SessionList() {
+export function SessionList({ onSelect }: { onSelect?: () => void } = {}) {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('active')
   const [cursor, setCursor] = useState<string | null>(null)
@@ -64,13 +64,20 @@ export function SessionList() {
         z.object({
           items: z.array(sessionSchema),
           next_cursor: z.string().nullable(),
+          has_pending_titles: z.boolean(),
         }),
         { signal },
       ),
+    refetchInterval: (query) =>
+      !query.state.error &&
+      query.state.dataUpdateCount < 180 &&
+      query.state.data?.has_pending_titles
+        ? 2000
+        : false,
   })
   return (
-    <details className="history-panel" open>
-      <summary>我的对话</summary>
+    <section className="session-browser" aria-label="我的对话">
+      <h2>我的对话</h2>
       <form
         className="flex flex-wrap items-end gap-3"
         onSubmit={(e) => {
@@ -119,7 +126,12 @@ export function SessionList() {
         {!list.isError
           ? list.data?.items.map((item) => (
               <li key={item.id}>
-                <Link to="/chat/$sessionId" params={{ sessionId: item.id }}>
+                <Link
+                  to="/chat/$sessionId"
+                  params={{ sessionId: item.id }}
+                  onClick={onSelect}
+                  activeProps={{ 'aria-current': 'page' }}
+                >
                   {preferences.data?.display_preferences.hide_titles
                     ? '对话'
                     : item.title}
@@ -139,7 +151,7 @@ export function SessionList() {
           下一批对话
         </button>
       ) : null}
-    </details>
+    </section>
   )
 }
 
@@ -151,6 +163,7 @@ const deletionSchema = z.object({
   completed_steps: z.array(z.string()),
   remaining_steps: z.array(z.string()),
   retryable: z.boolean(),
+  external_provider_status: z.enum(['unknown', 'not_applicable']),
 })
 export function DeletionReceipts({ csrf }: { csrf: string }) {
   const client = useQueryClient()
@@ -199,6 +212,11 @@ export function DeletionReceipts({ csrf }: { csrf: string }) {
                   : '已阻断访问，清理尚未完成'}
               </p>
               <p className="text-sm">回执：{job.deletion_id}</p>
+              {job.external_provider_status === 'unknown' ? (
+                <p>
+                  模型服务商的数据保留及删除状态未知，本回执仅确认本应用在线清理。
+                </p>
+              ) : null}
               <p>
                 已处理：
                 {job.completed_steps
@@ -245,6 +263,7 @@ export function SessionActions({
   const client = useQueryClient()
   const dialog = useRef<HTMLDialogElement>(null)
   const deletionKey = useRef(crypto.randomUUID())
+  const renameRevision = useRef<number | null>(null)
   const rename = useForm({
     defaultValues: { title: session.title },
     onSubmit: async ({ value }) => {
@@ -260,7 +279,11 @@ export function SessionActions({
       const body = {
         ...patch,
         ...(patch.title !== undefined
-          ? { title: z.string().trim().min(1).max(120).parse(patch.title) }
+          ? {
+              title: z.string().trim().min(1).max(120).parse(patch.title),
+              expected_title_revision:
+                renameRevision.current ?? session.title_revision,
+            }
           : {}),
         expected_version: session.version,
       }
@@ -270,7 +293,13 @@ export function SessionActions({
         body,
       })
       await client.invalidateQueries()
+      renameRevision.current = null
+      rename.reset()
       notifyPrivateChange({ type: 'session-updated', sessionId: session.id })
+    },
+    onError: async () => {
+      await client.invalidateQueries({ queryKey: ['session', session.id] })
+      renameRevision.current = null
     },
   })
   const remove = useMutation({
@@ -306,7 +335,10 @@ export function SessionActions({
                 <input
                   maxLength={120}
                   value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
+                  onChange={(e) => {
+                    renameRevision.current ??= session.title_revision
+                    field.handleChange(e.target.value)
+                  }}
                 />
               </label>
             )}
@@ -343,10 +375,10 @@ export function SessionActions({
         <p>
           将立即停止相关运行并阻断访问，清理消息、历史分支、事件及关联反馈。删除后无法恢复。
         </p>
-        <p>完成情况可在“删除处理记录”中查询。</p>
+        <p>完成情况可在“设置 → 数据管理 → 删除处理记录”中查询。</p>
         {remove.isError ? (
           <p role="alert">
-            删除状态尚未确认。请重试原请求，或返回对话列表查询删除处理记录。
+            删除状态尚未确认。请重试原请求，或在设置的数据管理中查询删除处理记录。
           </p>
         ) : null}
         <div className="flex flex-wrap gap-3">
@@ -379,11 +411,14 @@ export function TurnHistory({
 }) {
   const [cursor, setCursor] = useState<string | null>(null)
   const history = useQuery({
-    queryKey: ['history', sessionId, currentId, cursor],
+    queryKey: ['history', sessionId, 'old-versions', currentId, cursor],
     queryFn: ({ signal }) =>
       request(
         `/sessions/${sessionId}/history?` +
-          new URLSearchParams(cursor ? { cursor } : {}),
+          new URLSearchParams({
+            old_only: 'true',
+            ...(cursor ? { cursor } : {}),
+          }),
         z.object({
           items: z.array(runSchema),
           next_cursor: z.string().nullable(),
@@ -391,37 +426,41 @@ export function TurnHistory({
         { signal },
       ),
   })
+  if (!cursor && !history.data?.items.length && !history.data?.next_cursor)
+    return null
   return (
-    <details className="history-panel">
-      <summary>历史轮次与旧分支</summary>
-      {history.isError ? (
-        <p role="alert">
-          历史暂不可用。
-          <button onClick={() => void history.refetch()}>重试历史</button>
-        </p>
-      ) : null}
-      {!history.isError
-        ? history.data?.items
-            .filter((item) => item.run_id !== currentId)
-            .map((item) => (
-              <article className="history-turn" key={item.run_id}>
-                <p className="text-sm text-muted">
-                  {item.is_current ? '历史轮次' : '旧分支 · 不用于当前回答'} ·
-                  输入版本 {item.input_version ?? '—'}
-                </p>
-                <p className="whitespace-pre-wrap">{item.input_text}</p>
-                <p className="whitespace-pre-wrap">{item.output?.text}</p>
-              </article>
-            ))
-        : null}
-      {cursor ? (
-        <button onClick={() => setCursor(null)}>最新历史</button>
-      ) : null}
-      {history.data?.next_cursor ? (
-        <button onClick={() => setCursor(history.data!.next_cursor)}>
-          更早历史
-        </button>
-      ) : null}
+    <details className="history-panel old-versions-menu">
+      <summary>查看旧版本</summary>
+      <div className="old-versions-content">
+        {history.isError ? (
+          <p role="alert">
+            历史暂不可用。
+            <button onClick={() => void history.refetch()}>重试历史</button>
+          </p>
+        ) : null}
+        {!history.isError
+          ? history.data?.items
+              .filter((item) => item.is_current === false)
+              .map((item) => (
+                <article className="history-turn" key={item.run_id}>
+                  <p className="text-sm text-muted">
+                    旧分支 · 不用于当前回答 · 输入版本{' '}
+                    {item.input_version ?? '—'}
+                  </p>
+                  <p className="whitespace-pre-wrap">{item.input_text}</p>
+                  <p className="whitespace-pre-wrap">{item.output?.text}</p>
+                </article>
+              ))
+          : null}
+        {cursor ? (
+          <button onClick={() => setCursor(null)}>最新历史</button>
+        ) : null}
+        {history.data?.next_cursor ? (
+          <button onClick={() => setCursor(history.data!.next_cursor)}>
+            更早历史
+          </button>
+        ) : null}
+      </div>
     </details>
   )
 }
@@ -640,8 +679,12 @@ export function BranchActions({
         })
       }
       pending.current = null
+    },
+    onSettled: async () => {
+      // A revision draft may have persisted even when its start acknowledgement failed.
       await client.invalidateQueries({ queryKey: ['current-run', sessionId] })
       await client.invalidateQueries({ queryKey: ['history', sessionId] })
+      await client.invalidateQueries({ queryKey: ['timeline', sessionId] })
       notifyPrivateChange({ type: 'session-updated', sessionId })
     },
   })
@@ -654,7 +697,7 @@ export function BranchActions({
     },
   })
   return (
-    <section className="branch-actions" aria-label="输入修订">
+    <div className="branch-actions">
       {run.status === 'draft' ? (
         <button
           disabled={mutate.isPending}
@@ -665,10 +708,12 @@ export function BranchActions({
       ) : (
         <>
           <button
+            className="regenerate-button"
             disabled={mutate.isPending}
             onClick={() => mutate.mutate({ kind: 'regenerate' })}
           >
-            重新生成
+            <span aria-hidden="true">↻ </span>
+            {mutate.isPending ? '正在提交…' : '重新生成'}
           </button>
           <details>
             <summary>修订最后输入</summary>
@@ -701,9 +746,9 @@ export function BranchActions({
       )}
       {mutate.isError ? (
         <p role="alert">
-          操作未确认，保留原输入。请重试原操作或查询运行状态；活动运行不能修订。
+          操作未确认，保留原输入。请重试原操作；活动运行不能修订。
         </p>
       ) : null}
-    </section>
+    </div>
   )
 }

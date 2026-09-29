@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-test('session service failure stays on home and retry restores login', async ({
+test('session service failure stays on chat and retry restores login', async ({
   page,
 }) => {
   let unavailable = true
@@ -17,9 +17,9 @@ test('session service failure stays on home and retry restores login', async ({
   )
   await page.goto('/')
   await expect(page.getByRole('alert')).toHaveText(
-    '服务暂时不可用，请稍后重试。',
+    '无法确认登录状态，内容已隐藏。',
   )
-  await expect(page).toHaveURL('/')
+  await expect(page).toHaveURL('/chat')
   await expect(page.getByText('欢迎回来。')).toHaveCount(0)
   unavailable = false
   await page.getByRole('button', { name: '重试', exact: true }).click()

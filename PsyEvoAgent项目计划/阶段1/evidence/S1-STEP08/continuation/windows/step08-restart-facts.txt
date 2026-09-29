@@ -1,0 +1,1 @@
+Live restart checks passed; external retention remains unknown

@@ -68,7 +68,17 @@ test('email register, refresh, account change revokes sessions and logout', asyn
   page.on('pageerror', (error) => errors.push(error.message))
   const email = `browser-${Date.now()}@example.com`
   await register(page, email)
-  await expect(page.getByText(`当前账号：${email}`)).toBeVisible()
+  await expect(page).toHaveURL('/chat')
+  expect(
+    await page.evaluate(
+      async () =>
+        (
+          await (
+            await fetch('/api/v1/auth/session', { credentials: 'same-origin' })
+          ).json()
+        ).email,
+    ),
+  ).toBe(email)
   await expect(page.locator('body')).not.toContainText(
     /年龄|同意|撤回|用途确认/,
   )
@@ -80,9 +90,20 @@ test('email register, refresh, account change revokes sessions and logout', asyn
     cookie?.secure && cookie.httpOnly && cookie.sameSite === 'Strict',
   ).toBe(true)
   await page.reload()
-  await expect(page.getByText(`当前账号：${email}`)).toBeVisible()
+  await expect(page).toHaveURL('/chat')
+  expect(
+    await page.evaluate(
+      async () =>
+        (
+          await (
+            await fetch('/api/v1/auth/session', { credentials: 'same-origin' })
+          ).json()
+        ).email,
+    ),
+  ).toBe(email)
   await page.goto('/me/privacy')
-  await expect(page).toHaveURL('/me')
+  await expect(page).toHaveURL(/\/me(?:\?section=preferences)?$/)
+  await page.getByRole('link', { name: '账号安全', exact: true }).click()
   await page.getByLabel('当前密码').fill('incorrect')
   await page.getByLabel('新密码', { exact: true }).fill('changed-password')
   await page.getByLabel('确认新密码').fill('changed-password')
@@ -97,8 +118,8 @@ test('email register, refresh, account change revokes sessions and logout', asyn
   await expect(page.getByRole('alert')).toHaveText('邮箱或密码不正确。')
   await page.getByLabel('密码', { exact: true }).fill('changed-password')
   await page.getByRole('button', { name: '登录', exact: true }).click()
-  await expect(page).toHaveURL('/')
-  await page.goto('/me')
+  await expect(page).toHaveURL('/chat')
+  await page.goto('/me?section=security')
   await expect(page.getByRole('heading', { name: '我的账号' })).toBeVisible()
   await page.screenshot({
     path: '../.artifacts/step035-account-desktop.png',
@@ -136,7 +157,7 @@ test('forgot password and mobile keyboard recovery', async ({
   await page.getByLabel('邮箱', { exact: true }).fill('browser-b@example.com')
   await page.getByLabel('密码', { exact: true }).fill('reset-browser-password')
   await page.getByRole('button', { name: '登录', exact: true }).click()
-  await expect(page).toHaveURL('/')
+  await expect(page).toHaveURL('/chat')
   await page.context().clearCookies()
   await page.goto('/register')
   await page.getByLabel('邮箱', { exact: true }).focus()
@@ -170,7 +191,7 @@ test('forgot password and mobile keyboard recovery', async ({
   })
   await page.unroute('**/api/v1/auth/register')
   await page.getByRole('button', { name: '注册并进入' }).click()
-  await expect(page).toHaveURL('/')
+  await expect(page).toHaveURL('/chat')
   await page.context().clearCookies()
   await page.reload()
   await expect(page).toHaveURL('/login')
@@ -222,7 +243,7 @@ test('brand and browser icon resources on all entry pages', async ({
     .getByLabel('密码', { exact: true })
     .fill('synthetic-admin-password')
   await page.getByRole('button', { name: '登录', exact: true }).click()
-  await expect(page).toHaveURL('/')
+  await expect(page).toHaveURL('/chat')
   for (const route of ['/', '/me']) {
     await page.goto(route)
     await expect(

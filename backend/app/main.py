@@ -1,5 +1,6 @@
 """API factory: importing this module creates neither clients nor consumers."""
 
+import asyncio
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -20,6 +21,7 @@ from app.database import make_engine
 from app.deletion import router as deletion_router
 from app.history import router as history_router
 from app.mail import Mailer, SMTPMailer
+from app.model_settings_api import router as model_settings_router
 from app.models import opaque_id
 from app.pages import router as pages_router
 from app.run_stream import Connections
@@ -42,10 +44,30 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.engine = (
         make_engine(settings.database_url.get_secret_value()) if settings.database_url else None
     )
+    config_task: asyncio.Task[None] | None = None
+    if (
+        settings.environment == "development"
+        and settings.support_mode == "live"
+        and settings.provider_config_file
+    ):
+        from app.provider_config import official_settings
+
+        async def refresh_config() -> None:
+            while True:
+                try:
+                    await asyncio.to_thread(official_settings, settings)
+                except ValueError:
+                    pass  # A malformed save keeps the last valid in-memory configuration.
+                await asyncio.sleep(0.5)
+
+        config_task = asyncio.create_task(refresh_config())
     logger.info("api.started")
     try:
         yield
     finally:
+        if config_task is not None:
+            config_task.cancel()
+            await asyncio.gather(config_task, return_exceptions=True)
         if app.state.engine is not None:
             app.state.engine.dispose()
         logger.info("api.stopped")
@@ -57,6 +79,7 @@ def create_app(settings: Settings | None = None, mailer: Mailer | None = None) -
     application.state.engine = None
     application.state.mailer = mailer or SMTPMailer(application.state.settings)
     application.include_router(router)
+    application.include_router(model_settings_router)
     application.include_router(runs_router)
     application.include_router(stream_router)
     application.include_router(pages_router)

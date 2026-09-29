@@ -1,8 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { AccountPage } from '../account-page'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
-  ssr: false,
-  head: () => ({ meta: [{ title: '首页 · PsyEvoAgent' }] }),
-  component: () => <AccountPage page="home" />,
+  beforeLoad: () => {
+    throw redirect({ to: '/chat', replace: true })
+  },
 })

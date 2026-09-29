@@ -1,0 +1,8 @@
+{
+  "run_id": "4312c2fb-e45a-4f6f-bb35-bdd092b23dcd",
+  "cancelled_run_id": "10260517-093c-43b1-bb2e-914932444f36",
+  "session_id": "2ef4185f-95e7-4842-bfed-f03b9aa1bcf1",
+  "delta_count": 1,
+  "sse_snapshot_dom_equal": true,
+  "refreshed_call_count": 1
+}

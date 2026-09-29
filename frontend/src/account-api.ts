@@ -3,7 +3,7 @@ import { z } from 'zod'
 export class RequestError extends Error {
   constructor(
     public readonly status: number,
-    code?: string,
+    public readonly code?: string,
   ) {
     super(
       code === 'invalid_email_code'

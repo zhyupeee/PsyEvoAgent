@@ -1,0 +1,5 @@
+warning: in the working copy of 'DEVELOPMENT.md', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'PsyEvoAgent项目计划/阶段1/04-分步实施与检查清单.md', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/app/history.py', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'frontend/src/style.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'scripts/check_step03.py', CRLF will be replaced by LF the next time Git touches it

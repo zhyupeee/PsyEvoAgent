@@ -1,8 +1,24 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { AccountPage } from '../account-page'
+import { z } from 'zod'
+import { SettingsPage } from '../account-page'
+import { SupportPage } from '../support-shell'
 
 export const Route = createFileRoute('/me')({
   ssr: false,
-  head: () => ({ meta: [{ title: '我的账号 · PsyEvoAgent' }] }),
-  component: () => <AccountPage page="me" />,
+  validateSearch: z.object({
+    section: z
+      .enum(['preferences', 'models', 'security', 'data'])
+      .catch('preferences'),
+  }),
+  head: () => ({ meta: [{ title: '设置 · PsyEvoAgent' }] }),
+  component: Page,
 })
+
+function Page() {
+  const { section } = Route.useSearch()
+  return (
+    <SupportPage>
+      <SettingsPage section={section} />
+    </SupportPage>
+  )
+}

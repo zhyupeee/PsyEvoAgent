@@ -15,9 +15,12 @@ from app.models import (
     Feedback,
     Interaction,
     Message,
+    ModelCall,
+    ProviderBinding,
     Run,
     RunBranch,
     RunEvent,
+    TitleTask,
     now,
 )
 from app.runs import execution, lock_owner, terminal
@@ -26,8 +29,18 @@ router = APIRouter(prefix="/api/v1")
 STEPS = ["online_blocked", "messages", "events", "feedback", "source_links"]
 
 
-def receipt(job: DeletionJob) -> dict[str, Any]:
-    return {
+def receipt(job: DeletionJob, db: Session) -> dict[str, Any]:
+    # Persisted call reservations survive deletion and process/configuration changes.
+    calls = db.scalars(
+        select(ModelCall)
+        .join(Run, Run.id == ModelCall.run_id)
+        .where(
+            Run.owner_id == job.owner_id,
+            Run.id.in_([run.id for run in affected_runs(db, job.target)]),
+        )
+    ).all()
+    external = any(call.receipt.get("currency") != "SYNTHETIC" for call in calls)
+    result: dict[str, Any] = {
         "deletion_id": job.id,
         "target": job.target,
         "version": job.version,
@@ -39,10 +52,13 @@ def receipt(job: DeletionJob) -> dict[str, Any]:
         "not_applicable": {
             "checkpoints": "No persistent checkpointer configured",
             "backups": "No application backup service configured",
-            "external_provider": "Live provider disabled",
         },
         "retained": ["content-free tombstones", "idempotency hashes", "model usage metadata"],
+        "external_provider_status": "unknown" if external else "not_applicable",
     }
+    if not external:
+        result["not_applicable"]["external_provider"] = "No live call recorded"
+    return result
 
 
 def affected_runs(db: Session, target: str) -> list[Run]:
@@ -62,6 +78,9 @@ def purge_step(db: Session, job: DeletionJob, step: str) -> None:
     runs = affected_runs(db, job.target)
     ids = [run.id for run in runs]
     if step == "messages":
+        for binding in db.scalars(select(ProviderBinding).where(ProviderBinding.run_id.in_(ids))):
+            binding.encrypted_config = None
+        db.execute(delete(TitleTask).where(TitleTask.session_id == job.target))
         for message in db.scalars(select(Message).where(Message.run_id.in_(ids))):
             message.content, message.deleted_at = "", now()
             message.source_refs, message.consent_refs = [], []
@@ -105,7 +124,7 @@ def cleanup(request: Request, job_id: str, owner: str) -> dict[str, Any]:
             except Exception:
                 job.status, job.error_code = "failed_retryable", "cleanup_" + step
                 bump(job, job.version)
-                result = receipt(job)
+                result = receipt(job, db)
                 return result
             job.completed_steps = [*job.completed_steps, step]
             job.status, job.error_code = "derivatives_purged", None
@@ -116,7 +135,7 @@ def cleanup(request: Request, job_id: str, owner: str) -> dict[str, Any]:
         if job.status != "completed":
             job.status, job.error_code = "completed", None
             bump(job, job.version)
-        return receipt(job)
+        return receipt(job, db)
 
 
 class DeleteSession(Version):
@@ -131,6 +150,8 @@ def remove(
         source = owned(db, Conversation, session_id, auth.owner_id)
         bump(source, body.expected_version)
         source.deleted_at, source.status = now(), "deleted"
+        source.title_generation_status = "cancelled"
+        source.title_revision += 1
         for run in affected_runs(db, source.id):
             terminal(db, run, execution(db, run), "cancelled", "source_deleted")
             run.deleted_at = now()
@@ -151,14 +172,14 @@ def remove(
 
 @router.get("/deletion-jobs/{job_id}")
 def get_job(job_id: str, db: DB, auth: Auth) -> dict[str, Any]:
-    return receipt(owned(db, DeletionJob, job_id, auth.owner_id))
+    return receipt(owned(db, DeletionJob, job_id, auth.owner_id), db)
 
 
 @router.get("/deletion-jobs")
 def jobs(db: DB, auth: Auth) -> dict[str, Any]:
     return {
         "items": [
-            receipt(job)
+            receipt(job, db)
             for job in db.scalars(
                 select(DeletionJob)
                 .where(DeletionJob.owner_id == auth.owner_id)
@@ -173,7 +194,7 @@ def jobs(db: DB, auth: Auth) -> dict[str, Any]:
 def retry(job_id: str, body: Version, request: Request, db: DB, auth: Auth) -> dict[str, Any]:
     job = owned(db, DeletionJob, job_id, auth.owner_id)
     if job.status == "completed":
-        return receipt(job)
+        return receipt(job, db)
     if job.version != body.expected_version:
         raise APIError(409, "version_conflict")
     owner = auth.owner_id

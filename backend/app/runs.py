@@ -136,6 +136,10 @@ def sources_available(db: Session, run: Run, ex: RunExecution | None) -> bool:
 
 
 def executable(db: Session, run: Run, ex: RunExecution) -> bool:
+    from app.provider_settings import available
+
+    if not available(db, run.owner_id, run.id):
+        return False
     auth = db.get(IdentitySession, ex.identity_id)
     user = db.get(User, run.owner_id)
     return bool(
@@ -210,7 +214,11 @@ def snapshot(db: Session, run: Run) -> dict[str, Any]:
             Message.run_id == run.id, Message.role == "assistant", Message.deleted_at.is_(None)
         )
     )
-    calls = db.scalars(select(ModelCall).where(ModelCall.run_id == run.id)).all()
+    calls = db.scalars(
+        select(ModelCall).where(
+            ModelCall.run_id == run.id, ModelCall.receipt["role"].astext == "support"
+        )
+    ).all()
     unknown = any(call.receipt.get("actual_tokens") is None for call in calls)
     used = sum(
         int(
@@ -247,8 +255,16 @@ def start_run(
         if not sources_available(db, run, ex):
             raise APIError(404, "not_found")
         return run
-    if request.app.state.settings.support_mode != "fake":
+    from app.provider_settings import for_owner
+
+    try:
+        settings = for_owner(db, request.app.state.settings, identity.owner_id)
+    except ValueError:
+        raise APIError(503, "provider_configuration_unavailable") from None
+    if settings.support_mode not in {"fake", "live"}:
         raise APIError(503, "provider_not_configured")
+    if settings.support_mode == "live" and not settings.provider_ready:
+        raise APIError(503, "provider_configuration_unavailable")
     if run.status != "draft" or run.version != body.expected_version:
         raise APIError(409, "version_conflict")
     source = owned(db, Conversation, run.session_id, identity.owner_id)
@@ -291,16 +307,33 @@ def start_run(
                 ]
             )
         )
+    live = settings.support_mode == "live"
+    budget = (
+        Budget(
+            max_calls=1,
+            max_tokens=32768,
+            max_cost=None,
+            max_output_tokens=settings.provider_max_output_tokens,
+            deadline_seconds=settings.provider_deadline_seconds,
+        )
+        if live
+        else Budget()
+    )
+    versions = (
+        VersionBinding(model_ref=settings.provider_model, provider_ref=settings.provider_base_url)
+        if live
+        else VersionBinding()
+    )
     ex = RunExecution(
         owner_id=run.owner_id,
         run_id=run.id,
         identity_id=identity.id,
         request_hash=fingerprint,
         grant_ids=grant_ids,
-        versions=VersionBinding().model_dump(),
-        budget=Budget().model_dump(mode="json"),
+        versions=versions.model_dump(),
+        budget=budget.model_dump(mode="json"),
         preference=pref.mode if pref else "listen",
-        deadline_at=now() + timedelta(seconds=10),
+        deadline_at=now() + timedelta(seconds=budget.deadline_seconds),
     )
     if len(grant_ids) > 8:
         raise APIError(422, "too_many_grants")
@@ -324,6 +357,10 @@ def start_run(
         )
         db.add(original)
     db.add(ex)
+    if live:
+        from app.provider_settings import freeze
+
+        freeze(db, settings, run.owner_id, run.id)
     run.status, run.version, run.source_message_version = (
         "queued",
         run.version + 1,

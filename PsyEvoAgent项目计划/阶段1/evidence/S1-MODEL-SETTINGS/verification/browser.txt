@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:46548) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests\model-settings.spec.ts:4:1 › account model settings persist, hide keys, switch modes and revoke (13.2s)
+
+  1 passed (15.7s)

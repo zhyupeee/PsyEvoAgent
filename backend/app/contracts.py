@@ -83,6 +83,7 @@ class SessionCreate(Input):
 
 
 class SessionChange(Version):
+    expected_title_revision: int | None = Field(default=None, gt=0, strict=True)
     title: str | None = Field(default=None, min_length=1, max_length=120, pattern=r"^[^\x00]*$")
     status: Literal["active", "archived"] | None = None
 

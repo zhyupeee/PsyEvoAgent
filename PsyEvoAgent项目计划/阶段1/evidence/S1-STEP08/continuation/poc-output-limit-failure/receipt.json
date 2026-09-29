@@ -1,0 +1,112 @@
+{
+  "step_id": "S1-STEP08.1",
+  "execution_kind": "live-internal-stream-poc",
+  "started": "2026-09-27T14:02:22.405873+00:00",
+  "status": "failed",
+  "credential_reference": "PSYEVO_PROVIDER_API_KEY",
+  "packages": {
+    "langchain-openai": "1.6.6",
+    "openai": "3.19.2",
+    "langchain-core": "1.6.4",
+    "langgraph": "1.2.12"
+  },
+  "limitations": [
+    "Synthetic fixed input only; no database, webpage or public stream validation",
+    "Finite output rules do not establish semantic safety or professional review",
+    "Price, data region, retention and remote cancellation remain unknown"
+  ],
+  "profile": {
+    "provider": "hybgzs-compatible",
+    "model_ref": "grok-4.7",
+    "base_url": "https://ai.hybgzs.com/v1",
+    "adapter_version": "1.6.6",
+    "parameters": [
+      [
+        "sdk_retries",
+        "0"
+      ]
+    ],
+    "allowed_tasks": [
+      "support"
+    ],
+    "region": "unknown",
+    "retention": "unknown",
+    "price_version": "unknown",
+    "currency": "unknown",
+    "structured_method": "json-text+pydantic"
+  },
+  "budget": {
+    "max_calls": 1,
+    "reserved_token_envelope": 8192,
+    "max_output_tokens": 1024,
+    "deadline_seconds": 60.0,
+    "cost_limit": null,
+    "cost_status": "unknown",
+    "tokenizer_status": "unknown; entire envelope reserved, not an estimate"
+  },
+  "run_id": "eefc82e2-c278-4a66-adf8-27025ba23cde",
+  "versions": {
+    "policy_version": "support-policy/1",
+    "assessor_version": "disabled",
+    "evaluator_version": "behavior-rules/1",
+    "graph_version": "support-graph/1",
+    "model_ref": "grok-4.7",
+    "schema_version": "support-runtime/1",
+    "experiment_config_version": "experiment-defaults/1"
+  },
+  "ledger": [
+    {
+      "run_id": "eefc82e2-c278-4a66-adf8-27025ba23cde",
+      "request_id": "729fcfbb-33fc-45bd-a913-2db94e4cdf9d",
+      "attempt": 1,
+      "model_ref": "grok-4.7",
+      "versions": {
+        "policy_version": "support-policy/1",
+        "assessor_version": "disabled",
+        "evaluator_version": "behavior-rules/1",
+        "graph_version": "support-graph/1",
+        "model_ref": "grok-4.7",
+        "schema_version": "support-runtime/1",
+        "experiment_config_version": "experiment-defaults/1"
+      },
+      "reserved_tokens": 8192,
+      "reserved_cost": null,
+      "role": "support",
+      "price_version": "unknown",
+      "currency": "unknown",
+      "actual_tokens": 3846,
+      "actual_cost": null,
+      "usage_source": "provider_reported",
+      "status": "usage_over_reservation",
+      "elapsed_ms": 10766
+    }
+  ],
+  "stream": {
+    "chunks": 88,
+    "first_chunk_ms": 4297,
+    "finished": true,
+    "locally_closed": true
+  },
+  "rule_verdict": "error",
+  "stop_reason": "usage_over_reservation",
+  "capabilities": {
+    "text": "unknown",
+    "json_text_schema": "unknown",
+    "internal_stream": "unknown",
+    "usage": "unknown",
+    "public_chunks": "unsupported",
+    "remote_cancellation": "unknown",
+    "refusal": "unknown",
+    "tool_structured_combination": "unknown",
+    "semantic_safety": "unknown"
+  },
+  "ended": "2026-09-27T14:02:33.244004+00:00",
+  "source_sha256": {
+    "backend/app/provider.py": "349cc1597c71a21fa3ce0ef68ba12914f58d801c9337b7a89e318978c8281b8d",
+    "backend/app/provider_probe.py": "e1035869333644da3c0d11b8d2cc4bb95ca8784e804e1c0cf4dfc18e81a59bcb",
+    "backend/app/support.py": "df96fffc2d64b059712e5de59fc17a3e88f7b9b33385943967c17337d8275810",
+    "backend/app/config.py": "7887eefde83e8191ecb59fd2c663feddfda6da02e1e9e02005df74bb04ab8cae",
+    "backend/pyproject.toml": "63cfcc8cf0caa6985d027190807b3ff93551b658a7bba8abd695ff22755966e9",
+    "backend/uv.lock": "fb033c12b3e5a80340b808982d6ff46dfa6819cdca602d0db2a7c9739767993c"
+  }
+}

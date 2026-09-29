@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
     DateTime,
     ForeignKey,
@@ -105,6 +106,31 @@ class Preferences(Personal, Base):
     display_preferences: Mapped[dict[str, str | bool]] = mapped_column(JSONB, default=dict)
 
 
+class ProviderSettings(Personal, Base):
+    __tablename__ = "provider_settings"
+    __table_args__ = (
+        UniqueConstraint("owner_id"),
+        CheckConstraint("mode IN ('official','custom')"),
+        CheckConstraint("version > 0"),
+    )
+    mode: Mapped[str] = mapped_column(String(12), default="official", server_default="official")
+    base_url: Mapped[str | None] = mapped_column(String(500))
+    model: Mapped[str | None] = mapped_column(String(200))
+    encrypted_api_key: Mapped[str | None] = mapped_column(Text)
+    deadline_seconds: Mapped[float] = mapped_column(default=60)
+    max_output_tokens: Mapped[int] = mapped_column(Integer, default=4096)
+
+
+class ProviderBinding(Base):
+    """Private per-run credential snapshot, never included in public run DTOs."""
+
+    __tablename__ = "provider_bindings"
+    run_id: Mapped[str] = mapped_column(ForeignKey("runs.id"), primary_key=True)
+    owner_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    custom: Mapped[bool] = mapped_column(Boolean)
+    encrypted_config: Mapped[str | None] = mapped_column(Text)
+
+
 class Consent(Personal, Base):
     __tablename__ = "consent_records"
     __table_args__ = (
@@ -132,6 +158,13 @@ class Conversation(Personal, Base):
         CheckConstraint("version > 0"),
     )
     title: Mapped[str] = mapped_column(String(120), default="新的对话")
+    title_source: Mapped[str] = mapped_column(
+        String(12), default="default", server_default="default"
+    )
+    title_revision: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
+    title_generation_status: Mapped[str] = mapped_column(
+        String(20), default="not_requested", server_default="not_requested"
+    )
     status: Mapped[str] = mapped_column(String(20), default="active")
 
 
@@ -255,6 +288,23 @@ class RunEvent(Base):
     run_id: Mapped[str] = mapped_column(ForeignKey("runs.id"), primary_key=True)
     event_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     envelope: Mapped[dict[str, object]] = mapped_column(JSONB)
+
+
+class TitleTask(Base):
+    __tablename__ = "title_tasks"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["session_id", "owner_id"], ["conversations.id", "conversations.owner_id"]
+        ),
+        ForeignKeyConstraint(["run_id", "owner_id"], ["runs.id", "runs.owner_id"]),
+    )
+    session_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    owner_id: Mapped[str] = mapped_column(String(36))
+    run_id: Mapped[str] = mapped_column(String(36))
+    title_revision: Mapped[int] = mapped_column(Integer)
+    message_versions: Mapped[dict[str, int]] = mapped_column(JSONB)
+    profile: Mapped[dict[str, str]] = mapped_column(JSONB)
+    deadline_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 
 class ModelCall(Base):

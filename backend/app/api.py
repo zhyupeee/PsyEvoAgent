@@ -155,7 +155,14 @@ def resource(row: Personal) -> dict[str, Any]:
             revoked_at=None if row.revoked_at is None else row.revoked_at.isoformat(),
         )
     elif isinstance(row, Conversation):
-        result.update(session_id=row.id, title=row.title, status=row.status)
+        result.update(
+            session_id=row.id,
+            title=row.title,
+            status=row.status,
+            title_source=row.title_source,
+            title_revision=row.title_revision,
+            title_generation_status=row.title_generation_status,
+        )
     elif isinstance(row, Run):
         result.update(
             run_id=row.id,
@@ -532,7 +539,11 @@ def create_session(body: SessionCreate, request: Request, db: DB, auth: Auth) ->
             auth,
             Conversation,
             body.model_dump(),
-            lambda: Conversation(owner_id=auth.owner_id, title=body.title),
+            lambda: Conversation(
+                owner_id=auth.owner_id,
+                title=body.title,
+                title_source="manual" if "title" in body.model_fields_set else "default",
+            ),
         )
     )
 
@@ -551,9 +562,16 @@ def change_session(resource_id: str, body: SessionChange, db: DB, auth: Auth) ->
     if any(run.status in {"queued", "running"} and not run.deleted_at for run in affected):
         raise APIError(409, "run_active")
     old_version = row.version
+    if body.title is not None and body.expected_title_revision is not None:
+        if row.title_revision != body.expected_title_revision:
+            raise APIError(409, "title_version_conflict")
     bump(row, body.expected_version)
     if body.title is not None:
         row.title = body.title.strip()
+        row.title_source = "manual"
+        row.title_revision += 1
+        if row.title_generation_status in {"queued", "running"}:
+            row.title_generation_status = "cancelled"
     if body.status is not None:
         row.status = body.status
     # Metadata-only edits preserve valid own historical snapshots, never stale sources.

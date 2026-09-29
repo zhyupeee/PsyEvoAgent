@@ -6,7 +6,7 @@ from ipaddress import IPv6Address
 from typing import Literal
 from urllib.parse import urlsplit
 
-from pydantic import BaseModel, ConfigDict, SecretStr, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator, model_validator
 from sqlalchemy.engine import make_url
 
 
@@ -23,7 +23,44 @@ class Settings(BaseModel):
     smtp_password: SecretStr | None = None
     smtp_tls_mode: Literal["starttls", "ssl"] | None = None
     email_code_key: SecretStr | None = None
-    support_mode: Literal["disabled", "fake"] = "disabled"
+    support_mode: Literal["disabled", "fake", "live"] = "disabled"
+    # STEP08 internal PoC only; this does not enable the API or Worker.
+    live_probe_enabled: bool = False
+    provider_base_url: str = "https://ai.hybgzs.com/v1"
+    provider_model: str = "grok-4.7"
+    provider_api_key: SecretStr | None = None
+    provider_encryption_key: SecretStr | None = None
+    provider_config_file: str | None = None
+    provider_custom_endpoint: bool = False
+    provider_deadline_seconds: float = Field(default=60, gt=0, le=120, allow_inf_nan=False)
+    provider_max_output_tokens: int = Field(default=1024, ge=1, le=4096, strict=True)
+
+    @property
+    def provider_ready(self) -> bool:
+        return bool(self.provider_api_key and self.provider_api_key.get_secret_value().strip())
+
+    @field_validator("provider_base_url")
+    @classmethod
+    def provider_https(cls, value: str) -> str:
+        url = urlsplit(value)
+        if (
+            url.scheme != "https"
+            or not url.hostname
+            or url.username is not None
+            or url.password is not None
+            or url.query
+            or url.fragment
+            or any(c.isspace() for c in value)
+        ):
+            raise ValueError("Provider requires an HTTPS base URL without credentials or query")
+        return value.rstrip("/")
+
+    @field_validator("provider_model")
+    @classmethod
+    def provider_model_id(cls, value: str) -> str:
+        if not value.strip() or len(value) > 200 or any(c.isspace() for c in value):
+            raise ValueError("An exact model ID is required")
+        return value
 
     @property
     def email_ready(self) -> bool:
@@ -78,6 +115,18 @@ class Settings(BaseModel):
 
     @model_validator(mode="after")
     def isolated_test_database(self) -> "Settings":
+        if self.environment == "test" and self.provider_max_output_tokens > 1024:
+            raise ValueError("Synthetic acceptance retains its 1024 output token limit")
+        if self.support_mode == "live" and (
+            self.database_url is None
+            or (not self.provider_ready and self.provider_encryption_key is None)
+        ):
+            raise ValueError("Live support requires explicit credentials and a database")
+        if self.support_mode == "live" and self.environment == "development":
+            assert self.database_url is not None
+            url = make_url(self.database_url.get_secret_value())
+            if url.host not in {"127.0.0.1", "localhost"} or url.database != "psyevo_synthetic_dev":
+                raise ValueError("Development live support requires the local development database")
         if self.support_mode == "fake" and (
             self.environment != "test" or self.database_url is None
         ):
@@ -97,6 +146,16 @@ def load_settings(environ: Mapping[str, str] | None = None) -> Settings:
         {
             "environment": source.get("PSYEVO_ENV", "development"),
             "support_mode": source.get("PSYEVO_SUPPORT_MODE", "disabled"),
+            "live_probe_enabled": source.get("PSYEVO_LIVE_PROBE_ENABLED", "false"),
+            "provider_base_url": source.get("PSYEVO_PROVIDER_BASE_URL", "https://ai.hybgzs.com/v1"),
+            "provider_model": source.get("PSYEVO_PROVIDER_MODEL", "grok-4.7"),
+            "provider_api_key": source.get("PSYEVO_PROVIDER_API_KEY"),
+            "provider_encryption_key": source.get("PSYEVO_PROVIDER_ENCRYPTION_KEY"),
+            "provider_config_file": source.get("PSYEVO_PROVIDER_CONFIG_FILE"),
+            "provider_deadline_seconds": source.get("PSYEVO_PROVIDER_DEADLINE_SECONDS", "60"),
+            "provider_max_output_tokens": int(
+                source.get("PSYEVO_PROVIDER_MAX_OUTPUT_TOKENS", "1024")
+            ),
             "database_url": source.get("PSYEVO_DATABASE_URL"),
             "browser_origin": source.get("PSYEVO_BROWSER_ORIGIN", "http://127.0.0.1:3000"),
             **{

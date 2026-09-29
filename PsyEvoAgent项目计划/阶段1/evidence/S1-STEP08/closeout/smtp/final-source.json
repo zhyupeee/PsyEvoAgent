@@ -1,0 +1,8 @@
+{
+  "note": "SMTP send receipt retains execution-time hashes; final probe only renames a local receipt variable. The same SMTPMailer/config code was used.",
+  "files": {
+    "backend/app/config.py": "c8d115de85cbce43c3c8f13f01987d4d9ba1bfd298c3d1de0ede8f99324b9bbb",
+    "backend/app/mail.py": "7913c4a0b4297bad1f483d5202b77a4d305693b0a6d6a3999851672a9649bd3f",
+    "backend/app/smtp_probe.py": "1b4a8f78b0a3004b94fa49205b328be985fc0cf42abcdd510384675b3281d214"
+  }
+}

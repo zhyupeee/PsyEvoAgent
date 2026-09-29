@@ -145,6 +145,7 @@ def test_retry_reserves_each_attempt_and_settles_without_erasing_unknown(kind: s
     assert first.usage_source == "unknown"
     assert second.actual_tokens == 50 and second.actual_cost == Decimal("0.050")
     assert result.ledger.tokens == first.reserved_tokens + 50
+    assert first.reserved_cost is not None
     assert result.ledger.cost == first.reserved_cost + Decimal("0.050")
 
 

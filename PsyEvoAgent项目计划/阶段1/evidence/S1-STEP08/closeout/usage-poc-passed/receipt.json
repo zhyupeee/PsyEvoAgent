@@ -1,0 +1,128 @@
+{
+  "step_id": "S1-STEP08.1",
+  "execution_kind": "live-internal-stream-poc",
+  "started": "2026-09-28T05:51:01.055934+00:00",
+  "status": "passed",
+  "credential_reference": "PSYEVO_PROVIDER_API_KEY",
+  "packages": {
+    "langchain-openai": "1.6.6",
+    "openai": "3.19.2",
+    "langchain-core": "1.6.4",
+    "langgraph": "1.2.12"
+  },
+  "limitations": [
+    "Synthetic fixed input only; no database, webpage or public stream validation",
+    "Finite output rules do not establish semantic safety or professional review",
+    "Price, data region, retention and remote cancellation remain unknown"
+  ],
+  "profile": {
+    "provider": "hybgzs-compatible",
+    "model_ref": "grok-4.7",
+    "base_url": "https://ai.hybgzs.com/v1",
+    "adapter_version": "1.6.6",
+    "parameters": [
+      [
+        "sdk_retries",
+        "0"
+      ]
+    ],
+    "allowed_tasks": [
+      "support"
+    ],
+    "region": "unknown",
+    "retention": "unknown",
+    "price_version": "unknown",
+    "currency": "unknown",
+    "structured_method": "json-text+pydantic"
+  },
+  "budget": {
+    "max_calls": 1,
+    "reserved_token_envelope": 8192,
+    "max_output_tokens": 1024,
+    "deadline_seconds": 60.0,
+    "cost_limit": null,
+    "cost_status": "unknown",
+    "tokenizer_status": "unknown; entire envelope reserved, not an estimate"
+  },
+  "run_id": "04b49c64-8e5f-49a7-8c25-a03206bf0fab",
+  "versions": {
+    "policy_version": "support-policy/1",
+    "assessor_version": "disabled",
+    "evaluator_version": "behavior-rules/1",
+    "graph_version": "support-graph/1",
+    "model_ref": "grok-4.7",
+    "provider_ref": "https://ai.hybgzs.com/v1",
+    "schema_version": "support-runtime/1",
+    "experiment_config_version": "experiment-defaults/1"
+  },
+  "ledger": [
+    {
+      "run_id": "04b49c64-8e5f-49a7-8c25-a03206bf0fab",
+      "request_id": "f556f185-a1d1-4255-95dd-e6556a7be869",
+      "attempt": 1,
+      "model_ref": "grok-4.7",
+      "versions": {
+        "policy_version": "support-policy/1",
+        "assessor_version": "disabled",
+        "evaluator_version": "behavior-rules/1",
+        "graph_version": "support-graph/1",
+        "model_ref": "grok-4.7",
+        "provider_ref": "https://ai.hybgzs.com/v1",
+        "schema_version": "support-runtime/1",
+        "experiment_config_version": "experiment-defaults/1"
+      },
+      "reserved_tokens": 8192,
+      "reserved_cost": null,
+      "role": "support",
+      "price_version": "unknown",
+      "currency": "unknown",
+      "actual_tokens": 1934,
+      "actual_cost": null,
+      "usage_source": "provider_reported",
+      "status": "settled",
+      "elapsed_ms": 18171
+    }
+  ],
+  "stream": {
+    "chunks": 89,
+    "first_chunk_ms": 8436,
+    "finished": true,
+    "locally_closed": true,
+    "protocol_error": null,
+    "duplicate_usage_reports": 1,
+    "usage_reports": [
+      {
+        "input_tokens": 1313,
+        "output_tokens": 621,
+        "total_tokens": 1934
+      },
+      {
+        "input_tokens": 1313,
+        "output_tokens": 621,
+        "total_tokens": 1934
+      }
+    ]
+  },
+  "rule_verdict": "pass",
+  "stop_reason": null,
+  "capabilities": {
+    "text": "tested",
+    "json_text_schema": "tested",
+    "internal_stream": "tested",
+    "usage": "tested",
+    "public_chunks": "unsupported",
+    "remote_cancellation": "unknown",
+    "refusal": "unknown",
+    "tool_structured_combination": "unknown",
+    "semantic_safety": "unknown"
+  },
+  "ended": "2026-09-28T05:51:19.355581+00:00",
+  "source_sha256": {
+    "backend/app/provider.py": "6125e740ffb804e2187b391043e77b6e70b7f49702d97ec93778eb8f4168cc73",
+    "backend/app/provider_probe.py": "39acb491105f4a5f66cb04caa13de0b020d88fc093a9592eb2602cd4d1f2ceef",
+    "backend/app/support.py": "43277b2dac686cd42aefa9054bfeb0649dc5e224236462250dd4e6db65608853",
+    "backend/app/config.py": "c8d115de85cbce43c3c8f13f01987d4d9ba1bfd298c3d1de0ede8f99324b9bbb",
+    "backend/pyproject.toml": "63cfcc8cf0caa6985d027190807b3ff93551b658a7bba8abd695ff22755966e9",
+    "backend/uv.lock": "fb033c12b3e5a80340b808982d6ff46dfa6819cdca602d0db2a7c9739767993c"
+  }
+}

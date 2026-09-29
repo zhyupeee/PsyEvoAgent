@@ -1,0 +1,88 @@
+{
+  "run_id": {
+    "run_id": "d07fce5a-3a37-447c-b86d-09b1a1f76f53",
+    "status": "completed",
+    "ledger": {
+      "role": "support",
+      "run_id": "d07fce5a-3a37-447c-b86d-09b1a1f76f53",
+      "status": "settled",
+      "attempt": 1,
+      "currency": "unknown",
+      "versions": {
+        "model_ref": "grok-4.7",
+        "provider_ref": "https://ai.hybgzs.com/v1",
+        "graph_version": "support-graph/1",
+        "policy_version": "support-policy/1",
+        "schema_version": "support-runtime/1",
+        "assessor_version": "disabled",
+        "evaluator_version": "behavior-rules/1",
+        "experiment_config_version": "experiment-defaults/1"
+      },
+      "model_ref": "grok-4.7",
+      "elapsed_ms": 6921,
+      "request_id": "aa8772ff-1821-4e60-b13d-d6bd9bde44f9",
+      "actual_cost": null,
+      "usage_source": "provider_reported",
+      "actual_tokens": 3378,
+      "price_version": "unknown",
+      "reserved_cost": null,
+      "reserved_tokens": 8192
+    }
+  },
+  "cancelled_run_id": {
+    "run_id": "b2173733-f583-4c17-bb11-1f366785fa2f",
+    "status": "cancelled",
+    "ledger": {
+      "role": "support",
+      "run_id": "b2173733-f583-4c17-bb11-1f366785fa2f",
+      "status": "cancelled",
+      "attempt": 1,
+      "currency": "unknown",
+      "versions": {
+        "model_ref": "grok-4.7",
+        "provider_ref": "https://ai.hybgzs.com/v1",
+        "graph_version": "support-graph/1",
+        "policy_version": "support-policy/1",
+        "schema_version": "support-runtime/1",
+        "assessor_version": "disabled",
+        "evaluator_version": "behavior-rules/1",
+        "experiment_config_version": "experiment-defaults/1"
+      },
+      "model_ref": "grok-4.7",
+      "elapsed_ms": 156,
+      "request_id": "2bc5c5af-8048-493f-9e20-d7c9eca14725",
+      "actual_cost": null,
+      "usage_source": "unknown",
+      "actual_tokens": null,
+      "price_version": "unknown",
+      "reserved_cost": null,
+      "reserved_tokens": 8192
+    }
+  },
+  "deletion": {
+    "deletion_id": "a687da2e-b1c9-4618-a365-5a702cee6f0b",
+    "target": "ee5b7227-1603-4789-90a8-73c119629fc3",
+    "version": 6,
+    "status": "completed",
+    "completed_steps": [
+      "online_blocked",
+      "messages",
+      "events",
+      "feedback",
+      "source_links"
+    ],
+    "remaining_steps": [],
+    "retryable": false,
+    "error_code": null,
+    "not_applicable": {
+      "checkpoints": "No persistent checkpointer configured",
+      "backups": "No application backup service configured"
+    },
+    "retained": [
+      "content-free tombstones",
+      "idempotency hashes",
+      "model usage metadata"
+    ],
+    "external_provider_status": "unknown"
+  }
+}

@@ -1,0 +1,6 @@
+
+Running 1 test using 1 worker
+
+  ok 1 tests\live.spec.ts:29:1 › live full-buffer journey: send, SSE, reload, isolation, cancel and confirmed deletion (21.7s)
+
+  1 passed (28.5s)

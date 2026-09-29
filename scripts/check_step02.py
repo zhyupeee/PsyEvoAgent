@@ -232,7 +232,7 @@ def browser_checks():
                 "http://127.0.0.1:8000/api/v1/health",
                 "api",
             ),
-            ([PNPM, "dev"], ROOT / "frontend", "http://127.0.0.1:3000", "frontend"),
+            ([PNPM, "dev"], ROOT / "frontend", "http://127.0.0.1:3000/health", "frontend"),
         ]:
             with httpx.Client(trust_env=False, timeout=0.5) as client:
                 try:
