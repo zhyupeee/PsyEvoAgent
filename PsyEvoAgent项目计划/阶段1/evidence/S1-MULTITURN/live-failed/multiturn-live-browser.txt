@@ -1,0 +1,35 @@
+
+Running 1 test using 1 worker
+
+  x  1 tests\multiturn-live.spec.ts:5:1 › two synthetic live turns retain conversation context (2.1m)
+
+
+  1) tests\multiturn-live.spec.ts:5:1 › two synthetic live turns retain conversation context ───────
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.assistant-message')
+    Expected: 1
+    Received: 0
+    Timeout:  125000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.assistant-message') with timeout 125000ms
+      - waiting for locator('.assistant-message')
+        249 × locator resolved to 0 elements
+            - unexpected value "0"
+
+
+      39 |     await page.getByRole('button', { name: '发送', exact: true }).click()
+      40 |     runs.push((await (await started).json()).run_id)
+    > 41 |     await expect(page.locator('.assistant-message')).toHaveCount(runs.length, {
+         |                                                      ^
+      42 |       timeout: 125000,
+      43 |     })
+      44 |     await expect(page.getByRole('status')).toContainText('已完成')
+        at D:\PsyEvoAgent\frontend\tests\multiturn-live.spec.ts:41:54
+
+    Error Context: test-results\multiturn-live-two-synthet-f0c3f-retain-conversation-context\error-context.md
+
+  1 failed
+    tests\multiturn-live.spec.ts:5:1 › two synthetic live turns retain conversation context ────────

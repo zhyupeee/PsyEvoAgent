@@ -25,7 +25,15 @@ parser.add_argument("--tls-port", type=int, default=3443)
 parser.add_argument("--step05", action="store_true", help="Also verify durable fake runs and gateway SSE")
 parser.add_argument("--step06", action="store_true", help="Also verify chat, preferences and independent exercise UI")
 parser.add_argument("--step07", action="store_true", help="Also verify history, revisions, deletion and feedback")
+parser.add_argument("--step08-live", action="store_true", help="Explicit live integration after fake regression")
+parser.add_argument("--multiturn-live", action="store_true", help="Two synthetic live context turns instead of historical STEP08 live journey")
 args = parser.parse_args()
+if args.multiturn_live:
+    args.step08_live = True
+if args.step08_live:
+    if os.environ.get("CI") or os.environ.get("PSYEVO_CHECK_NETWORK") or not os.environ.get("PSYEVO_PROVIDER_API_KEY", "").strip():
+        parser.error("Live acceptance requires a key outside PR/network isolation")
+    args.step07 = True
 if args.step07:
     args.step06 = True
 if args.step06:
@@ -103,6 +111,16 @@ if args.step07:
     RECEIPT["acceptance_ids"] = ["S1-A04", "S1-A06", "S1-A08", "RSI-S1-A03", "RSI-S1-A07", "RSI-S1-A08"]
     RECEIPT["limitations"] = ["Isolated synthetic accounts/fake model; live Provider/content review/SMTP remain unresolved", "No STEP08 live integration or stage handoff", "No persistent checkpoints or application backup configured; content-free tombstones and usage metadata retained", "Language guards are not kernel isolation"]
     ENV["PSYEVO_STEP07_ARTIFACTS"] = str(RUN)
+if args.step08_live:
+    RECEIPT["step_id"] = "S1-STEP08"
+    RECEIPT["execution_kind"] = "isolated-postgresql-fake-regression-plus-explicit-live-browser"
+    RECEIPT["limitations"] = [
+        "Live full-buffer support uses synthetic inputs only; no remote publication",
+        "Full-buffer engineering scope; professional review and safe public chunks are not validated; SMTP delivery is verified separately",
+        "Local cancellation/deletion do not prove external provider cancellation/deletion",
+        "Provider price, data region and retention remain unknown",
+        "Windows network guards apply to regression; live API/Worker explicitly permit provider access",
+    ]
 
 
 def run(label: str, args: list[str], cwd: Path = ROOT, timeout: int = 240) -> str:
@@ -264,6 +282,28 @@ engine.dispose()
             finally:
                 worker.terminate()
                 worker.wait(timeout=15)
+    if args.step08_live:
+        run("seed-step08", [sys.executable, "-c", seed.replace("admin@example.com", "step08-live@example.com").replace("synthetic-admin-password", "synthetic-browser-password").replace("browser-b@example.com", "step08-other@example.com")], BACKEND)
+        # Only API/Worker receive credentials. Browser/build/test environments remain scrubbed.
+        live_env = dict(ENV)
+        live_env.pop("PSYEVO_CHECK_NETWORK", None)
+        live_env.pop("PYTHONPATH", None)
+        live_env.pop("NODE_OPTIONS", None)
+        live_env.update({key: value for key, value in os.environ.items() if key.startswith("PSYEVO_PROVIDER_")})
+        live_env.update(PSYEVO_SUPPORT_MODE="live", PSYEVO_STEP08_ARTIFACTS=str(RUN))
+        ENV.update(PSYEVO_STEP08_ARTIFACTS=str(RUN))
+        with (RUN / "live-worker.txt").open("w", encoding="utf-8") as worker_log, (RUN / "live-api.txt").open("w", encoding="utf-8") as api_log:
+            worker = subprocess.Popen([sys.executable, "-m", "app.worker", "--support"], cwd=BACKEND, env=live_env, stdout=worker_log, stderr=subprocess.STDOUT)
+            api = subprocess.Popen([sys.executable, "-m", "uvicorn", "app.main:create_app", "--factory", "--host", "127.0.0.1", "--port", str(args.api_port), "--no-access-log"], cwd=BACKEND, env=live_env, stdout=api_log, stderr=subprocess.STDOUT)
+            try:
+                run("multiturn-live-browser" if args.multiturn_live else "step08-live-browser", [PNPM, "exec", "playwright", "test", "--config", "playwright.multiturn.config.ts" if args.multiturn_live else "playwright.step08.config.ts"], ROOT / "frontend", timeout=360)
+                if worker.poll() is not None or api.poll() is not None:
+                    raise RuntimeError("Live API/Worker exited unexpectedly")
+            finally:
+                api.terminate()
+                worker.terminate()
+                api.wait(timeout=15)
+                worker.wait(timeout=15)
     run("database-restart", ["docker", "restart", NAME])
     # Docker may assign a new published port after restart when HostPort was random.
     port = (
@@ -324,7 +364,7 @@ with Session(engine) as db:
     runs = db.scalars(select(Run).where(Run.owner_id == user.id)).all()
     assert len(runs) == 1 and runs[0].status == "completed"
     rid = runs[0].id
-    assert db.scalar(select(func.count()).select_from(ModelCall).where(ModelCall.run_id == rid)) == 1
+    assert db.scalar(select(func.count()).select_from(ModelCall).where(ModelCall.run_id == rid, ModelCall.receipt["role"].astext == "support")) == 1
     assert db.scalar(select(func.count()).select_from(Interaction).where(Interaction.run_id == rid)) == 1
     assert db.scalar(select(func.count()).select_from(RunEvent).where(RunEvent.run_id == rid)) == 128
 print("PostgreSQL restart: one browser run, one model call, one initiation; event window retained")
@@ -337,7 +377,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 from app.config import load_settings
 from app.database import make_engine
-from app.models import User, Preferences, Message, Run, Interaction, ModelCall
+from app.models import User, Preferences, Message, Run, Interaction, ModelCall, Conversation
 engine = make_engine(load_settings().database_url.get_secret_value())
 with Session(engine) as db:
     user = db.scalar(select(User).where(User.email == "step05-unused@example.com"))
@@ -352,8 +392,13 @@ with Session(engine) as db:
     run = db.get(Run, sent[0].run_id)
     assert run is not None and run.status == "completed"
     assert db.scalar(select(func.count()).select_from(Interaction).where(Interaction.run_id == run.id)) == 1
-    assert db.scalar(select(func.count()).select_from(ModelCall).where(ModelCall.run_id == run.id)) == 1
-print("STEP06 restart: preferences persisted; lost-ack retry produced one input/run/call/initiation")
+    assert db.scalar(select(func.count()).select_from(ModelCall).where(ModelCall.run_id == run.id, ModelCall.receipt["role"].astext == "support")) == 1
+    source = db.get(Conversation, run.session_id)
+    assert source.title_source == "auto" and source.title_revision == 2
+    assert source.title_generation_status == "succeeded" and source.title == "合成对话主题"
+    assert source.version == 1
+    assert db.scalar(select(func.count()).select_from(ModelCall).where(ModelCall.run_id == run.id, ModelCall.receipt["role"].astext == "title")) == 1
+print("STEP06 restart: preferences and title persisted; one input/run/support call/title call/initiation")
 engine.dispose()
 '''
         run("step06-restart-facts", [sys.executable, "-c", verify_pages], BACKEND)
@@ -380,7 +425,7 @@ with Session(engine) as db:
     for row in revised:
         run = db.get(Run, row.run_id)
         assert run is not None and run.status == "completed"
-        assert db.scalar(select(func.count()).select_from(ModelCall).where(ModelCall.run_id == run.id)) == 1
+        assert db.scalar(select(func.count()).select_from(ModelCall).where(ModelCall.run_id == run.id, ModelCall.receipt["role"].astext == "support")) == 1
     jobs = list(db.scalars(select(DeletionJob).where(DeletionJob.owner_id == user.id)))
     assert len(jobs) == 1 and jobs[0].status == "completed"
     source = db.get(Conversation, jobs[0].target)
@@ -394,10 +439,17 @@ engine.dispose()
 '''
         run("step07-restart-facts", [sys.executable, "-c", verify_history], BACKEND)
     run("documents", [sys.executable, "-B", "-X", "utf8", "_check_docs.py"])
+    if args.step08_live and not args.multiturn_live:
+        run("step08-restart-facts", [sys.executable, "-m", "tests.step08_receipt", str(RUN / "live-browser.json"), str(RUN / "live-facts.json")], BACKEND)
     run("diff", ["git", "diff", "--check"])
     RECEIPT["passed"] = True
 finally:
     if created:
+        if args.step08_live and any(c["label"] == "seed-step08" and c["exit_code"] == 0 for c in commands):
+            try:
+                run("live-diagnostics", [sys.executable, "-m", "tests.live_diagnostics", str(RUN / "live-diagnostics.json")], BACKEND)
+            except Exception:
+                RECEIPT["passed"] = False
         # Only this invocation's randomly named, labelled disposable test container.
         run("database-cleanup", ["docker", "rm", "-f", "-v", NAME])
     RECEIPT["finished"] = datetime.now(UTC).isoformat()

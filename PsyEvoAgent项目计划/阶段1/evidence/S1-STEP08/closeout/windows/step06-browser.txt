@@ -1,0 +1,15 @@
+
+Running 5 tests using 1 worker
+
+  ok 1 tests\support.spec.ts:31:1 › chat: real send, lost acknowledgement retry, snapshot reload, account isolation (16.7s)
+  ok 2 tests\support.spec.ts:88:1 › confirmed lost start clears pending send and preserves a revised next message (11.0s)
+  ok 3 tests\support.spec.ts:125:1 › stop reflects backend terminal even when completion wins; stream loss recovers without send (5.4s)
+  ok 4 tests\support.spec.ts:157:1 › preferences: failure is not saved; persistence, mobile keyboard and title display (6.4s)
+  ok 5 tests\support.spec.ts:214:1 › independent exercise: no model requests, skip, exit, refresh, unknown resources (5.6s)
+
+  5 passed (1.1m)
+[WebServer] INFO:     Started server process [47340]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8108 (Press CTRL+C to quit)

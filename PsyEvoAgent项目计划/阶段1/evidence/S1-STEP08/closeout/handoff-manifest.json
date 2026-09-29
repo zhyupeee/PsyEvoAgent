@@ -1,0 +1,33 @@
+{
+  "protocol": "s1-handoff/2026-09-28",
+  "status": "frozen",
+  "scope": "internal-experiment engineering only; not professional/clinical validation",
+  "frozen_at": "2026-09-28T06:07:07.146591+00:00",
+  "baseline_git": "f783572 plus preserved staged and current implementation",
+  "next_step": "S2-STEP01 (not implemented)",
+  "files_sha256": {
+    "EXPERIMENT.md": "2ffccea9aa28c626999d19204096170518a4fbbced9785206fab62c3bdc179f1",
+    "DEVELOPMENT.md": "33a84f4ac1253c5f79945020e4440a078036f8ab4cac9388990fbae63b249176",
+    "PsyEvoAgent项目计划/阶段1/evidence/S1-STEP08/engineering-closeout.md": "9a3c018f90b448e6e86abacabb8df05565b71caa945b181ed8f9435e997beeec",
+    "PsyEvoAgent项目计划/阶段1/evidence/S1-STEP08/engineering-matrix.md": "48f73b1a03ff806d3fcc96dc09f32e95b8e0ac0528de0b3e7bdd50b4b3dbc715",
+    "PsyEvoAgent项目计划/阶段1/evidence/S1-STEP08/stage2-handoff.md": "6cd32fe57606ec848c1691e7ab2e6569506ece5c1892917779aa6af8326633b6",
+    "PsyEvoAgent项目计划/阶段1/evidence/S1-STEP08/closeout/case-results.json": "18648df1bf764b072587c0656606538be3a81987bdd8794ead89f4a05836c3db",
+    "backend/uv.lock": "fb033c12b3e5a80340b808982d6ff46dfa6819cdca602d0db2a7c9739767993c",
+    "frontend/pnpm-lock.yaml": "3d84f3ebca92cd8b5f5d29f0478f0fbea69175fb5a93dc5747e9b58ca4d060fd",
+    "PsyEvoAgent项目计划/阶段1/fixtures/S1-STEP01/scenarios.json": "d54766fa90da50a09274174d56cb2e2fdd41c3eb42d3b08087f0bcb52ebe454c",
+    "PsyEvoAgent项目计划/阶段1/01-阶段目标与功能设计.md": "589363aee46af04840c96957c138a1edc404b29795620c2a91769f4bb899e191",
+    "PsyEvoAgent项目计划/阶段1/02-技术方案与实施计划.md": "d6c73e70caeb0d92348ca1cd0124e09cf8b112feaa4cdcf21820429e54b22ac3",
+    "PsyEvoAgent项目计划/阶段1/03-测试与验收标准.md": "cae019a044898e0c27c6ae1b4767f50820c432e0ab0b32bfcfca168a3fd582d4",
+    "PsyEvoAgent项目计划/阶段1/04-分步实施与检查清单.md": "b5d9f9a61ff7bf98b9c9c98178a6a38d49ef4b181fe57ed31fb00ca55e8d584f",
+    "backend/app/models.py": "af9a934b202994fc1e400d6e02c1c25e730931825036b021caf49fbb3e548e7a",
+    "backend/app/contracts.py": "55c0284945bfc46438be816bac7f079802ee68b674a9f41ff2ced83e357b12fe",
+    "backend/app/config.py": "c8d115de85cbce43c3c8f13f01987d4d9ba1bfd298c3d1de0ede8f99324b9bbb",
+    "backend/app/runs.py": "7e614d5e911d9c1789ddd4868b2670f707f48def6f7a79349070e8fb9d9c2222",
+    "backend/app/run_worker.py": "f95bb7ddf4826956234eca708cf8a8dc57dae11deee09f69803d1c59a18634de",
+    "backend/app/run_stream.py": "8a71113b88ec6a5d3b438c92f9d46e39c4ca304249290cf696d7b9bf6d52057c",
+    "backend/app/support.py": "43277b2dac686cd42aefa9054bfeb0649dc5e224236462250dd4e6db65608853",
+    "backend/app/provider.py": "6125e740ffb804e2187b391043e77b6e70b7f49702d97ec93778eb8f4168cc73",
+    "backend/app/deletion.py": "eb5423453016db50110e11b52d089c4a9e7dad98cd0d4dfa32baad8dff8ec3e6",
+    "backend/app/mail.py": "7913c4a0b4297bad1f483d5202b77a4d305693b0a6d6a3999851672a9649bd3f"
+  }
+}

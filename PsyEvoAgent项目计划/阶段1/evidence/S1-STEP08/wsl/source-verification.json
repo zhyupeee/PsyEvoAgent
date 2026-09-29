@@ -1,0 +1,9 @@
+{
+  "backend/app/provider.py": "349cc1597c71a21fa3ce0ef68ba12914f58d801c9337b7a89e318978c8281b8d",
+  "backend/app/provider_probe.py": "e1035869333644da3c0d11b8d2cc4bb95ca8784e804e1c0cf4dfc18e81a59bcb",
+  "backend/app/support.py": "df96fffc2d64b059712e5de59fc17a3e88f7b9b33385943967c17337d8275810",
+  "backend/app/config.py": "7887eefde83e8191ecb59fd2c663feddfda6da02e1e9e02005df74bb04ab8cae",
+  "backend/tests/test_provider.py": "0b651d3a888f2c1bf30c75720f27e50ab4f16c11dbdc574c5ce8e3a333f86388",
+  "backend/pyproject.toml": "63cfcc8cf0caa6985d027190807b3ff93551b658a7bba8abd695ff22755966e9",
+  "backend/uv.lock": "fb033c12b3e5a80340b808982d6ff46dfa6819cdca602d0db2a7c9739767993c"
+}

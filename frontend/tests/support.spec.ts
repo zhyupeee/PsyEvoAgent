@@ -10,7 +10,17 @@ async function login(
   await page.getByLabel('邮箱', { exact: true }).fill(email)
   await page.getByLabel('密码', { exact: true }).fill(password)
   await page.getByRole('button', { name: '登录', exact: true }).click()
-  await expect(page.getByText(`当前账号：${email}`)).toBeVisible()
+  await expect(page).toHaveURL('/chat')
+  expect(
+    await page.evaluate(
+      async () =>
+        (
+          await (
+            await fetch('/api/v1/auth/session', { credentials: 'same-origin' })
+          ).json()
+        ).email,
+    ),
+  ).toBe(email)
 }
 async function screenshot(page: Page, name: string) {
   const directory = process.env.PSYEVO_STEP06_ARTIFACTS
@@ -28,12 +38,109 @@ test.beforeEach(async ({ context }) => {
   )
 })
 
+test('multi-turn timeline: pagination, reload, switching and mobile sidebar', async ({
+  page,
+}) => {
+  test.setTimeout(120000)
+  await login(page, 'admin@example.com', 'synthetic-admin-password')
+  await page.getByRole('button', { name: '开始一次对话' }).click()
+  const inputs = Array.from(
+    { length: 21 },
+    (_, index) => `合成分页输入 ${index + 1}：纸船与河岸`,
+  )
+  for (const text of inputs) {
+    await page.getByLabel('想说的事').fill(text)
+    await page.getByRole('button', { name: '发送', exact: true }).click()
+    await expect(page.getByRole('status')).toContainText('已完成', {
+      timeout: 20000,
+    })
+    await expect(page.locator('.user-message').last()).toHaveText(text)
+  }
+  const url = page.url()
+  await page.reload()
+  await expect(page.locator('.user-message')).toHaveCount(20)
+  const earlier = page.getByRole('button', { name: '加载更早消息' })
+  await earlier.scrollIntoViewIfNeeded()
+  const anchor = page.locator('.chat-turn').first()
+  const anchorId = await anchor.getAttribute('data-run-id')
+  const anchorTop = await anchor.evaluate(
+    (node) => node.getBoundingClientRect().top,
+  )
+  const olderResponse = page.waitForResponse(
+    (response) =>
+      response.url().includes('/timeline?') &&
+      response.url().includes('cursor='),
+  )
+  await earlier.click()
+  const olderPage = await (await olderResponse).json()
+  expect(
+    olderPage.items.map((item: { input_text: string }) => item.input_text),
+  ).toEqual([inputs[0]])
+  await expect(page.locator('.user-message')).toHaveText(inputs)
+  await expect(page.locator('.assistant-message')).toHaveCount(21)
+  expect(
+    Math.abs(
+      (await page
+        .locator(`[data-run-id="${anchorId}"]`)
+        .evaluate((node) => node.getBoundingClientRect().top)) - anchorTop,
+    ),
+  ).toBeLessThan(2)
+  await expect(page.getByText('查看旧版本', { exact: true })).toHaveCount(0)
+  await screenshot(page, 'multiturn-desktop')
+  await page.getByRole('button', { name: '新建对话', exact: true }).click()
+  await expect(page).not.toHaveURL(url)
+  await expect(page.locator('.user-message')).toHaveCount(0)
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect(
+    page.getByRole('complementary', { name: '会话列表' }),
+  ).toBeHidden()
+  await page.getByRole('button', { name: '历史对话', exact: true }).click()
+  await expect(
+    page.getByRole('complementary', { name: '会话列表' }),
+  ).toBeVisible()
+  await page.locator(`.session-list a[href="${new URL(url).pathname}"]`).click()
+  await expect(page).toHaveURL(url)
+  await expect(
+    page.getByRole('complementary', { name: '会话列表' }),
+  ).toBeHidden()
+  // Returning to the same session retains pages already loaded in Query.
+  await expect(page.locator('.user-message')).toHaveCount(21)
+  await screenshot(page, 'multiturn-mobile')
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true)
+  // Exceeds the unchanged fake envelope, producing a real persisted failure.
+  const oversized = '合成'.repeat(2000)
+  await page.getByLabel('想说的事').fill(oversized)
+  await page.getByRole('button', { name: '发送', exact: true }).click()
+  await expect(page.getByRole('status')).toContainText('本次响应失败', {
+    timeout: 20000,
+  })
+  await expect(page.locator('.user-message').last()).toHaveText(oversized)
+  await expect(
+    page
+      .locator('.chat-turn')
+      .last()
+      .getByRole('button', { name: '重新生成', exact: true }),
+  ).toBeVisible()
+  await expect(page.getByRole('button', { name: '查询运行状态' })).toHaveCount(
+    0,
+  )
+  await expect(
+    page.locator('.chat-turn').last().locator('.assistant-message'),
+  ).toHaveCount(0)
+  await page.reload()
+  await expect(page.getByRole('status')).toContainText('本次响应失败')
+  await expect(page.locator('.user-message').last()).toHaveText(oversized)
+})
+
 test('chat: real send, lost acknowledgement retry, snapshot reload, account isolation', async ({
   page,
   context,
 }) => {
   await login(page)
-  await page.getByRole('link', { name: '进入对话' }).click()
   await page.getByRole('button', { name: '开始一次对话' }).click()
   await page.getByLabel('想说的事').fill('合成页面输入，只想倾听')
   let lost = false
@@ -58,11 +165,20 @@ test('chat: real send, lost acknowledgement retry, snapshot reload, account isol
   expect(keys).toHaveLength(2)
   expect(keys[0]).toBe(keys[1])
   await expect(page.locator('.assistant-message')).not.toBeEmpty()
+  await expect(page.locator('.chat-title')).toHaveText('合成对话主题', {
+    timeout: 20000,
+  })
   const text = await page.locator('.assistant-message').innerText()
   const url = page.url()
   await page.reload()
+  await expect(page.locator('.chat-title')).toHaveText('合成对话主题')
   await expect(page.locator('.assistant-message')).toHaveText(text)
   await screenshot(page, 'chat-desktop')
+  await page.getByRole('link', { name: '← 返回对话列表' }).click()
+  await page.getByLabel('搜索标题').fill('合成对话主题')
+  await page.getByRole('button', { name: '搜索', exact: true }).click()
+  await page.locator(`.session-list a[href="${new URL(url).pathname}"]`).click()
+  await expect(page).toHaveURL(url)
   const other = await context
     .browser()!
     .newContext({ baseURL: new URL(url).origin })
@@ -85,6 +201,33 @@ test('chat: real send, lost acknowledgement retry, snapshot reload, account isol
   await other.close()
 })
 
+test('unaccepted send reports its unchanged state and retries the original message', async ({
+  page,
+}) => {
+  await login(page, 'admin@example.com', 'synthetic-admin-password')
+  await page.getByRole('button', { name: '开始一次对话' }).click()
+  await page.getByLabel('想说的事').fill('合成未接收消息')
+  await page.route('**/api/v1/runs/*/start', (route) => route.abort('failed'))
+  await page.getByRole('button', { name: '发送', exact: true }).click()
+  await expect(page.getByRole('alert')).toContainText('发送未确认')
+  await page.getByRole('button', { name: '检查发送状态' }).click()
+  await expect(
+    page.getByText('尚未确认发送成功。请点击“重试原消息”继续发送。', {
+      exact: true,
+    }),
+  ).toBeVisible()
+  await expect(page.getByLabel('想说的事')).toHaveValue('合成未接收消息')
+  await page.unroute('**/api/v1/runs/*/start')
+  await page.getByRole('button', { name: '重试原消息', exact: true }).click()
+  await expect(page.getByRole('status')).toContainText('已完成', {
+    timeout: 20000,
+  })
+  await expect(page.locator('.user-message')).toHaveText(['合成未接收消息'])
+  await expect(page.getByRole('button', { name: '检查发送状态' })).toHaveCount(
+    0,
+  )
+})
+
 test('confirmed lost start clears pending send and preserves a revised next message', async ({
   page,
 }) => {
@@ -103,7 +246,7 @@ test('confirmed lost start clears pending send and preserves a revised next mess
   await page.getByRole('button', { name: '发送', exact: true }).click()
   await expect(page.getByRole('alert')).toContainText('发送未确认')
   await page.getByLabel('想说的事').fill('合成状态查询后的新输入')
-  await page.getByRole('button', { name: '查询运行状态' }).click()
+  await page.getByRole('button', { name: '检查发送状态' }).click()
   await expect(page.getByRole('status')).toContainText('已完成', {
     timeout: 20000,
   })
@@ -113,9 +256,10 @@ test('confirmed lost start clears pending send and preserves a revised next mess
   )
   expect(starts).toBe(1)
   await page.getByRole('button', { name: '发送', exact: true }).click()
-  await expect(page.locator('.user-message')).toHaveText(
+  await expect(page.locator('.user-message')).toHaveText([
+    '合成状态查询前的输入',
     '合成状态查询后的新输入',
-  )
+  ])
   await expect(page.getByRole('status')).toContainText('已完成', {
     timeout: 20000,
   })
@@ -149,6 +293,11 @@ test('stop reflects backend terminal even when completion wins; stream loss reco
     return response.json() as Promise<{ status: string }>
   }, sid)
   expect(['completed', 'cancelled']).toContain(run.status)
+  await expect(page.getByRole('status')).toContainText(
+    run.status === 'completed' ? '已完成' : '已停止',
+  )
+  await page.reload()
+  await expect(page.locator('.user-message')).toHaveText('合成取消检查')
   await expect(page.getByRole('status')).toContainText(
     run.status === 'completed' ? '已完成' : '已停止',
   )
@@ -251,4 +400,112 @@ test('independent exercise: no model requests, skip, exit, refresh, unknown reso
   expect(await page.evaluate(() => Object.keys(localStorage))).toEqual([])
   await page.setViewportSize({ width: 390, height: 844 })
   await screenshot(page, 'resources-mobile')
+})
+
+test('navigation keeps core entry clear, settings drafts and exercise return accessible', async ({
+  page,
+}) => {
+  const writes: string[] = []
+  page.on('request', (request) => {
+    if (
+      request.method() === 'POST' &&
+      /\/sessions$|\/run-drafts|\/runs\//.test(request.url())
+    )
+      writes.push(request.url())
+  })
+  await login(page, 'step05-browser@example.com')
+  await expect(
+    page.getByRole('heading', { name: '对话', exact: true }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('navigation', { name: '主要导航' }).getByRole('link'),
+  ).toHaveCount(2)
+  await expect(
+    page.getByRole('link', { name: '对话', exact: true }),
+  ).toHaveAttribute('aria-current', 'page')
+  expect(writes).toEqual([])
+  await page.goto('/')
+  await expect(page).toHaveURL('/chat')
+  await expect(page.getByRole('button', { name: '开始一次对话' })).toBeEnabled()
+  await screenshot(page, 'navigation-home-desktop')
+  await page.getByRole('link', { name: '设置', exact: true }).click()
+  await expect(
+    page.getByRole('heading', { name: '交流与显示偏好' }),
+  ).toBeVisible()
+  await page.getByRole('link', { name: '账号安全', exact: true }).click()
+  await page.getByLabel('当前密码').fill('unsaved-local-draft')
+  await page.getByRole('link', { name: '数据管理', exact: true }).click()
+  await expect(page.getByLabel('当前密码')).not.toBeVisible()
+  await page.goBack()
+  await expect(page.getByLabel('当前密码')).toHaveValue('unsaved-local-draft')
+  await page.goForward()
+  await page.reload()
+  await expect(
+    page.getByRole('link', { name: '数据管理', exact: true }),
+  ).toHaveAttribute('aria-current', 'page')
+  await expect(
+    page.getByRole('link', { name: '设置', exact: true }),
+  ).toHaveAttribute('aria-current', 'page')
+  await screenshot(page, 'navigation-settings-desktop')
+  await page.getByRole('link', { name: '管理和删除会话 →' }).click()
+  await page.getByLabel('搜索标题').fill('没有匹配的合成标题-navigation')
+  await page.getByRole('button', { name: '搜索', exact: true }).click()
+  await expect(page.getByText('没有匹配的对话。')).toBeVisible()
+  await page.getByRole('button', { name: '开始一次对话' }).click()
+  await expect(page).toHaveURL(/\/chat\/.+/)
+  const conversationUrl = page.url()
+  await expect(page.getByRole('region', { name: '我的对话' })).toBeVisible()
+  await expect(page.getByLabel('对话标题')).not.toBeVisible()
+  await page.getByText('管理此对话', { exact: true }).click()
+  const title = '用于检查窄屏换行的合成对话标题'.repeat(5)
+  await page.getByLabel('对话标题').fill(title)
+  await page.getByRole('button', { name: '保存标题' }).click()
+  await expect(page.getByRole('heading', { name: title })).toBeVisible()
+  await page.getByText('管理此对话', { exact: true }).click()
+  await page.setViewportSize({ width: 375, height: 812 })
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true)
+  await screenshot(page, 'navigation-long-title-mobile')
+  await page.getByRole('link', { name: '独立练习' }).click()
+  await page.getByRole('link', { name: '退出练习，返回对话' }).click()
+  await expect(page).toHaveURL(conversationUrl)
+  await page.getByRole('link', { name: '独立练习' }).click()
+  await page.getByRole('button', { name: '开始练习' }).click()
+  for (let i = 0; i < 3; i++)
+    await page.getByRole('button', { name: '下一步' }).click()
+  await page.getByRole('link', { name: '返回原对话' }).click()
+  await expect(page).toHaveURL(conversationUrl)
+  expect(writes).toHaveLength(1)
+  await page.getByRole('link', { name: '设置', exact: true }).click()
+  await expect(page).toHaveURL(/\/me\?section=preferences/)
+  await expect(page.getByRole('heading', { name: '设置' })).toBeVisible()
+  await page
+    .getByRole('combobox', { name: '字号', exact: true })
+    .selectOption('large')
+  await page.getByRole('button', { name: '保存偏好' }).click()
+  await expect(page.locator('.support-shell')).toHaveAttribute(
+    'data-large',
+    'true',
+  )
+  await screenshot(page, 'navigation-settings-mobile')
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true)
+  await page.getByRole('link', { name: '账号安全', exact: true }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('heading', { name: '我的账号' })).toBeVisible()
+  await page.getByRole('link', { name: '交流与显示', exact: true }).click()
+  await page
+    .getByRole('combobox', { name: '字号', exact: true })
+    .selectOption('normal')
+  await page.getByRole('button', { name: '保存偏好' }).click()
+  await expect(page.locator('.support-shell')).toHaveAttribute(
+    'data-large',
+    'false',
+  )
 })

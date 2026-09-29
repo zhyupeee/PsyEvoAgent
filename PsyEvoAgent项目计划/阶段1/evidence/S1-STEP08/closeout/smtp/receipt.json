@@ -1,0 +1,20 @@
+{
+  "protocol": "smtp-delivery-check/1",
+  "step_id": "S1-STEP08",
+  "execution_kind": "real-smtp-one-synthetic-message",
+  "started": "2026-09-28T05:31:45.484981+00:00",
+  "status": "passed",
+  "smtp_accepted": true,
+  "delivery_confirmed": true,
+  "delivery_token_hash": "ce98cf0e7837cda0b2a43e1b39efe94decc8d5c025a0a078bda0143d06710c86",
+  "run_id": "c5b8dfe0ba5a4472a8107df08ae1e4d5",
+  "limitations": "SMTP acceptance is not inbox delivery; no business account is created",
+  "tls_mode": "ssl",
+  "ended": "2026-09-28T05:31:46.394244+00:00",
+  "source_sha256": {
+    "smtp_probe.py": "aa94548fa918eab76166e7f3e6eb8234248d0e3abc1a741df974ded00b4cfc71",
+    "mail.py": "7913c4a0b4297bad1f483d5202b77a4d305693b0a6d6a3999851672a9649bd3f",
+    "config.py": "c8d115de85cbce43c3c8f13f01987d4d9ba1bfd298c3d1de0ede8f99324b9bbb"
+  },
+  "confirmed_at": "2026-09-28T05:33:35.610725+00:00"
+}

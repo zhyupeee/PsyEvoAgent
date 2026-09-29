@@ -102,7 +102,7 @@ function OwnerScope({
       void client.invalidateQueries({
         predicate: ({ queryKey }) =>
           queryKey[0] === 'sessions' ||
-          (['session', 'current-run', 'history'].includes(
+          (['session', 'current-run', 'history', 'timeline'].includes(
             String(queryKey[0]),
           ) &&
             queryKey[1] === sessionId),
@@ -136,13 +136,23 @@ function Layout({ children }: { children: ReactNode }) {
           <Link to="/chat" activeProps={{ 'aria-current': 'page' }}>
             对话
           </Link>
-          <span aria-disabled="true" className="text-muted">
-            我的记录 · 尚未开放
-          </span>
-          <Link to="/resources" activeProps={{ 'aria-current': 'page' }}>
+          <Link
+            to="/resources"
+            activeOptions={{ includeSearch: false }}
+            activeProps={{ 'aria-current': 'page' }}
+          >
             支持资源
           </Link>
-          <Link to="/me">我的</Link>
+        </nav>
+        <nav aria-label="个人设置" className="settings-nav">
+          <Link
+            to="/me"
+            search={{ section: 'preferences' }}
+            activeOptions={{ includeSearch: false }}
+            activeProps={{ 'aria-current': 'page' }}
+          >
+            设置
+          </Link>
         </nav>
         <p className="text-sm text-muted">
           按自己的节奏。

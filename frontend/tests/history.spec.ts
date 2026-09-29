@@ -8,7 +8,17 @@ async function login(page: Page, email = 'step07-browser@example.com') {
     .getByLabel('密码', { exact: true })
     .fill('synthetic-browser-password')
   await page.getByRole('button', { name: '登录', exact: true }).click()
-  await expect(page.getByText('当前账号：' + email)).toBeVisible()
+  await expect(page).toHaveURL('/chat')
+  expect(
+    await page.evaluate(
+      async () =>
+        (
+          await (
+            await fetch('/api/v1/auth/session', { credentials: 'same-origin' })
+          ).json()
+        ).email,
+    ),
+  ).toBe(email)
 }
 async function conversation(page: Page, text: string, email?: string) {
   await login(page, email)
@@ -20,6 +30,14 @@ async function conversation(page: Page, text: string, email?: string) {
     timeout: 20000,
   })
 }
+async function openRevisions(page: Page) {
+  const panel = page.locator('.branch-actions')
+  await expect(panel).toBeVisible({ timeout: 20000 })
+  await expect(
+    panel.getByRole('button', { name: '重新生成', exact: true }),
+  ).toBeVisible()
+}
+
 async function screenshot(page: Page, name: string) {
   const directory = process.env.PSYEVO_STEP07_ARTIFACTS
   if (!directory) throw new Error('Missing evidence directory')
@@ -91,16 +109,20 @@ test('rename search archive restore, revision and regenerate preserve separate h
   ).toBeVisible()
   await page.getByRole('button', { name: '归档对话', exact: true }).click()
   await expect(page.getByText('此对话已归档，恢复后可继续发送。')).toBeVisible()
+  await page.getByRole('link', { name: '← 返回对话列表' }).click()
   await page.getByLabel('会话范围').selectOption('archived')
   await page.getByLabel('搜索标题').fill('STEP07检索')
   await page.getByRole('button', { name: '搜索', exact: true }).click()
   await expect(
     page.getByRole('link', { name: 'STEP07检索对话', exact: true }),
   ).toBeVisible()
+  await page.getByRole('link', { name: 'STEP07检索对话', exact: true }).click()
+  await page.getByText('管理此对话', { exact: true }).click()
   await page.getByRole('button', { name: '恢复归档' }).click()
   await expect(
     page.getByRole('button', { name: '归档对话', exact: true }),
   ).toBeEnabled()
+  await openRevisions(page)
   await page.getByText('修订最后输入', { exact: true }).click()
   await page.getByLabel('修订内容').fill('   ')
   await page.getByRole('button', { name: '保存修订并生成' }).click()
@@ -113,14 +135,34 @@ test('rename search archive restore, revision and regenerate preserve separate h
   await expect(page.getByRole('status')).toContainText('已完成', {
     timeout: 20000,
   })
+  await openRevisions(page)
+  const regenerated = page.waitForResponse(
+    (response) =>
+      /\/sessions\/[^/]+\/runs$/.test(response.url()) &&
+      response.request().method() === 'POST',
+  )
   await page.getByRole('button', { name: '重新生成', exact: true }).click()
-  await expect(
-    page.getByRole('button', { name: '重新生成', exact: true }),
-  ).toBeEnabled({ timeout: 20000 })
+  const nextRun: { run_id: string } = await (await regenerated).json()
+  await expect
+    .poll(() =>
+      page.evaluate(async (id) => {
+        const response = await fetch(`/api/v1/runs/${id}`)
+        return (await response.json()).status
+      }, nextRun.run_id),
+    )
+    .toBe('completed')
   await expect(page.getByRole('status')).toContainText('已完成', {
     timeout: 20000,
   })
-  await page.getByText('历史轮次与旧分支', { exact: true }).click()
+  await openRevisions(page)
+  await expect(
+    page.getByRole('button', { name: '重新生成', exact: true }),
+  ).toBeEnabled()
+  await page.getByText('查看旧版本', { exact: true }).click()
+  await expect(
+    page.locator('.conversation-heading .history-panel'),
+  ).toBeVisible()
+  await expect(page.locator('.chat-scroll .history-panel')).toHaveCount(0)
   await expect(page.locator('.history-turn')).toHaveCount(2)
   await expect(
     page.locator('.history-turn').filter({ hasText: 'STEP07旧输入不可混入' }),
@@ -153,6 +195,7 @@ test('ordinary changes refresh the affected tab and preserve unrelated unsent fo
     timeout: 20000,
   })
   await other.getByLabel('想说的事').fill('unsent composer')
+  await openRevisions(other)
   await other.getByText('修订最后输入', { exact: true }).click()
   await other.getByLabel('修订内容').fill('unsent revision')
   await other.getByText('反馈或纠正 · 可跳过', { exact: true }).click()
@@ -176,6 +219,7 @@ test('ordinary changes refresh the affected tab and preserve unrelated unsent fo
   await expect(same.getByText('此对话已归档，恢复后可继续发送。')).toHaveCount(
     0,
   )
+  await openRevisions(page)
   await page.getByText('修订最后输入', { exact: true }).click()
   await page.getByLabel('修订内容').fill('')
   await page.getByRole('button', { name: '保存修订并生成' }).click()
@@ -186,8 +230,10 @@ test('ordinary changes refresh the affected tab and preserve unrelated unsent fo
     const run = await response.json()
     return run?.input_version === 2 && run?.status === 'completed'
   })
+  await openRevisions(page)
   await page.getByRole('button', { name: '重新生成', exact: true }).click()
   await regenerated
+  await openRevisions(page)
   await expect(
     page.getByRole('button', { name: '重新生成', exact: true }),
   ).toBeEnabled({ timeout: 20000 })
@@ -195,6 +241,7 @@ test('ordinary changes refresh the affected tab and preserve unrelated unsent fo
     timeout: 20000,
   })
   await expect(page.getByRole('alert')).toHaveCount(0)
+  await openRevisions(page)
   await page.getByText('修订最后输入', { exact: true }).click()
   await page.getByLabel('修订内容').fill('cross-tab revised')
   await page.getByRole('button', { name: '保存修订并生成' }).click()
@@ -251,6 +298,8 @@ test('confirmed deletion clears two tabs, retries lost response, survives logout
     other.getByRole('heading', { name: '对话暂不可用' }),
   ).toBeVisible()
   await expect(other.locator('body')).not.toContainText('STEP07删除后不再可见')
+  await page.getByRole('link', { name: '删除处理记录', exact: true }).click()
+  await expect(page).toHaveURL(/\/me\?section=data$/)
   await page.getByText('删除处理记录', { exact: true }).click()
   await expect(page.getByText('本应用在线内容清理完成').first()).toBeVisible()
   await expect(page.locator('body')).not.toContainText('STEP07删除后不再可见')
@@ -260,7 +309,8 @@ test('confirmed deletion clears two tabs, retries lost response, survives logout
     ),
   ).toBe(true)
   await screenshot(page, 'deletion-receipt-mobile')
-  await page.getByRole('link', { name: '我的', exact: true }).click()
+  await page.getByRole('link', { name: '设置', exact: true }).click()
+  await page.getByRole('link', { name: '账号安全', exact: true }).click()
   await page.getByRole('button', { name: '退出账号' }).click()
   await expect(page).toHaveURL(/\/login$/)
   await expect(

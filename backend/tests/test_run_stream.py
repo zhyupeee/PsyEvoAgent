@@ -67,7 +67,7 @@ def test_worker_shutdown_drains_bounded_execution_before_pool_disposal(
     started, release = threading.Event(), threading.Event()
     order: list[str] = []
 
-    def work(_: object) -> bool:
+    def work(_: object, settings: Settings | None = None) -> bool:
         started.set()
         assert release.wait(timeout=2)
         order.append("finished")
@@ -75,6 +75,7 @@ def test_worker_shutdown_drains_bounded_execution_before_pool_disposal(
 
     event.listen(engine, "engine_disposed", lambda _: order.append("disposed"))
     monkeypatch.setattr("app.run_worker.execute_one", work)
+    monkeypatch.setattr("app.titles.execute_one", work)
     monkeypatch.setattr("app.database.make_engine", lambda _: engine)
     monkeypatch.setattr(
         "app.config.load_settings",
@@ -92,4 +93,4 @@ def test_worker_shutdown_drains_bounded_execution_before_pool_disposal(
             await worker
 
     asyncio.run(check())
-    assert order == ["finished", "disposed"]
+    assert order == ["finished", "finished", "disposed"]

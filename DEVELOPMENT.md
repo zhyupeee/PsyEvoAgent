@@ -1,4 +1,100 @@
-# 本地工程开发（S1-STEP02/03/04/05/06/07）
+# 本地工程开发（S1-STEP02～08内部实验工程交付）
+
+## 2026-09-29 模型配置页面与自动生效
+
+普通 Windows 启动仍用 `scripts/start-dev.ps1` 或 frontend 中 `pnpm backend`（无显式数据库变量）。一次启动完成增量迁移、独立加密主密钥初始化和 API/Worker 统一管理。随后保存 `.env.step08.ps1` 自动影响新运行，无需手动重启；在途回答与标题使用原私有配置快照，文件错误保留上次有效配置。仅显式 `-MaxOutputTokens` 覆盖文件输出上限。
+
+用户在“设置 → 模型配置”选择官方或个人 API。个人模式按账号加密保存；缺少官方 Key 时仍可使用个人模式。Key 不回显，换地址必须重新输入 Key。保存不调用模型；测试按钮执行一次固定合成请求，可能收费，不重发用户对话。
+
+`app.local_model_key` 首次本地启动生成独立 Fernet 主密钥，保存于 Git 忽略的 `.env.local.json` 的 `provider_encryption_key`，启动脚本注入 `PSYEVO_PROVIDER_ENCRYPTION_KEY`。存在密文时不得另造密钥；必须恢复原配置。不要向前端进程传入 Provider 或加密变量。`PSYEVO_PROVIDER_CONFIG_FILE` 仅由普通本地入口设置；配置读取由 `app.provider_config` 负责，`app.config` 仍只读显式进程变量，显式测试库不自动读取本地文件。
+
+`-DisableSupport` 关闭 live；`-PrepareOnly` 只准备数据库，不加载 Provider、不初始化模型密钥、不启动 Worker。源码重载先排空 Worker 当前任务；模型配置变化使用新运行快照，不触发源码重载。旧失败回答需用户主动重新生成。
+
+定向检查：backend 中运行 `uv run --no-sync pytest tests/test_model_config.py`；数据库/API 检查使用隔离 `PSYEVO_TEST_DATABASE_URL` 并运行 `pytest -m postgres tests/test_model_settings_api.py`。根目录 `backend/.venv/Scripts/python.exe -X utf8 scripts/check_model_settings.py` 使用同一显式隔离测试库，端口8110/3110，不读取真实 Key、不发真实模型调用。
+
+当前状态见 [S1-MODEL-SETTINGS](PsyEvoAgent项目计划/阶段1/evidence/S1-MODEL-SETTINGS/README.md)。下方旧配置和收据保留原时点。
+
+## 2026-09-28 本地真实聊天启动修复
+
+最新修复：普通 `pnpm backend`（无显式数据库变量）或 `scripts/start-dev.ps1` 默认启动 live API/独立 Worker，`-DisableSupport` 关闭，`-PrepareOnly` 不启动模型。开发启动输出上限默认为 4096，可用 `-MaxOutputTokens` 降低；总预算仍为 8192，供应商超额仍失败，不裁掉 usage 或发布未通过检查的回复。隔离 test 配置仍限 1024。此处取代下文早期“默认 disabled”的启动说明。
+
+两条用户报告的失败 run 原因为 `usage_over_reservation`，总用量 2411/2648 未超总预算，但输出超过原 1024 上限。反馈/修订组件 sibling key 已加独立前缀。73 项后端定向测试、前端 check 通过；使用重启后开发配置的固定合成输入真实 Provider 探针通过，未重发用户原消息。历史失败 run 保留原预算及失败事实，新请求才使用新预算。
+
+用户已明确授权当前本地开发库使用真实模型。日常需要 AI 回复时，在根目录执行 `powershell -NoProfile -File scripts/start-dev.ps1 -LiveSupport`，或在 frontend 执行 `pnpm backend -LiveSupport`（未显式设置数据库变量时）。该显式选项读取 Git 忽略的 `.env.step08.ps1`，向 API 和独立 Worker 注入 Provider 配置，启用 `PSYEVO_SUPPORT_MODE=live`。脚本结束时停止其 Worker 并恢复环境变量；API 导入和 reload 不启动消费者。前端仍在另一个终端执行 `pnpm dev`，不要向前端加载密钥。
+
+默认启动仍为 disabled。development live 仅接受 loopback 的 `psyevo_synthetic_dev` 库和非空密钥；test 仍强制隔离合成库，fake 与练习限制不变。保留开发数据，使用增量迁移。配置测试不连接开发库；真实聊天会向已配置服务商发送内容并可能产生费用。此授权仅覆盖本地开发，不代表发布授权。
+
+本轮验证：配置/Provider 30 项、基础/进程 11 项、Node 启动入口 7 项通过，Ruff 与配置 mypy 通过。实际开发 API 和独立 Worker 均为 development/live 且凭据已加载，3001 同源健康请求返回 200；报错 run 经只读检查仍为 draft/version 1，可重试原消息。本轮未代发用户保留的消息，未将运行配置检查记为该消息回复成功。
+
+## 2026-09-28 STEP08内部实验工程验收
+
+**状态：COMPLETED（限定内部实验工程范围）**。最终74项数据库/API/迁移、92项后端、21项页面及真实模型旅程、重启直查、WSL内核隔离通过；真实SMTP邮件经用户回传测试标识确认送达。无需再次填写内容审阅表或重复发送测试邮件；后续重新验证才运行下列显式命令。
+
+当前采用[工程完成标准](EXPERIMENT.md)，专业审阅不再作为STEP08工程前置，事实仍为未审阅。Full Buffer Review为启用路径；安全公共分块未实现，不冒充通过。live仍限独立合成test数据库，development练习仍关闭；本次没有新业务API/迁移。最新结果、21项矩阵及阶段2合同见[收尾记录](PsyEvoAgent项目计划/阶段1/evidence/S1-STEP08/engineering-closeout.md)。下方历史状态保留原时点。
+
+SMTP配置放在Git忽略的`.env.step08-smtp.ps1`，只由操作者显式dot-source向当前进程注入；API、SMTPMailer及探针仍由`app.config.load_settings`读取进程变量，不自动读文件。既有配置为`PSYEVO_SMTP_HOST/PORT/FROM/USERNAME/PASSWORD/TLS_MODE`及`PSYEVO_EMAIL_CODE_KEY`。新增探针变量`PSYEVO_SMTP_TEST_TO`为操作者自有收件邮箱，`PSYEVO_SMTP_TEST_SEND_ALLOWED=true`为向该邮箱发送一封合成测试邮件的显式授权，仅`app.smtp_probe`消费，不是业务身份字段。
+
+```powershell
+# 一次运输/送达检查；不要混入PR门禁或反复重发
+. ./.env.step08-smtp.ps1
+Push-Location backend
+try { uv run --no-sync python -m app.smtp_probe --send } finally { Pop-Location }
+# 收件后，从backend目录对上述命令生成的实际receipt路径确认：
+# uv run --no-sync python -m app.smtp_probe --confirm <实际receipt.json路径>
+# 按提示输入邮件里的测试标识；不会再次发送邮件
+```
+
+无授权/缺收件邮箱/CI或网络隔离环境拒绝发送；不就地创建业务账号。探针收据位于`.artifacts/step08-smtp-*/receipt.json`，只记录TLS模式、接受/送达状态、测试标识散列、源hash和时间；不记录收件地址、密码、邮件全文或原始SMTP错误。确认错误返回1且不改送达状态；正确标识才标delivery_confirmed。SMTP服务器接受不能等价邮箱送达。此次真实发送与确认已执行，不需再填内容审阅表。
+
+模型工程门禁继续显式加载`.env.step08.ps1`，执行`scripts/check_step08.py --live`；该入口不读取SMTP密码也不发送邮件。普通Windows/WSL gate仅受控测试；真实SMTP收据独立附入最终验收。SMTP业务验证码注册/恢复/改密仍由原隔离数据库+邮件替身回归，不能把独立运输检查称为真实账号完整注册实测。
+
+当前兼容适配会对重复终局usage的input/output/total三个相同计数去重，可选细分字段差异不重复计账；计数冲突、提前usage、终止后正文、畸形工具片段和错误choice均停止。`tests.live_diagnostics`在门禁清理合成数据库前导出无正文调用/终态记录，避免失败原因被清理掉。历史收据数字保留原观察，不能拿此前SDK可能累计的重复usage当供应商实际账单；价格仍unknown。
+
+## S1-STEP08.1 内部流PoC（真实验收BLOCKED）
+
+2026-09-27续作：用户已本机填写密钥，内部流PoC已有真实通过收据；以下“密钥留空/产品live未接入”为首次切片时点。当前新增隔离合成库的网页live装配与验收入口：
+
+```powershell
+. ./.env.step08.ps1
+backend/.venv/Scripts/python.exe -X utf8 scripts/check_step08.py --live --web-port 3108 --api-port 8108 --tls-port 3448
+```
+
+此入口先复用STEP07完整fake门禁，再向独立API/Worker注入live配置，浏览器/前端进程不接收密钥。`PSYEVO_SUPPORT_MODE=live`仅允许`PSYEVO_ENV=test`、既有独立loopback合成check/migration库和非空密钥；不启动开发库live。`app.config.load_settings`由API和独立Worker读取，API import不启动消费者。PoC仍需`PSYEVO_LIVE_PROBE_ENABLED=true`；独立Worker显式live模式不依赖PoC开关。验收器生成并清理随机数据库，不将真实密钥放进命令行、收据或前端。
+
+当前正式适配链仍采用整稿路径：原始流只在私有Buffer中，终局schema/usage/输出规则通过后，由既有Worker事务写message/delta/completed，页面复用原SSE与快照。start冻结模型、`provider_ref`、原deadline、输出上限及单次调用预算；费用上限/实际费用为null，不沿用fake价格。Worker重新装配按冻结预算裁剪，不随进程新配置扩大单次预算。供应商兼容请求同时发`max_completion_tokens`与`max_tokens`；每次仍检查实际usage，不能凭一次通过声明任意请求都会尊重限制。
+
+删除回执根据持久调用账本判断是否涉及live，不随当前开关改写历史事实。在线清理成功仍为completed；新增`external_provider_status=unknown`时页面明确供应商保留/删除状态未知，不能宣称远端已删除。无真实调用时该字段为not_applicable。无需新数据库迁移。
+
+新增`PSYEVO_STEP08_ARTIFACTS`仅由检查器给页面验收进程指定输出目录；`tests.step08_receipt`在数据库重启后核对完成/取消各一次调用、删除阻断与费用unknown，并输出无正文账本。live检查失败不自动重调模型；失败收据与成功收据分别保留。STEP08整体状态与未满足项见本步续作记录，不以此命令的工程通过替代专业内容审阅或安全分块验收。
+
+用户指定`https://ai.hybgzs.com/v1`与`grok-4.7`，Chat Completions兼容协议仍待真实验证。`app.provider`通过LangChain把内部流缓冲后送回原`SupportRuntime`的schema、usage和整稿规则检查；没有公共增量或数据库写入。API/Worker仍只支持disabled/fake，真实PoC完成后才接网页旅程。
+
+新增直接依赖`langchain-openai==1.6.6`、`openai==3.19.2`、`httpx2==2.13.1`；后者是SDK要求的显式传输客户端，已有HTTPX业务消费者及LangChain Core/LangGraph版本保持原样。先在backend执行`uv sync --locked --group dev`。
+
+本地忽略文件`.env.step08.ps1`已留空密钥，参考模板为`scripts/step08-live.env.ps1.example`。在本机填写后，根目录显式执行：
+
+```powershell
+. ./.env.step08.ps1
+Push-Location backend
+try { uv run --no-sync python -m app.provider_probe --live } finally { Pop-Location }
+```
+
+不自动加载环境文件；`app.config.load_settings`只读进程变量：
+
+| 变量 | 默认/范围 | 消费者 |
+|---|---|---|
+| `PSYEVO_LIVE_PROBE_ENABLED` | false；需显式true | PoC及适配器工厂，不开放产品live |
+| `PSYEVO_PROVIDER_BASE_URL` | 上述HTTPS地址；禁止URL凭据/查询/片段 | SDK工厂 |
+| `PSYEVO_PROVIDER_MODEL` | grok-4.7 | SDK、绑定、收据 |
+| `PSYEVO_PROVIDER_API_KEY` | 空 | SDK工厂，不进入收据 |
+| `PSYEVO_PROVIDER_DEADLINE_SECONDS` | 60，最多120秒 | SDK与原图总deadline |
+| `PSYEVO_PROVIDER_MAX_OUTPUT_TOKENS` | 1024，范围1～1024 | SDK输出限制与账本 |
+
+PoC只发送代码内固定合成输入；一次调用，无SDK/图重试，预占整个8192 token信封，不沿用fake字节估算。实际usage超界判失败；未知tokenizer不构成精确请求token上限保证。价格/币种/地区/保留条件unknown，费用预占和实际费用均null，没有已验证金额上限。原始流上限32768字节/4096块，超限停止，不强制发布。SDK禁重定向和环境代理，不回退`OPENAI_API_KEY`。本地取消不证明远端停止计费。
+
+`--live`、显式开关和非空密钥缺一不可；检测到`CI`或`PSYEVO_CHECK_NETWORK`拒绝入口。缺配置退出2，调用/检查失败退出1，单次PoC通过退出0。收据位于`.artifacts/step08-live-*/receipt.json`，含版本、源码hash、run、账本、流观察，不含正文/密钥/原始错误。不自动执行真实请求，不将其加入PR门禁。
+
+受控SDK检查：backend中运行`uv run --no-sync pytest tests/test_provider.py`；完整前置复验仍用根目录`scripts/check_step07.py`，会收集新增后端测试。测试使用内存传输替身，不是Provider实测。真实流完整能力矩阵、网页旅程、安全分块和阶段交接仍未完成，见[本步记录](PsyEvoAgent项目计划/阶段1/evidence/S1-STEP08/README.md)。
 
 ## S1-STEP07 历史、修订、删除与反馈
 
@@ -243,3 +339,10 @@ API和前端终端都设置相同的 `PSYEVO_BROWSER_ORIGIN=https://<指定主�
 `scripts/check_step03.py`会创建独立随机容器和合成数据库，执行注册/旧账号/来源权限/迁移保留回归、类型与lint、单测、构建、浏览器和数据库重启检查。另用本地OpenSSL（Windows复用Git自带版本）生成一日合成证书，通过仅绑定loopback的测试TLS代理验证HTTPS注册、Secure Cookie、退出和错误Origin拒绝；此代理不用于部署。测试证书只在被忽略的.artifacts目录，忽略自签名证书仅在测试配置中开启。
 
 `PSYEVO_TEST_WEB_PORT`、`PSYEVO_TEST_API_PORT`、`PSYEVO_TEST_TLS_PORT`由检查器注入，分别供Playwright/Vite测试代理使用；不继承开发数据库环境。常规工程健康页面移到`/health`，STEP02浏览器回归同步使用新地址。历史完整门禁收据不改写，新验收与32份修订清单见[本次复核记录](PsyEvoAgent项目计划/阶段1/evidence/S1-STEP03/registration-review.md)。
+# 同会话多轮增量检查
+
+2026-09-29页面交互调整：有效轮次直接显示在聊天区，旧版本单独折叠；最新回答下可直接重新生成。发送/停止未确认时才提供带进度和结果的状态检查。浏览器组新增“start请求未送达→检查结果→幂等重试”，保留回执丢失、历史分页和旧分支隔离测试；不调用真实Provider。
+
+普通回归复用 `backend/.venv/Scripts/python.exe -X utf8 scripts/check_step03.py --step07 --web-port 3127 --api-port 8127 --tls-port 3427`；新增受控模型与PostgreSQL用例自动参与原门禁，连续消息页面用例纳入STEP06浏览器组。
+
+仅显式执行真实两轮合成验证时，在独立PowerShell进程加载ignored配置：`. ./.env.step08.ps1`，再执行 `backend/.venv/Scripts/python.exe -X utf8 scripts/check_step03.py --multiturn-live --web-port 3127 --api-port 8127 --tls-port 3427`。该入口先跑fake回归，再在隔离合成库启动live API和独立Worker；前端/build/browser不接收Provider密钥。新live用例替代该次门禁的历史STEP08 live旅程，手动命名测试会话以避免额外标题调用，固定两次support调用，不自动重试。原 `--step08-live` 行为不变；本次收据写入新.artifacts目录，不覆盖STEP08历史记录。

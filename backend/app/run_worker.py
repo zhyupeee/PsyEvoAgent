@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+from collections.abc import Callable
 from dataclasses import asdict
 from decimal import Decimal
 from uuid import UUID
@@ -12,11 +13,15 @@ from sqlalchemy import Engine, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
+from app.config import Settings
+from app.history import context_available, context_history
 from app.models import Message, ModelCall, Run, now
+from app.provider import InternalStreamProvider, LiveProfile, open_provider
 from app.runs import emit, executable, execution, lock_owner, terminal
 from app.support import (
     Budget,
     CallReceipt,
+    ContextTurn,
     ModelProfile,
     Source,
     SupportInput,
@@ -74,14 +79,21 @@ def claim(engine: Engine) -> tuple[str, str] | None:
     return None
 
 
-def allowed(engine: Engine, run_id: str, owner: str, generation: int) -> bool:
+def allowed(
+    engine: Engine, run_id: str, owner: str, generation: int, history: tuple[ContextTurn, ...] = ()
+) -> bool:
     with Session(engine) as db, db.begin():
         lock_owner(db, owner)
         run = db.get(Run, run_id)
         if run is None:
             return False
         ex = execution(db, run)
-        return ex is not None and ex.generation == generation and executable(db, run, ex)
+        return (
+            ex is not None
+            and ex.generation == generation
+            and executable(db, run, ex)
+            and context_available(db, run, history)
+        )
 
 
 def store_call(engine: Engine, receipt: CallReceipt) -> None:
@@ -99,7 +111,11 @@ def store_call(engine: Engine, receipt: CallReceipt) -> None:
 
 
 async def execute(
-    engine: Engine, run_id: str, owner: str, model: FakeMessagesListChatModel | None = None
+    engine: Engine,
+    run_id: str,
+    owner: str,
+    model: FakeMessagesListChatModel | InternalStreamProvider | None = None,
+    profile: ModelProfile | LiveProfile | None = None,
 ) -> None:
     # This coroutine runs in a bounded worker thread, never in the HTTP event loop.
     with Session(engine) as db:
@@ -126,6 +142,9 @@ async def execute(
                 content=message.content,
             ),
         )
+        request = request.model_copy(
+            update={"history": context_history(db, run, request, bound_budget)}
+        )
     if remaining <= 0:
         with Session(engine) as db, db.begin():
             lock_owner(db, owner)
@@ -135,8 +154,8 @@ async def execute(
         return
     runtime = SupportRuntime(
         model or fake_model(),
-        profile=ModelProfile(),
-        authorize=lambda _: allowed(engine, run_id, owner, generation),
+        profile=profile or ModelProfile(),
+        authorize=lambda _: allowed(engine, run_id, owner, generation, request.history),
         record_call=lambda receipt: store_call(engine, receipt),
     )
     task = asyncio.create_task(
@@ -150,7 +169,7 @@ async def execute(
     try:
         while not task.done():
             done, _ = await asyncio.wait({task}, timeout=0.05)
-            if not done and not allowed(engine, run_id, owner, generation):
+            if not done and not allowed(engine, run_id, owner, generation, request.history):
                 task.cancel()
         result = await task
         with Session(engine) as db, db.begin():
@@ -163,7 +182,7 @@ async def execute(
                 return
             if ex.deadline_at <= now():
                 terminal(db, run, ex, "interrupted", "interrupted")
-            elif not executable(db, run, ex):
+            elif not executable(db, run, ex) or not context_available(db, run, request.history):
                 terminal(db, run, ex, "cancelled", "source_unavailable")
             elif result.rule_verdict != "pass" or result.text is None:
                 terminal(db, run, ex, "failed", result.stop_reason or "output_unavailable")
@@ -174,40 +193,92 @@ async def execute(
                     Message(owner_id=owner, run_id=run_id, role="assistant", content=result.text)
                 )
                 terminal(db, run, ex, "completed", None)
+                from app.titles import enqueue
+
+                enqueue(db, run)
     finally:
         if not task.done():
             task.cancel()
             await task
 
 
-def execute_one(engine: Engine) -> bool:
+def execute_one(engine: Engine, settings: Settings | None = None) -> bool:
     selected = claim(engine)
     if selected is None:
         return False
     run_id, owner = selected
     try:
-        asyncio.run(execute(engine, run_id, owner))
-    except Exception:
+        if settings is not None and settings.support_mode == "live":
+
+            async def live() -> None:
+                with Session(engine) as db:
+                    run = db.get(Run, run_id)
+                    assert run is not None
+                    ex = execution(db, run)
+                    assert ex is not None
+                    bound = Budget.model_validate(ex.budget)
+                    remaining = max(0.001, (ex.deadline_at - now()).total_seconds())
+                    from app.provider_settings import for_run
+
+                    selected_settings = for_run(db, settings, owner, run_id)
+                call_settings = selected_settings.model_copy(
+                    update={
+                        "provider_max_output_tokens": bound.max_output_tokens,
+                        "provider_deadline_seconds": min(bound.deadline_seconds, remaining),
+                    }
+                )
+                async with open_provider(call_settings) as provider:
+                    await execute(
+                        engine,
+                        run_id,
+                        owner,
+                        provider,
+                        LiveProfile(
+                            model_ref=selected_settings.provider_model,
+                            base_url=selected_settings.provider_base_url,
+                        ),
+                    )
+
+            asyncio.run(live())
+        else:
+            asyncio.run(execute(engine, run_id, owner))
+    except Exception as error:
+        import logging
+
+        logging.getLogger("uvicorn.error").warning(
+            "worker.execution_failed type=%s", type(error).__name__
+        )
+        reason = "configuration_mismatch" if isinstance(error, ValueError) else "execution_error"
         with Session(engine) as db, db.begin():
             lock_owner(db, owner)
             run = db.get(Run, run_id)
             assert run is not None
-            terminal(db, run, execution(db, run), "failed", "execution_error")
+            terminal(db, run, execution(db, run), "failed", reason)
     return True
 
 
-async def consume(stop: asyncio.Event) -> None:
+async def consume(stop: asyncio.Event, *, ready: Callable[[], None] | None = None) -> None:
     from app.config import load_settings
     from app.database import make_engine
+    from app.titles import execute_one as execute_title
 
     settings = load_settings()
-    if settings.support_mode != "fake" or settings.database_url is None:
+    if settings.support_mode not in {"fake", "live"} or settings.database_url is None:
         raise ValueError("Support worker requires explicitly enabled isolated fake mode")
     engine = make_engine(settings.database_url.get_secret_value())
-    print("worker.started consumers=1 mode=fake", flush=True)
-    try:
+    if ready is not None:
+        from sqlalchemy import text
+
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+        ready()
+    print(f"worker.started consumers=2 mode={settings.support_mode}", flush=True)
+
+    async def loop(titles: bool) -> None:
         while not stop.is_set():
-            active = asyncio.create_task(asyncio.to_thread(execute_one, engine))
+            active = asyncio.create_task(
+                asyncio.to_thread(execute_title if titles else execute_one, engine, settings)
+            )
             try:
                 await asyncio.shield(active)
             except asyncio.CancelledError:
@@ -219,6 +290,11 @@ async def consume(stop: asyncio.Event) -> None:
                 await asyncio.wait_for(stop.wait(), timeout=0.1)
             except TimeoutError:
                 pass
+
+    try:
+        async with asyncio.TaskGroup() as group:
+            group.create_task(loop(False))
+            group.create_task(loop(True))
     finally:
         engine.dispose()
-        print("worker.stopped consumers=1 mode=fake", flush=True)
+        print(f"worker.stopped consumers=2 mode={settings.support_mode}", flush=True)

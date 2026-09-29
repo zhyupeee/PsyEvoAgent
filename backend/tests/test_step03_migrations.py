@@ -11,16 +11,16 @@ from psycopg import sql
 from sqlalchemy import Column, DateTime, Integer, String, inspect, select, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import DeclarativeBase, Session
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
 from app.database import make_engine
 from app.models import (
     Consent,
     ContextGrant,
-    Conversation,
     Feedback,
     IdentitySession,
     LoginAttempt,
+    Personal,
     Preferences,
     Run,
     RunBranch,
@@ -46,6 +46,14 @@ class HistoricalUser(HistoricalBase):
     created_at = Column(DateTime(timezone=True), default=now)
     updated_at = Column(DateTime(timezone=True), default=now)
     failed_logins = Column(Integer, default=0)
+
+
+class Conversation(Personal, HistoricalBase):
+    """Pre-title schema used to seed earlier migration revisions."""
+
+    __tablename__ = "conversations"
+    title: Mapped[str] = mapped_column(String(120), default="新的对话")
+    status: Mapped[str] = mapped_column(String(20), default="active")
 
 
 pytestmark = pytest.mark.postgres
@@ -199,11 +207,49 @@ def test_empty_upgrade_is_repeatable(migration_url: str) -> None:
             "run_executions",
             "run_events",
             "model_calls",
+            "title_tasks",
+            "provider_settings",
+            "provider_bindings",
             "messages",
             "interaction_events",
             "feedback",
             "run_branches",
         }
+    finally:
+        engine.dispose()
+
+
+def test_title_migration_preserves_titles_and_provenance(migration_url: str) -> None:
+    from app.models import Conversation as CurrentConversation
+
+    config = Config(str(BACKEND / "alembic.ini"))
+    command.upgrade(config, "h007_history_feedback")
+    engine = make_engine(migration_url)
+    try:
+        with Session(engine) as db, db.begin():
+            user = User(email="title-migration@example.com", password_hash="synthetic")
+            db.add(user)
+            db.flush()
+            default = Conversation(owner_id=user.id)
+            manual = Conversation(owner_id=user.id, title="保留手动主题")
+            db.add_all([default, manual])
+            db.flush()
+            ids = default.id, manual.id
+        command.upgrade(config, "head")
+        command.upgrade(config, "head")
+        command.check(config)
+        with Session(engine) as db, db.begin():
+            rows = [db.get(CurrentConversation, sid) for sid in ids]
+            assert all(row is not None for row in rows)
+            assert [(row.title, row.title_source) for row in rows if row] == [
+                ("新的对话", "default"),
+                ("保留手动主题", "manual"),
+            ]
+            assert rows[0] is not None
+            rows[0].title_revision = 2
+        with pytest.raises(RuntimeError, match="automatic title history"):
+            command.downgrade(config, "h007_history_feedback")
+        command.check(config)
     finally:
         engine.dispose()
 
@@ -319,7 +365,7 @@ def test_no_expiry_migration_preserves_records_and_refuses_lossy_downgrade(
         with engine.connect() as connection:
             assert (
                 connection.scalar(text("SELECT version_num FROM alembic_version"))
-                == "h007_history_feedback"
+                == "j010_provider_settings"
             )
         command.check(config)
     finally:

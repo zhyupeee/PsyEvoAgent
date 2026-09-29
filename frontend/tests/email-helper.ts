@@ -38,5 +38,5 @@ export async function register(page: Page, email: string) {
   await page.getByLabel('密码', { exact: true }).fill('12345678')
   await page.getByLabel('确认新密码').fill('12345678')
   await page.getByRole('button', { name: '注册并进入' }).click()
-  await expect(page).toHaveURL('/')
+  await expect(page).toHaveURL('/chat')
 }

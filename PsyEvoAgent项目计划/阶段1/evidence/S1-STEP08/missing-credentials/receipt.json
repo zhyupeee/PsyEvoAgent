@@ -1,0 +1,28 @@
+{
+  "step_id": "S1-STEP08.1",
+  "execution_kind": "live-internal-stream-poc",
+  "started": "2026-09-27T13:50:43.276112+00:00",
+  "status": "blocked",
+  "credential_reference": "PSYEVO_PROVIDER_API_KEY",
+  "packages": {
+    "langchain-openai": "1.6.6",
+    "openai": "3.19.2",
+    "langchain-core": "1.6.4",
+    "langgraph": "1.2.12"
+  },
+  "limitations": [
+    "Synthetic fixed input only; no database, webpage or public stream validation",
+    "Finite output rules do not establish semantic safety or professional review",
+    "Price, data region, retention and remote cancellation remain unknown"
+  ],
+  "reason": "provider_not_configured",
+  "ended": "2026-09-27T13:50:43.279469+00:00",
+  "source_sha256": {
+    "backend/app/provider.py": "349cc1597c71a21fa3ce0ef68ba12914f58d801c9337b7a89e318978c8281b8d",
+    "backend/app/provider_probe.py": "e1035869333644da3c0d11b8d2cc4bb95ca8784e804e1c0cf4dfc18e81a59bcb",
+    "backend/app/support.py": "df96fffc2d64b059712e5de59fc17a3e88f7b9b33385943967c17337d8275810",
+    "backend/app/config.py": "7887eefde83e8191ecb59fd2c663feddfda6da02e1e9e02005df74bb04ab8cae",
+    "backend/pyproject.toml": "63cfcc8cf0caa6985d027190807b3ff93551b658a7bba8abd695ff22755966e9",
+    "backend/uv.lock": "fb033c12b3e5a80340b808982d6ff46dfa6819cdca602d0db2a7c9739767993c"
+  }
+}

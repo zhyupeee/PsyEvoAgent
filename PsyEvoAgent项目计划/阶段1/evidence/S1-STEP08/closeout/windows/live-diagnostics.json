@@ -1,0 +1,188 @@
+[
+  {
+    "run_id": "a902c824-ab69-422f-be62-45fc8ae34fdf",
+    "status": "completed",
+    "stop_reason": null,
+    "call": {
+      "role": "support",
+      "run_id": "a902c824-ab69-422f-be62-45fc8ae34fdf",
+      "status": "settled",
+      "attempt": 1,
+      "currency": "unknown",
+      "versions": {
+        "model_ref": "grok-4.7",
+        "provider_ref": "https://ai.hybgzs.com/v1",
+        "graph_version": "support-graph/1",
+        "policy_version": "support-policy/1",
+        "schema_version": "support-runtime/1",
+        "assessor_version": "disabled",
+        "evaluator_version": "behavior-rules/1",
+        "experiment_config_version": "experiment-defaults/1"
+      },
+      "model_ref": "grok-4.7",
+      "elapsed_ms": 172,
+      "request_id": "93a2f51c-f694-4acd-b0f3-a7c6443dba32",
+      "actual_cost": null,
+      "usage_source": "provider_reported",
+      "actual_tokens": 30,
+      "price_version": "unknown",
+      "reserved_cost": null,
+      "reserved_tokens": 8192
+    }
+  },
+  {
+    "run_id": "c051b8ae-277f-49ec-b5fc-633ded23c445",
+    "status": "cancelled",
+    "stop_reason": "user_cancelled",
+    "call": {
+      "role": "support",
+      "run_id": "c051b8ae-277f-49ec-b5fc-633ded23c445",
+      "status": "cancelled",
+      "attempt": 1,
+      "currency": "unknown",
+      "versions": {
+        "model_ref": "grok-4.7",
+        "provider_ref": "https://ai.hybgzs.com/v1",
+        "graph_version": "support-graph/1",
+        "policy_version": "support-policy/1",
+        "schema_version": "support-runtime/1",
+        "assessor_version": "disabled",
+        "evaluator_version": "behavior-rules/1",
+        "experiment_config_version": "experiment-defaults/1"
+      },
+      "model_ref": "grok-4.7",
+      "elapsed_ms": 202,
+      "request_id": "6eecb301-fd0c-43f8-89fa-2d40fda59c96",
+      "actual_cost": null,
+      "usage_source": "unknown",
+      "actual_tokens": null,
+      "price_version": "unknown",
+      "reserved_cost": null,
+      "reserved_tokens": 8192
+    }
+  },
+  {
+    "run_id": "2c632f86-57fa-4c27-a139-a72537942954",
+    "status": "failed",
+    "stop_reason": "execution_error",
+    "call": {
+      "role": "support",
+      "run_id": "2c632f86-57fa-4c27-a139-a72537942954",
+      "status": "settled",
+      "attempt": 1,
+      "currency": "unknown",
+      "versions": {
+        "model_ref": "grok-4.7",
+        "provider_ref": "https://ai.hybgzs.com/v1",
+        "graph_version": "support-graph/1",
+        "policy_version": "support-policy/1",
+        "schema_version": "support-runtime/1",
+        "assessor_version": "disabled",
+        "evaluator_version": "behavior-rules/1",
+        "experiment_config_version": "experiment-defaults/1"
+      },
+      "model_ref": "grok-4.7",
+      "elapsed_ms": 47,
+      "request_id": "fb2fcbbb-3cab-43a5-9a7c-4416801d0ed1",
+      "actual_cost": null,
+      "usage_source": "provider_reported",
+      "actual_tokens": 30,
+      "price_version": "unknown",
+      "reserved_cost": null,
+      "reserved_tokens": 8192
+    }
+  },
+  {
+    "run_id": "2c5b541d-6b41-4b7e-b0fb-19e9a02cbefc",
+    "status": "completed",
+    "stop_reason": null,
+    "call": {
+      "role": "support",
+      "run_id": "2c5b541d-6b41-4b7e-b0fb-19e9a02cbefc",
+      "status": "settled",
+      "attempt": 1,
+      "currency": "unknown",
+      "versions": {
+        "model_ref": "grok-4.7",
+        "provider_ref": "https://ai.hybgzs.com/v1",
+        "graph_version": "support-graph/1",
+        "policy_version": "support-policy/1",
+        "schema_version": "support-runtime/1",
+        "assessor_version": "disabled",
+        "evaluator_version": "behavior-rules/1",
+        "experiment_config_version": "experiment-defaults/1"
+      },
+      "model_ref": "grok-4.7",
+      "elapsed_ms": 47,
+      "request_id": "16455d18-5409-4666-bdd7-9baa61482080",
+      "actual_cost": null,
+      "usage_source": "provider_reported",
+      "actual_tokens": 30,
+      "price_version": "unknown",
+      "reserved_cost": null,
+      "reserved_tokens": 8192
+    }
+  },
+  {
+    "run_id": "4312c2fb-e45a-4f6f-bb35-bdd092b23dcd",
+    "status": "completed",
+    "stop_reason": null,
+    "call": {
+      "role": "support",
+      "run_id": "4312c2fb-e45a-4f6f-bb35-bdd092b23dcd",
+      "status": "settled",
+      "attempt": 1,
+      "currency": "unknown",
+      "versions": {
+        "model_ref": "grok-4.7",
+        "provider_ref": "https://ai.hybgzs.com/v1",
+        "graph_version": "support-graph/1",
+        "policy_version": "support-policy/1",
+        "schema_version": "support-runtime/1",
+        "assessor_version": "disabled",
+        "evaluator_version": "behavior-rules/1",
+        "experiment_config_version": "experiment-defaults/1"
+      },
+      "model_ref": "grok-4.7",
+      "elapsed_ms": 7172,
+      "request_id": "13b6417c-8254-4d01-89f1-673dddee85b3",
+      "actual_cost": null,
+      "usage_source": "provider_reported",
+      "actual_tokens": 1720,
+      "price_version": "unknown",
+      "reserved_cost": null,
+      "reserved_tokens": 8192
+    }
+  },
+  {
+    "run_id": "10260517-093c-43b1-bb2e-914932444f36",
+    "status": "cancelled",
+    "stop_reason": "user_cancelled",
+    "call": {
+      "role": "support",
+      "run_id": "10260517-093c-43b1-bb2e-914932444f36",
+      "status": "cancelled",
+      "attempt": 1,
+      "currency": "unknown",
+      "versions": {
+        "model_ref": "grok-4.7",
+        "provider_ref": "https://ai.hybgzs.com/v1",
+        "graph_version": "support-graph/1",
+        "policy_version": "support-policy/1",
+        "schema_version": "support-runtime/1",
+        "assessor_version": "disabled",
+        "evaluator_version": "behavior-rules/1",
+        "experiment_config_version": "experiment-defaults/1"
+      },
+      "model_ref": "grok-4.7",
+      "elapsed_ms": 327,
+      "request_id": "c4014bb4-c928-440e-837c-333a400ba2fb",
+      "actual_cost": null,
+      "usage_source": "unknown",
+      "actual_tokens": null,
+      "price_version": "unknown",
+      "reserved_cost": null,
+      "reserved_tokens": 8192
+    }
+  }
+]

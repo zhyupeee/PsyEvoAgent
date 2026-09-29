@@ -17,11 +17,12 @@ import {
 } from './account-api'
 import { Brand } from './brand'
 import { Preferences } from './preferences'
+import { ModelSettings } from './model-settings'
 
 const control =
   'min-h-11 rounded-md border border-line px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-50'
 const button = `${control} cursor-pointer bg-status font-medium text-white hover:brightness-95 disabled:cursor-wait`
-type Page = 'login' | 'register' | 'home' | 'me'
+type Page = 'login' | 'register'
 type FormMode = 'login' | 'register' | 'reset' | 'change'
 
 export function AccountPage({ page }: { page: Page }) {
@@ -68,29 +69,9 @@ function Account({ page }: { page: Page }) {
     queryFn: ({ signal }) => getIdentity(signal),
     refetchInterval: 60_000,
   })
-  const authenticated = page === 'home' || page === 'me'
   useEffect(() => {
-    if (identity.data === null && authenticated)
-      void navigate({ to: '/login', replace: true })
-    if (identity.data && !authenticated)
-      void navigate({ to: '/', replace: true })
-  }, [identity.data, authenticated, navigate])
-  const logout = useMutation({
-    mutationFn: async () => {
-      if (!identity.data) return
-      try {
-        await request('/auth/logout', z.null(), {
-          method: 'POST',
-          csrf: identity.data.csrf_token,
-        })
-      } catch (error) {
-        if (!(error instanceof RequestError && error.status === 401))
-          throw error
-      }
-      notifyPrivateChange({ type: 'signed-out' })
-      window.location.replace('/login')
-    },
-  })
+    if (identity.data) void navigate({ to: '/chat', replace: true })
+  }, [identity.data, navigate])
   return (
     <div className="min-h-screen">
       <header className="border-b border-line bg-white">
@@ -101,7 +82,11 @@ function Account({ page }: { page: Page }) {
             className="flex items-center gap-5 text-sm"
           >
             {identity.data ? (
-              <Link to="/me" className="text-status">
+              <Link
+                to="/me"
+                search={{ section: 'security' }}
+                className="text-status"
+              >
                 我的账号
               </Link>
             ) : (
@@ -118,7 +103,7 @@ function Account({ page }: { page: Page }) {
         </div>
       </header>
       <main className="mx-auto min-h-[70vh] max-w-4xl px-5 py-10 sm:px-8 sm:py-16">
-        <ErrorNotice error={identity.error ?? logout.error} />
+        <ErrorNotice error={identity.error} />
         {identity.isError ? (
           <button
             className={button}
@@ -129,7 +114,7 @@ function Account({ page }: { page: Page }) {
           </button>
         ) : null}
         {identity.isPending ? <p role="status">正在确认登录状态…</p> : null}
-        {!authenticated && identity.data === null ? (
+        {identity.data === null ? (
           <section className="mx-auto max-w-lg rounded-lg border border-line bg-white p-6 sm:p-9">
             <h1 className="mb-3 text-2xl font-semibold">
               {page === 'register'
@@ -169,66 +154,110 @@ function Account({ page }: { page: Page }) {
             </p>
           </section>
         ) : null}
-        {authenticated && identity.data ? (
-          <section>
-            <h1 className="mb-3 text-3xl font-semibold">
-              {page === 'me' ? '我的账号' : '欢迎回来。'}
-            </h1>
-            <p className="mb-8 break-all text-muted">
-              当前账号：{identity.data.email}
-            </p>
-            {page === 'home' ? (
-              <>
-                <p className="mb-8 leading-8">
-                  账号已就绪。可以进入对话页面、查看支持资源或调整偏好。
-                </p>
-                <div className="mb-6 flex flex-wrap gap-4">
-                  <Link to="/chat" className={button}>
-                    进入对话
-                  </Link>
-                  <Link to="/resources" className={control}>
-                    支持资源
-                  </Link>
-                </div>
-                <Link to="/me" className={`${button} inline-flex items-center`}>
-                  管理账号
-                </Link>
-              </>
-            ) : (
-              <>
-                <Preferences csrf={identity.data.csrf_token} />
-                <Link to="/chat">管理和删除会话</Link>
-                <DeletionReceipts csrf={identity.data.csrf_token} />
-                <section className="mb-8 max-w-lg rounded-lg border border-line bg-white p-6">
-                  <h2 className="mb-2 text-xl font-semibold">修改密码</h2>
-                  <p className="mb-6 text-sm leading-6 text-muted">
-                    修改后所有已登录设备将退出，请使用新密码重新登录。
-                  </p>
-                  <IdentityForm mode="change" csrf={identity.data.csrf_token} />
-                </section>
-                <div className="flex flex-wrap gap-4">
-                  <Link
-                    to="/"
-                    className={`${control} inline-flex items-center bg-white`}
-                  >
-                    返回首页
-                  </Link>
-                  <button
-                    className={control}
-                    onClick={() => logout.mutate()}
-                    disabled={logout.isPending}
-                  >
-                    退出账号
-                  </button>
-                </div>
-              </>
-            )}
-          </section>
-        ) : null}
       </main>
       <footer className="mx-auto max-w-6xl border-t border-line px-5 py-6 text-sm leading-7 text-muted sm:px-8">
-        PsyEvoAgent · 实验应用。真实对话服务与练习内容仍待配置、审阅。
+        PsyEvoAgent · 按自己的节奏，随时可以停下。
       </footer>
+    </div>
+  )
+}
+
+export function SettingsPage({
+  section,
+}: {
+  section: 'preferences' | 'models' | 'security' | 'data'
+}) {
+  const identity = useQuery({
+    queryKey: ['identity'],
+    queryFn: ({ signal }) => getIdentity(signal),
+  })
+  const logout = useMutation({
+    mutationFn: async () => {
+      if (!identity.data) return
+      try {
+        await request('/auth/logout', z.null(), {
+          method: 'POST',
+          csrf: identity.data.csrf_token,
+        })
+      } catch (error) {
+        if (!(error instanceof RequestError && error.status === 401))
+          throw error
+      }
+      notifyPrivateChange({ type: 'signed-out' })
+      window.location.replace('/login')
+    },
+  })
+  if (!identity.data) return null
+  return (
+    <div className="support-content settings-page">
+      <header className="support-header">
+        <h1>设置</h1>
+      </header>
+      <nav className="resource-tabs" aria-label="设置分类">
+        <Link
+          to="/me"
+          search={{ section: 'models' }}
+          aria-current={section === 'models' ? 'page' : undefined}
+        >
+          模型配置
+        </Link>
+        <Link
+          to="/me"
+          search={{ section: 'preferences' }}
+          aria-current={section === 'preferences' ? 'page' : undefined}
+        >
+          交流与显示
+        </Link>
+        <Link
+          to="/me"
+          search={{ section: 'security' }}
+          aria-current={section === 'security' ? 'page' : undefined}
+        >
+          账号安全
+        </Link>
+        <Link
+          to="/me"
+          search={{ section: 'data' }}
+          aria-current={section === 'data' ? 'page' : undefined}
+        >
+          数据管理
+        </Link>
+      </nav>
+      <ErrorNotice error={logout.error} />
+      {section === 'models' ? (
+        <ModelSettings csrf={identity.data.csrf_token} />
+      ) : null}
+      <div hidden={section !== 'preferences'}>
+        <Preferences csrf={identity.data.csrf_token} />
+      </div>
+      <div hidden={section !== 'security'}>
+        <section className="settings-card">
+          <h2>我的账号</h2>
+          <p className="break-all text-muted">
+            当前账号：{identity.data.email}
+          </p>
+          <button onClick={() => logout.mutate()} disabled={logout.isPending}>
+            退出账号
+          </button>
+        </section>
+        <section className="settings-card">
+          <h2>修改密码</h2>
+          <p className="text-muted">
+            修改后所有已登录设备将退出，请使用新密码重新登录。
+          </p>
+          <IdentityForm mode="change" csrf={identity.data.csrf_token} />
+        </section>
+      </div>
+      <div hidden={section !== 'data'}>
+        <section className="settings-card">
+          <h2>对话与数据</h2>
+          <p className="text-muted">
+            在对话列表中查找会话，进入后可以归档、恢复或确认删除。
+          </p>
+          <Link to="/chat">管理和删除会话 →</Link>
+        </section>
+        <DeletionReceipts csrf={identity.data.csrf_token} />
+      </div>
     </div>
   )
 }
@@ -292,7 +321,7 @@ function IdentityForm({ mode, csrf }: { mode: FormMode; csrf?: string }) {
             ...(mode === 'register' ? { code: value.code } : {}),
           },
         })
-        window.location.replace('/')
+        window.location.replace('/chat')
       } else {
         await request(
           mode === 'reset' ? '/auth/password-reset' : '/auth/password-change',

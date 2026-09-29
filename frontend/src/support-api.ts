@@ -20,8 +20,20 @@ export const sessionSchema = z.object({
   id: z.string(),
   version: z.number(),
   title: z.string(),
+  title_source: z.enum(['default', 'auto', 'manual']),
+  title_revision: z.number(),
+  title_generation_status: z.enum([
+    'not_requested',
+    'queued',
+    'running',
+    'succeeded',
+    'failed',
+    'cancelled',
+  ]),
   status: z.enum(['active', 'archived', 'deleted']),
 })
+export const titlePending = (session: z.infer<typeof sessionSchema>) =>
+  ['queued', 'running'].includes(session.title_generation_status)
 export const runSchema = z.object({
   run_id: z.string(),
   version: z.number(),
@@ -42,6 +54,8 @@ export const runSchema = z.object({
   input_id: z.string().nullable().optional(),
   input_version: z.number().nullable().optional(),
   is_current: z.boolean().optional(),
+  created_at: z.string().optional(),
+  parent_run_id: z.string().nullable().optional(),
 })
 export type Run = z.infer<typeof runSchema>
 export const terminal = (run: Run) =>

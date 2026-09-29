@@ -177,7 +177,13 @@ export function ExercisePage({
                 练习到这里结束
               </h1>
               <p>无需记录或评价这次体验。</p>
-              <Link to="/resources">返回资源</Link>
+              {from ? (
+                <Link to="/chat/$sessionId" params={{ sessionId: from }}>
+                  返回原对话
+                </Link>
+              ) : (
+                <Link to="/resources">返回资源</Link>
+              )}
               <Link to="/chat">主动开始一次对话</Link>
             </>
           )}

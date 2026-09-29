@@ -1,0 +1,60 @@
+{
+  "synthetic": true,
+  "model": "glm-5.2-200k",
+  "passed": true,
+  "run_status": "completed",
+  "stop_reason": null,
+  "title_status": "succeeded",
+  "title_length": 6,
+  "encrypted_binding": true,
+  "calls": [
+    {
+      "role": "support",
+      "run_id": "42b6650c-2d29-4e1c-9dcf-cba482fe83c1",
+      "status": "settled",
+      "attempt": 1,
+      "currency": "unknown",
+      "versions": {
+        "model_ref": "glm-5.2-200k",
+        "provider_ref": "https://x666.me/v1",
+        "graph_version": "support-graph/1",
+        "policy_version": "support-policy/2",
+        "schema_version": "support-runtime/1",
+        "assessor_version": "disabled",
+        "evaluator_version": "behavior-rules/1",
+        "experiment_config_version": "experiment-defaults/1"
+      },
+      "model_ref": "glm-5.2-200k",
+      "elapsed_ms": 11514,
+      "request_id": "3530efe4-5c0c-436c-9c9d-0b299ce118dd",
+      "actual_cost": null,
+      "usage_source": "provider_reported",
+      "actual_tokens": 177,
+      "price_version": "unknown",
+      "reserved_cost": null,
+      "reserved_tokens": 32768
+    },
+    {
+      "role": "title",
+      "run_id": "42b6650c-2d29-4e1c-9dcf-cba482fe83c1",
+      "status": "settled",
+      "attempt": 1,
+      "currency": "unknown",
+      "versions": {
+        "model_ref": "glm-5.2-200k",
+        "provider_ref": "https://x666.me/v1",
+        "title_schema": "title/1"
+      },
+      "model_ref": "glm-5.2-200k",
+      "elapsed_ms": 5983,
+      "request_id": "8905b17d-f290-5f99-9bf6-d413f1665842",
+      "actual_cost": null,
+      "usage_source": "provider_reported",
+      "actual_tokens": 198,
+      "price_version": "unknown",
+      "reserved_cost": null,
+      "reserved_tokens": 8192
+    }
+  ],
+  "clean_shutdown": true
+}

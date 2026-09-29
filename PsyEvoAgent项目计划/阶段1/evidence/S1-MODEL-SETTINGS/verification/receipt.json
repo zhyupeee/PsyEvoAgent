@@ -1,0 +1,25 @@
+{
+  "completed_at": "2026-09-29T03:01:25.113297+00:00",
+  "checks": {
+    "backend": {
+      "tests": 136,
+      "failures": 0,
+      "errors": 0
+    },
+    "postgres": {
+      "tests": 100,
+      "failures": 0,
+      "errors": 0
+    }
+  },
+  "browser_checks": 1,
+  "model": "glm-5.2-200k",
+  "live_response_status": "completed",
+  "live_title_status": "succeeded",
+  "live_calls": 2,
+  "private_snapshot_verified": true,
+  "notes": "Synthetic isolated verification; no original user messages replayed; provider prices unknown.",
+  "test_database_cleanup": true,
+  "local_api_health": 200,
+  "changed_material_secret_matches": 0
+}

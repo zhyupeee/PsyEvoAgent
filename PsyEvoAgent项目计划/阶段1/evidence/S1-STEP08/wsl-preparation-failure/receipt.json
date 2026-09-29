@@ -1,0 +1,38 @@
+{
+  "step_id": "S1-STEP04",
+  "protocol": "s1-runtime-check/1",
+  "execution_kind": "fake",
+  "started": "2026-09-27T13:45:51.256524+00:00",
+  "os_isolation_required": true,
+  "commands": [
+    {
+      "label": "engineering",
+      "command": [
+        "/home/zhyupe1118/psyevo-step08-d5E3do/backend/.venv/bin/python",
+        "scripts/check_step02.py",
+        "--require-os-isolation"
+      ],
+      "exit_code": 1,
+      "log": "engineering.txt"
+    }
+  ],
+  "status": "failed",
+  "acceptance_ids": [
+    "S1-A01",
+    "S1-A09",
+    "S1-A12",
+    "RSI-S1-A05",
+    "RSI-S1-A06"
+  ],
+  "limitations": "Local fake slice only; live provider/content BLOCKED; no STEP05/06",
+  "ended": "2026-09-27T13:47:31.663732+00:00",
+  "source_sha256": {
+    "backend/app/support.py": "df96fffc2d64b059712e5de59fc17a3e88f7b9b33385943967c17337d8275810",
+    "backend/tests/test_support.py": "b84f13afa5bd7869f3771dc4313bd1bd3160589344c4e7526ccb5428a3c20d53",
+    "backend/tests/support_receipt.py": "bfbed07ff2b63daacd73730e94f2b1dcc0fe470d8963249abdd2fed63a85f594",
+    "backend/pyproject.toml": "63cfcc8cf0caa6985d027190807b3ff93551b658a7bba8abd695ff22755966e9",
+    "backend/uv.lock": "fb033c12b3e5a80340b808982d6ff46dfa6819cdca602d0db2a7c9739767993c",
+    "scripts/check_step04.py": "91a104b9f58d7b85b39e62de4667bf6727788ef5a44223c0e08038595bfe5686",
+    "scripts/check_step02_isolated.sh": "84d795ed9eaab52deb81111f31725ff5be80bae814f0cb8fc3342e0c5d996aa7"
+  }
+}

@@ -4,10 +4,12 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
 import { getIdentity, request } from './account-api'
+import { ChatTimeline, turnLabels } from './chat-timeline'
+import { modelFailure } from './model-settings'
 import {
   BranchActions,
-  DeletionReceipts,
   FeedbackForm,
+  notifyPrivateChange,
   SessionActions,
   SessionList,
   TurnHistory,
@@ -17,14 +19,17 @@ import {
   runSchema,
   sessionSchema,
   terminal,
+  titlePending,
 } from './support-api'
 
 export function ChatPage({ sessionId }: { sessionId?: string }) {
   const navigate = useNavigate()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const identity = useQuery({
     queryKey: ['identity'],
     queryFn: ({ signal }) => getIdentity(signal),
   })
+  const client = useQueryClient()
   const key = useRef<string | null>(null)
   const create = useMutation({
     mutationFn: async () => {
@@ -35,6 +40,9 @@ export function ChatPage({ sessionId }: { sessionId?: string }) {
         csrf: identity.data?.csrf_token,
         key: key.current,
       })
+      key.current = null
+      setSidebarOpen(false)
+      await client.invalidateQueries({ queryKey: ['sessions'] })
       await navigate({
         to: '/chat/$sessionId',
         params: { sessionId: session.id },
@@ -42,42 +50,84 @@ export function ChatPage({ sessionId }: { sessionId?: string }) {
     },
   })
   return (
-    <div className="support-content chat-layout">
-      <header className="support-header">
-        <Link to="/chat">对话</Link>
-        <Link to="/resources" search={{ tab: 'support' }}>
-          现实支持
-        </Link>
-      </header>
-      <SessionList />
-      {sessionId ? (
-        <Conversation
-          key={sessionId}
-          sessionId={sessionId}
-          csrf={identity.data?.csrf_token ?? ''}
-        />
-      ) : (
-        <section className="support-empty">
-          <p className="eyebrow">留一点空间，给此刻的自己</p>
-          <h1>开始一次对话</h1>
-          <p>
-            可以从现在最在意的一件事说起。提供一般支持，不能替代专业咨询或诊断。
-          </p>
-          <p className="text-muted">
-            当前真实对话服务尚未配置。可先查看资源或调整偏好。
-          </p>
+    <div
+      className="support-content chat-workspace"
+      data-sidebar-open={sidebarOpen}
+    >
+      <aside id="chat-sidebar" className="chat-sidebar" aria-label="会话列表">
+        <div className="sidebar-heading">
+          <p className="eyebrow">留给自己的空间</p>
           <button
-            className="primary"
-            disabled={create.isPending || !identity.data}
-            onClick={() => create.mutate()}
+            className="sidebar-toggle"
+            onClick={() => setSidebarOpen(false)}
           >
-            开始一次对话
+            收起会话
           </button>
-          {create.isError ? <p role="alert">未能建立对话，请重试。</p> : null}
-          <Link to="/resources">也可以先看看支持资源 →</Link>
-        </section>
-      )}
-      <DeletionReceipts csrf={identity.data?.csrf_token ?? ''} />
+        </div>
+        <button
+          className="primary"
+          disabled={create.isPending || !identity.data}
+          onClick={() => create.mutate()}
+        >
+          新建对话
+        </button>
+        {create.isError ? <p role="alert">未能建立对话，请重试。</p> : null}
+        <SessionList onSelect={() => setSidebarOpen(false)} />
+      </aside>
+      <div className="chat-layout">
+        <header className="support-header">
+          <button
+            className="sidebar-toggle"
+            aria-expanded={sidebarOpen}
+            aria-controls="chat-sidebar"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            历史对话
+          </button>
+          {sessionId ? <Link to="/chat">← 返回对话列表</Link> : <h1>对话</h1>}
+          <Link to="/resources" search={{ tab: 'support' }}>
+            现实支持
+          </Link>
+        </header>
+        {sessionId ? (
+          <Conversation
+            key={sessionId}
+            sessionId={sessionId}
+            csrf={identity.data?.csrf_token ?? ''}
+          />
+        ) : (
+          <>
+            <section className="chat-welcome">
+              <div>
+                <p className="eyebrow">留一点空间，给此刻的自己</p>
+                <h2>今天，想聊些什么？</h2>
+                <p>
+                  可以从现在最在意的一件事说起。提供一般支持，不能替代专业咨询或诊断。
+                </p>
+              </div>
+              <div className="chat-welcome-actions">
+                <button
+                  className="primary"
+                  disabled={create.isPending || !identity.data}
+                  onClick={() => create.mutate()}
+                >
+                  开始一次对话
+                </button>
+                {create.isError ? (
+                  <p role="alert">未能建立对话，请重试。</p>
+                ) : null}
+                <Link to="/resources">也可以先看看支持资源 →</Link>
+              </div>
+            </section>
+
+            <p className="secondary-link">
+              <Link to="/me" search={{ section: 'data' }}>
+                删除处理记录
+              </Link>
+            </p>
+          </>
+        )}
+      </div>
     </div>
   )
 }
@@ -97,6 +147,13 @@ function Conversation({
     queryKey: ['session', sessionId],
     queryFn: ({ signal }) =>
       request('/sessions/' + sessionId, sessionSchema, { signal }),
+    refetchInterval: (query) =>
+      !query.state.error &&
+      query.state.dataUpdateCount < 180 &&
+      query.state.data &&
+      titlePending(query.state.data)
+        ? 2000
+        : false,
   })
   const queryKey = ['current-run', sessionId]
   const current = useQuery({
@@ -116,6 +173,23 @@ function Conversation({
   const active = !!run && ['queued', 'running'].includes(run.status)
   const [connection, setConnection] = useState('')
   const runId = run?.run_id
+  useEffect(() => {
+    if (run?.status === 'completed') {
+      void client.invalidateQueries({ queryKey: ['session', sessionId] })
+      void client.invalidateQueries({ queryKey: ['sessions'] })
+    }
+  }, [runId, run?.status, client, sessionId])
+  useEffect(() => {
+    if (session.data?.title_source === 'auto') {
+      void client.invalidateQueries({ queryKey: ['sessions'] })
+      notifyPrivateChange({ type: 'session-updated', sessionId })
+    }
+  }, [
+    session.data?.title_revision,
+    session.data?.title_source,
+    client,
+    sessionId,
+  ])
   useEffect(() => {
     if (!runId || !active) return
     // SSE only invalidates the authorized read model; raw candidate deltas never enter the UI.
@@ -148,6 +222,7 @@ function Conversation({
   const attempt = useRef<Attempt | null>(null)
   const send = useMutation({
     mutationFn: async (text: string) => {
+      recover.reset()
       if (!session.data) throw new Error('会话尚未就绪。')
       const parsed = z
         .string()
@@ -175,6 +250,8 @@ function Conversation({
           body,
           key: pending.id + step,
         })
+      // Preserve the previous completed turn before current-run advances.
+      await client.refetchQueries({ queryKey: ['timeline', sessionId] })
       if (!pending.draft) {
         const draft = await write(
           '/run-drafts',
@@ -218,6 +295,8 @@ function Conversation({
       attempt.current = null
       form.reset()
       await client.invalidateQueries({ queryKey })
+      await client.invalidateQueries({ queryKey: ['timeline', sessionId] })
+      notifyPrivateChange({ type: 'session-updated', sessionId })
     },
   })
   const form = useForm({
@@ -252,6 +331,23 @@ function Conversation({
       await client.invalidateQueries({ queryKey })
     },
   })
+  const recover = useMutation({
+    mutationFn: async () => {
+      const pending = attempt.current
+      const result = await current.refetch({ throwOnError: true })
+      await client.invalidateQueries({ queryKey: ['timeline', sessionId] })
+      const latest = result.data
+      if (
+        !latest ||
+        latest.status === 'draft' ||
+        (pending && latest.run_id !== pending.draft)
+      )
+        return '尚未确认发送成功。请点击“重试原消息”继续发送。'
+      if (latest.status === 'failed' || latest.status === 'interrupted')
+        return '已确认本次回答失败。可在消息下方点击“重新生成”。'
+      return `已更新：${turnLabels[latest.status]}。`
+    },
+  })
   if (session.isError || current.isError)
     return (
       <section>
@@ -267,30 +363,28 @@ function Conversation({
         </button>
       </section>
     )
-  const labels = {
-    draft: '尚未发送',
-    queued: '已接收，等待响应',
-    running: '正在响应',
-    completed: '已完成',
-    cancelled: '已停止',
-    failed: '本次响应失败',
-    interrupted: '本次响应中断',
-  }
   return (
     <>
-      <h1 className="chat-title">
-        {blocking || preferences.data?.display_preferences.hide_titles
-          ? '对话'
-          : (session.data?.title ?? '正在读取…')}
-      </h1>
-      {session.data ? (
-        <SessionActions
-          session={session.data}
-          csrf={csrf}
-          active={!!run && !terminal(run)}
-          onBlocking={() => setBlocking(true)}
-        />
-      ) : null}
+      <div className="conversation-heading">
+        <h1 className="chat-title">
+          {blocking || preferences.data?.display_preferences.hide_titles
+            ? '对话'
+            : (session.data?.title ?? '正在读取…')}
+        </h1>
+        <div className="conversation-actions">
+          {!blocking ? (
+            <TurnHistory sessionId={sessionId} currentId={run?.run_id} />
+          ) : null}
+          {session.data ? (
+            <SessionActions
+              session={session.data}
+              csrf={csrf}
+              active={!!run && !terminal(run)}
+              onBlocking={() => setBlocking(true)}
+            />
+          ) : null}
+        </div>
+      </div>
       {blocking ? (
         <p role="alert">
           内容已隐藏。请在删除处理记录中核对结果，未确认时可重试原删除请求。
@@ -300,42 +394,36 @@ function Conversation({
           {session.data?.status === 'archived' ? (
             <p>此对话已归档，恢复后可继续发送。</p>
           ) : null}
-          <div className="message-area" aria-label="当前轮次">
-            {!run?.input_text && !run?.output ? (
-              <p className="text-muted">
-                想说的可以写在下面。每条最多 4000
-                字；可在“我的”里选择先倾听或一起想办法。
-              </p>
-            ) : null}
-            {run?.input_text ? (
-              <p className="message user-message">{run.input_text}</p>
-            ) : null}
-            {run?.output ? (
-              <p className="message assistant-message">{run.output.text}</p>
-            ) : null}
+          <ChatTimeline sessionId={sessionId} current={run}>
             <p role="status">
-              {run ? labels[run.status] : ''}
+              {run ? turnLabels[run.status] : ''}
               {active ? ` · ${connection}` : ''}
             </p>
             {run && ['failed', 'interrupted'].includes(run.status) ? (
               <p role="alert">
-                未完成响应。输入保留在当前轮次，可核对状态后再次发送。
+                本次回答未完成，输入已保留。可以点击下方“重新生成”重试。
+                {run.stop_reason ? ` ${modelFailure(run.stop_reason)}` : ''}
               </p>
             ) : null}
-          </div>
-          {run && terminal(run) ? (
-            <FeedbackForm key={run.run_id} runId={run.run_id} csrf={csrf} />
-          ) : null}
-          {run?.input_id && !active && session.data?.status === 'active' ? (
-            <BranchActions
-              key={run.run_id}
-              run={run}
-              sessionId={sessionId}
-              sessionVersion={session.data.version}
-              csrf={csrf}
-            />
-          ) : null}
-          <TurnHistory sessionId={sessionId} currentId={run?.run_id} />
+            <div className="response-tools">
+              {run && terminal(run) ? (
+                <FeedbackForm
+                  key={`feedback-${run.run_id}`}
+                  runId={run.run_id}
+                  csrf={csrf}
+                />
+              ) : null}
+              {run?.input_id && !active && session.data?.status === 'active' ? (
+                <BranchActions
+                  key={`branch-${run.run_id}`}
+                  run={run}
+                  sessionId={sessionId}
+                  sessionVersion={session.data.version}
+                  csrf={csrf}
+                />
+              ) : null}
+            </div>
+          </ChatTimeline>
           <form
             className="composer"
             onSubmit={(e) => {
@@ -356,7 +444,7 @@ function Conversation({
                   <textarea
                     disabled={!session.data || !csrf}
                     maxLength={4000}
-                    rows={4}
+                    rows={2}
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
                     aria-describedby="message-limit"
@@ -373,7 +461,7 @@ function Conversation({
               </p>
             ) : null}
             {cancel.isError ? (
-              <p role="alert">停止未确认，请查询状态后重试。</p>
+              <p role="alert">停止未确认，请检查发送状态后重试。</p>
             ) : null}
             <div className="flex flex-wrap gap-3">
               {active ? (
@@ -406,9 +494,15 @@ function Conversation({
                   )}
                 </form.Subscribe>
               )}
-              <button type="button" onClick={() => void current.refetch()}>
-                查询运行状态
-              </button>
+              {send.isError || cancel.isError ? (
+                <button
+                  type="button"
+                  disabled={recover.isPending}
+                  onClick={() => recover.mutate()}
+                >
+                  {recover.isPending ? '正在检查…' : '检查发送状态'}
+                </button>
+              ) : null}
               <Link
                 to="/resources/exercises/$exerciseId"
                 params={{ exerciseId: 'attention' }}
@@ -417,6 +511,13 @@ function Conversation({
                 独立练习
               </Link>
             </div>
+            <p aria-live="polite" className="text-sm text-muted">
+              {recover.isPending
+                ? '正在检查发送状态…'
+                : recover.isError
+                  ? '暂时无法检查状态，请稍后重试。'
+                  : recover.data}
+            </p>
           </form>
         </>
       )}

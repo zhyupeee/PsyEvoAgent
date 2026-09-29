@@ -1,0 +1,19 @@
+
+Running 9 tests using 1 worker
+
+  ok 1 tests\account-recovery.spec.ts:3:1 › session service failure stays on home and retry restores login (5.0s)
+  ok 2 tests\foundation.spec.ts:12:1 › real Start page and same-origin FastAPI gateway work twice with keyboard (2.1s)
+  ok 3 tests\foundation.spec.ts:38:1 › slow request can be stopped and late success cannot overwrite it (2.4s)
+  ok 4 tests\foundation.spec.ts:67:1 › errors focus the message, never display raw bodies, and allow retry (1.9s)
+  ok 5 tests\foundation.spec.ts:83:1 › mobile reduced-motion layout fits and external browser requests are denied (569ms)
+  ok 6 tests\privacy.spec.ts:12:1 › code resend follows the edited email while an earlier send completes (2.2s)
+  ok 7 tests\privacy.spec.ts:63:1 › email register, refresh, account change revokes sessions and logout (13.8s)
+  ok 8 tests\privacy.spec.ts:112:1 › forgot password and mobile keyboard recovery (10.4s)
+  ok 9 tests\privacy.spec.ts:179:1 › brand and browser icon resources on all entry pages (8.4s)
+
+  9 passed (1.1m)
+[WebServer] INFO:     Started server process [41060]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8108 (Press CTRL+C to quit)
