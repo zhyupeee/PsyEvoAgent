@@ -1,6 +1,7 @@
 """Real PostgreSQL + controlled SDK transport; never a remote provider."""
 
 import asyncio
+import json
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -16,7 +17,9 @@ from sqlalchemy.orm import Session
 from app.config import Settings
 from app.models import Message, ModelCall, Run, RunEvent
 from app.provider import InternalStreamProvider, LiveProfile, open_provider
+from app.run_stream import MAX_EVENT_BYTES
 from app.run_worker import claim, execute, execute_one
+from app.support import MAX_RESPONSE_BYTES
 from tests import test_runs
 from tests.test_history import remove
 from tests.test_provider import PausedStream, response
@@ -37,6 +40,73 @@ def live_settings(client: TestClient) -> Settings:
     config = Settings.model_validate(config.model_dump())
     client.app.state.settings = config
     return config
+
+
+@pytest.mark.parametrize(
+    "unit", ["a", "倾听🙂", '\t"\\'], ids=["33000-ascii", "utf8-limit", "escaped-limit"]
+)
+def test_long_checked_answer_reaches_sse_and_replay(client: TestClient, unit: str) -> None:
+    config = live_settings(client)
+    # Exercise both the reported regression and the full private JSON byte limit.
+    count = (
+        33000
+        if unit == "a"
+        else (MAX_RESPONSE_BYTES - len(json.dumps({"text": "end"}).encode()))
+        // (len(json.dumps(unit, ensure_ascii=False).encode("utf-8")) - 2)
+    )
+    text = unit * count + "end"
+    encoded = json.dumps({"text": text}, ensure_ascii=False)
+    assert 32768 < len(encoded.encode("utf-8")) <= MAX_RESPONSE_BYTES
+    _, rid, body = create(client)
+    start(client, rid, body)
+    claimed = claim(engine(client))
+    assert claimed is not None and claimed[0] == rid
+
+    async def exercise() -> None:
+        async def handle(req: httpx.Request) -> httpx.Response:
+            return httpx.Response(
+                200,
+                content=response(encoded, tokens=1010),
+                headers={"content-type": "text/event-stream"},
+            )
+
+        async with open_provider(config, transport=httpx.MockTransport(handle)) as adapter:
+            await execute(
+                engine(client),
+                rid,
+                claimed[1],
+                adapter,
+                LiveProfile(model_ref=config.provider_model, base_url=config.provider_base_url),
+            )
+
+    asyncio.run(exercise())
+    snapshot = client.get(f"/api/v1/runs/{rid}").json()
+    assert snapshot["status"] == "completed" and snapshot["output"]["text"] == text
+    with Session(engine(client)) as db:
+        message = db.scalar(
+            select(Message).where(Message.run_id == rid, Message.role == "assistant")
+        )
+        assert message is not None and message.content == text
+
+    stream = client.get(f"/api/v1/runs/{rid}/events")
+    assert stream.status_code == 200
+    frames = [frame for frame in stream.text.split("\n\n") if "data: " in frame]
+    assert len(frames) == 3
+    assert all(len((frame + "\n\n").encode("utf-8")) <= MAX_EVENT_BYTES for frame in frames)
+    events = [
+        json.loads(line[6:]) for line in stream.text.splitlines() if line.startswith("data: ")
+    ]
+    assert [event["type"] for event in events] == ["run.started", "message.delta", "run.completed"]
+    assert events[1]["payload"]["text"] == text
+    for cursor, expected in [
+        (events[0]["event_id"], events[1:]),
+        (events[1]["event_id"], events[2:]),
+    ]:
+        replay = client.get(f"/api/v1/runs/{rid}/events", headers={"Last-Event-ID": cursor})
+        assert replay.status_code == 200
+        assert [
+            json.loads(line[6:]) for line in replay.text.splitlines() if line.startswith("data: ")
+        ] == expected
 
 
 @pytest.mark.parametrize("cancel", [False, True])

@@ -1,4 +1,4 @@
-﻿import { useForm } from '@tanstack/react-form'
+import { useForm } from '@tanstack/react-form'
 import {
   QueryClient,
   QueryClientProvider,
@@ -6,6 +6,15 @@ import {
   useQuery,
 } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
+import {
+  Database,
+  Eye,
+  EyeOff,
+  KeyRound,
+  LockKeyhole,
+  Mail,
+  User,
+} from 'lucide-react'
 import { DeletionReceipts, notifyPrivateChange } from './history-page'
 import { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
@@ -19,9 +28,12 @@ import { Brand } from './brand'
 import { Preferences } from './preferences'
 import { ModelSettings } from './model-settings'
 
-const control =
-  'min-h-11 rounded-md border border-line px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-50'
-const button = `${control} cursor-pointer bg-status font-medium text-white hover:brightness-95 disabled:cursor-wait`
+const control = 'field'
+const button = 'btn btn-primary'
+const tabLinkClass =
+  '-mb-px inline-flex min-h-11 items-center border-b-2 border-transparent px-1 text-sm font-medium text-muted no-underline transition-colors hover:text-ink aria-[current=page]:border-status aria-[current=page]:text-ink'
+const settingsCardClass =
+  'settings-card mb-6 grid gap-4 rounded-xl border border-line bg-white p-4 page:p-6'
 type Page = 'login' | 'register'
 type FormMode = 'login' | 'register' | 'reset' | 'change'
 
@@ -52,7 +64,7 @@ function ErrorNotice({ error }: { error: Error | null }) {
       role="alert"
       tabIndex={-1}
       ref={ref}
-      className="my-4 rounded-md border border-danger/20 bg-white p-3 text-sm text-danger"
+      className="my-4 rounded-lg border border-danger/20 bg-danger/5 p-3 text-sm text-danger"
     >
       {error instanceof RequestError
         ? error.message
@@ -113,7 +125,11 @@ function Account({ page }: { page: Page }) {
             {identity.isFetching ? '正在重试…' : '重试'}
           </button>
         ) : null}
-        {identity.isPending ? <p role="status">正在确认登录状态…</p> : null}
+        {identity.isPending ? (
+          <p role="status" className="sr-only">
+            正在确认登录状态…
+          </p>
+        ) : null}
         {identity.data === null ? (
           <section className="mx-auto max-w-lg rounded-lg border border-line bg-white p-6 sm:p-9">
             <h1 className="mb-3 text-2xl font-semibold">
@@ -138,7 +154,7 @@ function Account({ page }: { page: Page }) {
             />
             {page === 'login' ? (
               <button
-                className="mt-5 cursor-pointer text-sm text-status underline-offset-4 hover:underline"
+                className="btn-ghost mt-3 -ml-2.5 text-sm"
                 onClick={() => setReset(!reset)}
               >
                 {reset ? '返回登录' : '忘记密码？'}
@@ -146,7 +162,7 @@ function Account({ page }: { page: Page }) {
             ) : null}
             <p className="mt-6 border-t border-line pt-5 text-sm text-muted">
               <Link
-                className="text-status"
+                className="link-inline"
                 to={page === 'register' ? '/login' : '/register'}
               >
                 {page === 'register' ? '已有账号？登录' : '没有账号？注册'}
@@ -189,14 +205,18 @@ export function SettingsPage({
   })
   if (!identity.data) return null
   return (
-    <div className="support-content settings-page">
-      <header className="support-header">
-        <h1>设置</h1>
+    <div className="support-content settings-page mx-auto w-full max-w-[840px] pt-6 pb-12 page:pt-8">
+      <header className="support-header mb-5">
+        <h1 className="text-2xl font-semibold tracking-tight">设置</h1>
       </header>
-      <nav className="resource-tabs" aria-label="设置分类">
+      <nav
+        className="resource-tabs mb-6 flex flex-wrap gap-x-6 gap-y-1 border-b border-line"
+        aria-label="设置分类"
+      >
         <Link
           to="/me"
           search={{ section: 'models' }}
+          className={tabLinkClass}
           aria-current={section === 'models' ? 'page' : undefined}
         >
           模型配置
@@ -204,6 +224,7 @@ export function SettingsPage({
         <Link
           to="/me"
           search={{ section: 'preferences' }}
+          className={tabLinkClass}
           aria-current={section === 'preferences' ? 'page' : undefined}
         >
           交流与显示
@@ -211,6 +232,7 @@ export function SettingsPage({
         <Link
           to="/me"
           search={{ section: 'security' }}
+          className={tabLinkClass}
           aria-current={section === 'security' ? 'page' : undefined}
         >
           账号安全
@@ -218,6 +240,7 @@ export function SettingsPage({
         <Link
           to="/me"
           search={{ section: 'data' }}
+          className={tabLinkClass}
           aria-current={section === 'data' ? 'page' : undefined}
         >
           数据管理
@@ -231,30 +254,45 @@ export function SettingsPage({
         <Preferences csrf={identity.data.csrf_token} />
       </div>
       <div hidden={section !== 'security'}>
-        <section className="settings-card">
-          <h2>我的账号</h2>
-          <p className="break-all text-muted">
+        <section className={settingsCardClass}>
+          <h2 className="flex items-center gap-2 text-xl font-semibold">
+            <User size={20} aria-hidden="true" className="text-status" />
+            我的账号
+          </h2>
+          <p className="break-all text-sm text-muted">
             当前账号：{identity.data.email}
           </p>
-          <button onClick={() => logout.mutate()} disabled={logout.isPending}>
+          <button
+            className="btn justify-self-start"
+            onClick={() => logout.mutate()}
+            disabled={logout.isPending}
+          >
             退出账号
           </button>
         </section>
-        <section className="settings-card">
-          <h2>修改密码</h2>
-          <p className="text-muted">
+        <section className={settingsCardClass}>
+          <h2 className="flex items-center gap-2 text-xl font-semibold">
+            <KeyRound size={20} aria-hidden="true" className="text-status" />
+            修改密码
+          </h2>
+          <p className="text-sm text-muted">
             修改后所有已登录设备将退出，请使用新密码重新登录。
           </p>
           <IdentityForm mode="change" csrf={identity.data.csrf_token} />
         </section>
       </div>
       <div hidden={section !== 'data'}>
-        <section className="settings-card">
-          <h2>对话与数据</h2>
-          <p className="text-muted">
+        <section className={settingsCardClass}>
+          <h2 className="flex items-center gap-2 text-xl font-semibold">
+            <Database size={20} aria-hidden="true" className="text-status" />
+            对话与数据
+          </h2>
+          <p className="text-sm text-muted">
             在对话列表中查找会话，进入后可以归档、恢复或确认删除。
           </p>
-          <Link to="/chat">管理和删除会话 →</Link>
+          <Link to="/chat" className="link-inline justify-self-start text-sm">
+            管理和删除会话 →
+          </Link>
         </section>
         <DeletionReceipts csrf={identity.data.csrf_token} />
       </div>
@@ -404,7 +442,7 @@ function IdentityForm({ mode, csrf }: { mode: FormMode; csrf?: string }) {
     return (
       <div role="status" className="space-y-4 leading-7">
         <p>密码重置请求已完成。如邮箱关联有效账号，请使用新密码重新登录。</p>
-        <a href="/login" className="text-status underline">
+        <a href="/login" className="link-inline">
           返回登录
         </a>
       </div>
@@ -422,24 +460,31 @@ function IdentityForm({ mode, csrf }: { mode: FormMode; csrf?: string }) {
           {(field) => (
             <label className="grid gap-2 text-sm font-medium">
               邮箱
-              <input
-                className={control}
-                type="email"
-                autoComplete="username"
-                autoCapitalize="none"
-                spellCheck={false}
-                required
-                maxLength={254}
-                value={field.state.value}
-                onChange={(event) => {
-                  field.handleChange(event.target.value)
-                  const email = event.target.value.trim().toLowerCase()
-                  currentCodeEmail.current = email
-                  setCodeEmail(email)
-                  form.setFieldValue('code', '')
-                  setError(null)
-                }}
-              />
+              <span className="relative block">
+                <Mail
+                  size={16}
+                  aria-hidden="true"
+                  className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted"
+                />
+                <input
+                  className={`${control} pl-9`}
+                  type="email"
+                  autoComplete="username"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  required
+                  maxLength={254}
+                  value={field.state.value}
+                  onChange={(event) => {
+                    field.handleChange(event.target.value)
+                    const email = event.target.value.trim().toLowerCase()
+                    currentCodeEmail.current = email
+                    setCodeEmail(email)
+                    form.setFieldValue('code', '')
+                    setError(null)
+                  }}
+                />
+              </span>
             </label>
           )}
         </form.Field>
@@ -450,21 +495,30 @@ function IdentityForm({ mode, csrf }: { mode: FormMode; csrf?: string }) {
             {(field) => (
               <div className="grid gap-2 text-sm font-medium">
                 <label htmlFor={`${mode}-code`}>邮箱验证码</label>
-                <div className="flex flex-wrap gap-2">
-                  <input
-                    className={`${control} min-w-0 flex-1`}
-                    inputMode="numeric"
-                    id={`${mode}-code`}
-                    autoComplete="one-time-code"
-                    pattern="[0-9]{6}"
-                    required
-                    maxLength={6}
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                  />
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="relative block min-w-0 flex-1">
+                    <KeyRound
+                      size={16}
+                      aria-hidden="true"
+                      className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted"
+                    />
+                    <input
+                      className={`${control} min-w-0 pl-9`}
+                      inputMode="numeric"
+                      id={`${mode}-code`}
+                      autoComplete="one-time-code"
+                      pattern="[0-9]{6}"
+                      required
+                      maxLength={6}
+                      value={field.state.value}
+                      onChange={(event) =>
+                        field.handleChange(event.target.value)
+                      }
+                    />
+                  </span>
                   <button
                     type="button"
-                    className={`${control} text-status`}
+                    className="btn px-4 text-accent-strong"
                     onClick={() => {
                       form.setFieldValue('code', '')
                       send.mutate(codeEmail)
@@ -493,15 +547,22 @@ function IdentityForm({ mode, csrf }: { mode: FormMode; csrf?: string }) {
           {(field) => (
             <label className="grid gap-2 text-sm font-medium">
               当前密码
-              <input
-                className={control}
-                type="password"
-                autoComplete="current-password"
-                required
-                maxLength={128}
-                value={field.state.value}
-                onChange={(event) => field.handleChange(event.target.value)}
-              />
+              <span className="relative block">
+                <LockKeyhole
+                  size={16}
+                  aria-hidden="true"
+                  className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted"
+                />
+                <input
+                  className={`${control} pl-9`}
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  maxLength={128}
+                  value={field.state.value}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                />
+              </span>
             </label>
           )}
         </form.Field>
@@ -510,16 +571,23 @@ function IdentityForm({ mode, csrf }: { mode: FormMode; csrf?: string }) {
         {(field) => (
           <label className="grid gap-2 text-sm font-medium">
             {mode === 'reset' || mode === 'change' ? '新密码' : '密码'}
-            <input
-              className={control}
-              type={showPassword ? 'text' : 'password'}
-              autoComplete={isNew ? 'new-password' : 'current-password'}
-              required
-              minLength={isNew ? 6 : 1}
-              maxLength={128}
-              value={field.state.value}
-              onChange={(event) => field.handleChange(event.target.value)}
-            />
+            <span className="relative block">
+              <LockKeyhole
+                size={16}
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted"
+              />
+              <input
+                className={`${control} pl-9`}
+                type={showPassword ? 'text' : 'password'}
+                autoComplete={isNew ? 'new-password' : 'current-password'}
+                required
+                minLength={isNew ? 6 : 1}
+                maxLength={128}
+                value={field.state.value}
+                onChange={(event) => field.handleChange(event.target.value)}
+              />
+            </span>
           </label>
         )}
       </form.Field>
@@ -532,16 +600,23 @@ function IdentityForm({ mode, csrf }: { mode: FormMode; csrf?: string }) {
             {(field) => (
               <label className="grid gap-2 text-sm font-medium">
                 确认新密码
-                <input
-                  className={control}
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  required
-                  minLength={6}
-                  maxLength={128}
-                  value={field.state.value}
-                  onChange={(event) => field.handleChange(event.target.value)}
-                />
+                <span className="relative block">
+                  <LockKeyhole
+                    size={16}
+                    aria-hidden="true"
+                    className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted"
+                  />
+                  <input
+                    className={`${control} pl-9`}
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    required
+                    minLength={6}
+                    maxLength={128}
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                  />
+                </span>
               </label>
             )}
           </form.Field>
@@ -549,10 +624,15 @@ function IdentityForm({ mode, csrf }: { mode: FormMode; csrf?: string }) {
       ) : null}
       <button
         type="button"
-        className="justify-self-start text-xs text-status"
+        className="btn-ghost justify-self-start text-xs"
         aria-pressed={showPassword}
         onClick={() => setShowPassword(!showPassword)}
       >
+        {showPassword ? (
+          <EyeOff size={16} aria-hidden="true" />
+        ) : (
+          <Eye size={16} aria-hidden="true" />
+        )}
         {showPassword ? '隐藏密码' : '显示密码'}
       </button>
       <ErrorNotice error={error} />

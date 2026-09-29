@@ -16,7 +16,7 @@ from langchain_openai import ChatOpenAI
 from openai import APIConnectionError, APIStatusError, AsyncOpenAI, OpenAI
 
 from app.config import Settings
-from app.support import Frozen, ProviderFailure
+from app.support import MAX_RESPONSE_BYTES, Frozen, ProviderFailure
 
 
 class LiveProfile(Frozen):
@@ -174,8 +174,10 @@ class InternalStreamProvider:
                         raise ProviderFailure("provider_error", partial=partial)
                     size += len(content.encode("utf-8"))
                     # Limits stop the call; they never force private content to be published.
-                    if size > 32768 or self.observation.chunks > 4096:
-                        raise ProviderFailure("truncated", partial=partial)
+                    # Chunk boundaries are transport details, not output tokens.
+                    # Bytes bound the buffer; the caller's deadline bounds empty chunks.
+                    if size > MAX_RESPONSE_BYTES:
+                        raise ProviderFailure("output_too_large", partial=partial)
                     merged = chunk if merged is None else merged + chunk
             if merged is None or merged.response_metadata.get("finish_reason") is None:
                 raise ProviderFailure("truncated", partial=partial)

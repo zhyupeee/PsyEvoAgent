@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 
 Mode = Literal["listen", "clarify", "explore", "action", "close", "support_route"]
 Capability = Literal["documented", "tested", "unsupported", "unknown"]
+MAX_RESPONSE_BYTES = 131072
 
 
 class Frozen(BaseModel):
@@ -106,7 +107,7 @@ class Budget(Frozen):
 
 
 class Candidate(Frozen):
-    text: str = Field(min_length=1, max_length=4000)
+    text: str = Field(min_length=1)
 
 
 @dataclass
@@ -173,6 +174,7 @@ class ProviderFailure(Exception):
             "transient",
             "refusal",
             "truncated",
+            "output_too_large",
             "provider_error",
             "provider_authentication",
             "provider_model_unavailable",
@@ -431,11 +433,15 @@ class SupportRuntime:
                     raise ControlledStop("usage_unknown")
                 if not isinstance(response.content, str):
                     raise ControlledStop("schema_invalid")
+                if len(response.content.encode("utf-8")) > MAX_RESPONSE_BYTES:
+                    raise ControlledStop("output_too_large")
                 candidate = Candidate.model_validate_json(response.content)
                 receipt.status = "settled"
                 return {"candidate": candidate.text}
             except ProviderFailure as exc:
-                receipt.status = "partial_stream" if exc.partial else exc.kind
+                receipt.status = (
+                    "partial_stream" if exc.partial and exc.kind != "output_too_large" else exc.kind
+                )
                 delay = exc.retry_after
                 if (
                     not self.live

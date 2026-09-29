@@ -2,6 +2,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react'
 import { z } from 'zod'
 import { request } from './account-api'
+import { MarkdownMessage } from './markdown-message'
 import { runSchema, type Run } from './support-api'
 
 export function mergeTurns(pages: Run[][], current?: Run | null): Run[] {
@@ -89,7 +90,7 @@ export function ChatTimeline({
   }, [timeline.data, timeline.isFetchingNextPage, current])
   return (
     <div
-      className="chat-scroll"
+      className="chat-scroll min-h-[100px] flex-1 overflow-y-auto"
       ref={scroller}
       onScroll={() => {
         const node = scroller.current
@@ -98,17 +99,22 @@ export function ChatTimeline({
             node.scrollHeight - node.scrollTop - node.clientHeight < 80
       }}
     >
-      <div className="message-area" aria-label="会话消息">
+      <div
+        className="message-area mx-auto w-full max-w-[800px] px-3 py-4 wrap-anywhere side:px-1"
+        aria-label="会话消息"
+      >
         {timeline.isError ? (
-          <p role="alert">
+          <p role="alert" className="text-sm text-danger">
             消息暂不可用，历史内容已隐藏。
-            <button onClick={() => void refetch()}>重试消息</button>
+            <button className="btn ml-2" onClick={() => void refetch()}>
+              重试消息
+            </button>
           </p>
         ) : (
           <>
             {timeline.hasNextPage ? (
               <button
-                className="earlier-messages"
+                className="earlier-messages btn mx-auto mb-7 block min-h-11 text-xs"
                 disabled={timeline.isFetching}
                 onClick={() => {
                   const item =
@@ -128,7 +134,7 @@ export function ChatTimeline({
               </button>
             ) : null}
             {!turns.length ? (
-              <p className="text-muted">
+              <p className="py-10 text-center text-sm text-muted">
                 {timeline.isPending
                   ? '正在读取消息…'
                   : '想说的可以写在下面。每条最多 4000 字；可在“设置”里选择先倾听或一起想办法。'}
@@ -136,21 +142,25 @@ export function ChatTimeline({
             ) : null}
             {turns.map((item) => (
               <article
-                className="chat-turn"
+                className="chat-turn mb-7"
                 data-run-id={item.run_id}
                 key={item.run_id}
               >
                 {item.input_text ? (
-                  <p className="message user-message">{item.input_text}</p>
+                  <p className="message user-message ml-auto w-fit max-w-[92%] rounded-2xl bg-user-bubble px-4 py-2.5 leading-7 whitespace-pre-wrap page:max-w-[85%]">
+                    {item.input_text}
+                  </p>
                 ) : null}
                 {item.output ? (
-                  <p className="message assistant-message">
-                    {item.output.text}
-                  </p>
+                  <div className="message assistant-message mt-3 w-full min-w-0 py-1">
+                    <MarkdownMessage text={item.output.text} />
+                  </div>
                 ) : null}
                 {item.run_id !== current?.run_id &&
                 item.status !== 'completed' ? (
-                  <p className="turn-state">{turnLabels[item.status]}</p>
+                  <p className="turn-state mt-1 text-sm text-muted">
+                    {turnLabels[item.status]}
+                  </p>
                 ) : null}
                 {item.run_id === current?.run_id ? children : null}
               </article>

@@ -11,11 +11,14 @@ from starlette.types import Message, Receive, Scope, Send
 
 from app.api import DB, APIError, Auth
 from app.runs import authorized_event
+from app.support import MAX_RESPONSE_BYTES
 
 router = APIRouter(prefix="/api/v1")
 SEND_TIMEOUT = 2.0
 HEARTBEAT_SECONDS = 1.0
-MAX_EVENT_BYTES = 32768
+# The complete checked JSON response can fill MAX_RESPONSE_BYTES. Its public
+# text keeps JSON escaping; allow additional space for the event envelope/SSE.
+MAX_EVENT_BYTES = MAX_RESPONSE_BYTES + 4096
 
 
 class Connections:

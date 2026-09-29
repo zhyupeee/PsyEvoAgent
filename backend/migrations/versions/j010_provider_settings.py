@@ -48,7 +48,8 @@ def upgrade() -> None:
 def downgrade() -> None:
     if op.get_bind().scalar(
         sa.text(
-            "SELECT EXISTS (SELECT 1 FROM provider_settings) OR EXISTS (SELECT 1 FROM provider_bindings)"
+            "SELECT EXISTS (SELECT 1 FROM provider_settings)"
+            " OR EXISTS (SELECT 1 FROM provider_bindings)"
         )
     ):
         raise RuntimeError("Provider configuration exists; destructive downgrade refused")

@@ -1,5 +1,79 @@
 # 本地工程开发（S1-STEP02～08内部实验工程交付）
 
+## 2026-09-29 审查回归修复
+
+侧栏与会话管理共用 Radix Dialog 删除确认组件（锁定 `@radix-ui/react-dialog` 1.1.23）。确认后先阻断对应会话的正文、历史、SSE 订阅和输入；请求未确认时保持隐藏，关闭再打开弹窗仍使用原幂等键。保留取消、键盘焦点约束与关闭后的焦点恢复。修订入口复用现有 Collapsible，收起保留草稿。
+
+聊天容器恢复短视口下的纵向滚动兜底，禁用外层自动锚定以配合时间线自身分页定位；输入复用 Textarea，字号相对当前偏好缩放（普通 15.2px，大字体 19px）。公共 SSE 帧上限随完整响应上限调整为 132 KiB（128 KiB 响应加 4 KiB 事件封装余量），仍只发布整稿检查通过的答案，不改变 token 预算、发送超时、核权或公共事件序号。
+
+回归用例位于 `frontend/tests/chat-regressions.spec.ts` 与 `backend/tests/test_live_runs.py`，覆盖删除响应丢失与重试、弹窗焦点、320×500px 可操作性、实际字体大小、修订草稿与分页锚点，以及长 ASCII、接近 128 KiB 的 UTF-8/JSON 转义响应经 Worker 持久化、SSE 完成事件和游标重放。使用合成内容与受控 SDK 传输，未调用真实 Provider 或使用开发数据库；本次验证结果另列，不覆盖下方历史记录。
+
+Windows `scripts/check_step07.py --web-port 3137 --api-port 8137 --tls-port 3437` 通过：107 项 PostgreSQL/API/迁移测试、145 项后端测试、27 项浏览器检查、数据库重启事实核对、Ruff/mypy、`pnpm check`/`pnpm build` 及文档/补丁检查。新收据为 `.artifacts/psyevo-step07-1cdbb6449a1a/receipt.json`。另在 3138 端口以合成 API 运行 5 项聊天回归和 1 项反馈回归，全部通过，配置与截图在 `.artifacts/review-playwright.config.ts`、`.artifacts/review-browser-results/`。首次门禁发现并修复外层滚动锚定偏移，失败收据 `.artifacts/psyevo-step07-b26b5c222a66/receipt.json` 保留；本次未复跑 WSL 内核隔离门禁。
+
+## 2026-09-29 反馈板块组件替换
+
+“反馈或纠正 · 可跳过”整体改用 `components/ui/collapsible.tsx`，新增锁定依赖 `@radix-ui/react-collapsible` 1.1.20；两个下拉复用已有 Radix Select，文本框与按钮使用共享 Textarea / Button。保留 `.feedback-panel`、可访问名称、TanStack Form/Zod 和幂等提交逻辑。收起保留草稿，取消清空草稿并将焦点返回折叠入口；未扩展到其他板块。Radix 内部用于表单集成的隐藏原生 select 属于组件库实现。
+
+`pnpm check`（7 项 Node、7 项 Vitest）、`pnpm build`、`git diff --check` 通过。新增 `feedback-ui.spec.ts` 纳入默认 Playwright 组，Chromium 合成 API 拦截检查通过：1280/320px 键盘展开/下拉/焦点、草稿保留、取消重置且不提交、空理由提交、503 后同幂等键/同内容重试及合成回执展示；截图复核无横向溢出。结果及截图位于 `.artifacts/feedback-ui-review/`。`history.spec.ts` 的原 PostgreSQL 反馈用例同步改用 combobox/option；本轮未重跑完整 STEP/WSL 门禁，未连接数据库或 Provider。
+
+## 2026-09-29 会话归档筛选组件
+
+搜索框右侧的会话范围选择改用 Radix UI Select，新增锁定依赖 `@radix-ui/react-select` 2.3.7；实际消费者为 `history-page.tsx` 的会话列表。`components/ui/select.tsx` 提供当前使用的控件组合，沿用 Tailwind 主题、Lucide 图标和唯一 `style.css` 入口。菜单通过 Portal 展示，支持选中标记、键盘/触摸选择、Esc/外部点击关闭和焦点返回。保留“会话范围”名称、搜索词及筛选时重置分页的行为；既有历史浏览器用例改为点击 combobox/option。未初始化其他 shadcn 组件或添加 cn/Sonner。
+
+`pnpm check`（7 项 Node 启动检查、7 项 Vitest 测试）、`pnpm build` 通过。Chromium 合成 API 拦截检查通过：1440/390/320px 布局、入口展开坐标不变、菜单无裁切/横向溢出、键盘/触摸选择、关闭/焦点恢复及搜索与分页筛选。脚本、截图与收据位于 `.artifacts/archive-select-review/`；未连接数据库或 Provider，未运行完整 STEP/WSL 门禁，历史记录保持原时点。
+
+## 2026-09-29 对话操作展开位置修复
+
+“修订最后输入”保持在回答操作行，编辑区单独在下方占满宽度，展开不再强制入口换行；收起或按 Esc 保留未提交草稿，并提供展开状态和键盘操作。“管理此对话”改为标题栏下方的有界浮层，不再撑宽工具栏；支持点击外部或 Esc 关闭，与旧版本面板互斥，删除仍使用原确认对话框。沿用现有 Tailwind 控件、表单和 API，无新增依赖。
+
+`pnpm check`（7 项 Node 启动检查、7 项 Vitest 测试）、`pnpm build` 通过。Chromium 合成 API 拦截验证 1440/1024/390/320px 下入口展开前后坐标不变、标题栏尺寸不变、无横向溢出，并覆盖长对话、折叠侧栏、键盘操作、草稿保留、浮层关闭/互斥、删除确认、修订失败保留输入及改名/归档/恢复请求。脚本、截图及收据在 `.artifacts/disclosure-review/`；本次未连接数据库或调用 Provider，未重跑完整 STEP/WSL 门禁，历史收据保持原时点。
+
+## 2026-09-29 长回答误判修复
+
+Support 回答不再复用用户输入的 4000 字符上限；用户输入上限不变。Provider 流式拼接与 Support JSON 解析前共用 128 KiB（131072 UTF-8 字节）整稿上限，包含 JSON 包装、空白及转义字符。旧 32 KiB 上限提高四倍；不再按 SDK chunk 数量判定截断，字节上限约束缓冲，既有运行期限约束空块流。token 预算、用量校验、正常结束标记及整稿规则检查继续生效。
+
+超出整稿字节上限返回 `output_too_large`，前端显示长度超限；`truncated`、`partial_stream`、`usage_over_reservation` 分别显示未完整生成、传输不完整与预算超限。历史失败 run 保留原事实，不自动重发。
+
+受控 SDK/Support/多轮/模型配置回归覆盖 4000/4001/6000 字符、中文及 JSON 转义、旧缓冲上限以上正文、128 KiB 精确边界与超限、超过 6000 个内容块及结束/用量块。95 项通过，6 项 PostgreSQL 用例按默认标记排除；Ruff、mypy（63 个源文件）、前端 `pnpm check`、`pnpm build` 和 `git diff --check` 通过。测试使用合成内容和受控用量计数，不代表真实供应商 token 测量；未调用真实模型或使用开发数据库，未执行浏览器或完整 Windows/WSL 门禁。
+
+## 2026-09-29 AI 回复 Markdown 展示
+
+当前聊天时间线与旧版本回答共用 `frontend/src/markdown-message.tsx`，新增锁定依赖 `react-markdown` 10.1.0 与 `remark-gfm` 4.0.1；支持标题、强调、列表、引用、代码块、表格、任务列表与删除线。排版由唯一 `style.css` 中的 `markdown-content` 工具类维护，沿用现有颜色和字体；用户输入仍显示原文。保留接口与存储中的 Markdown 原文，仅渲染获准的 `output.text`，不改变整稿发布、SSE 恢复或来源检查。禁用原始 HTML，保留解析器默认 URL 过滤，链接使用 `noopener noreferrer`；模型图片只显示替代文字，不自动请求远程图片。
+
+本次 `pnpm check`（7 项 Node 启动检查、7 项 Vitest 测试）、`pnpm build` 通过。Chromium 合成 API 拦截验证正文语义与样式、1440/390/320px 布局、表格/代码横向滚动、用户输入原文、旧版本与刷新恢复，以及 HTML/危险链接拦截和无图片外连；脚本、截图及收据位于 `.artifacts/markdown-review/`。此次未连接数据库或调用 Provider，未重跑完整 STEP/WSL 门禁，历史收据保留原时点。
+
+## 2026-09-29 对话起始页与设置导航优化
+
+按钮最终调整：以文字本身相对按钮水平居中，加号绝对定位在文字左侧、间距 6px，不占据文字居中布局；保留 18px 图标和 20px 文字行高。`pnpm check`、`pnpm build` 通过；Chromium 合成 API 下验证 1280/390px 文字中心、图标垂直中心及 6px 间距，截图复核通过，材料在 `.artifacts/new-chat-label-center-review/`。此项取代下方“加号固定左侧”的布局方案；下方截图与测量仍为前一版本记录。
+
+新建对话按钮视觉补充：侧栏按钮改用 `components/ui/button.tsx` 共用基础组件，采用左右等宽图标槽，文字相对整按钮居中、18px 加号固定左侧，文字行高统一为 20px；创建、禁用状态和可访问名称保留，无新增依赖。`pnpm check`、`pnpm build` 通过；Chromium 合成 API 下验证 1280/390px 的文字水平/垂直中心与图标垂直中心偏差均小于 1px，并复核按钮截图，材料位于 `.artifacts/new-chat-button-review/`。未连接数据库或 Provider，未执行完整 STEP 门禁。
+
+刷新身份加载补充：身份查询等待及未登录跳转期间复用无账号数据的 `SupportLayout` 顶部导航，主区域标记 `aria-busy`；“正在确认登录状态”改为屏幕阅读器专用提示，登录/注册页同步处理。身份成功前不挂载账号业务页面或查询偏好，不持久化登录身份来绕过校验；失败隐藏内容与重试规则保留。
+
+本轮 `pnpm check`、`pnpm build` 通过；`account-recovery.spec.ts` 的两项 Chromium 合成拦截测试通过，覆盖 1280/320px 首次访问与刷新时主动挂起身份响应、入口位置不变、未发起业务请求/未显示密码表单，以及 503 重试后 401 跳转登录。本地结果为 `.artifacts/identity-refresh-review/results.json`；未连接数据库或 Provider，未执行完整 STEP/WSL 门禁。
+
+后续设置入口布局修复：对话、设置与资源统一顶部导航，设置链接始终位于右上角；窄屏将主要导航放在第二行。移除按路由切换顶栏/左侧栏的布局变化，设置和资源内容独立滚动并预留滚动条空间，保留路由、可访问名称及历史测试钩子。未新增依赖。
+
+本次 `pnpm check`（7 项 Node、7 项 Vitest）、`pnpm build` 通过。Chromium 合成 API 拦截在 1280/390/320px 下验证首次进入设置的逐帧入口位置、滚动后导航位置、无横向溢出、页面切换无身份闪现/布局卸载、标签草稿保留及身份保护，并复核截图；脚本、截图和收据位于 `.artifacts/settings-layout-review/`。`frontend/tests/support.spec.ts` 增加入口与导航边界不变断言；本轮未执行完整 STEP/WSL 门禁，未连接数据库或 Provider。下方为此前时点记录。
+
+对话起始页改为居中的轻量欢迎区，突出标题与开始按钮；支持资源保留次级入口，服务说明与删除处理记录放在底部。原创建会话行为、错误重试和可访问名称保留。`/me` 及旧 `/me/privacy` 路由现归入 `_support`，与对话、资源共用身份缓存和布局；设置标签、旧地址跳转、首次身份检查与退出行为保持原约定。
+
+`pnpm check`、`pnpm build` 通过。Chromium 合成 API 拦截检查通过：欢迎区桌面/手机/短屏布局、创建失败重试及两个链接；桌面/手机跨设置导航全过程无登录提示闪现或布局卸载、设置标签草稿保留、旧地址跳转、身份失败重试及退出后保护。本地截图和收据分别在 `.artifacts/welcome-review/`、`.artifacts/settings-navigation-review/`；并扩展 `frontend/tests/support.spec.ts` 的导航回归用例。本次定向检查未连接数据库或 Provider，未重跑完整 STEP 门禁，历史收据保持原时点。
+
+## 2026-09-29 会话侧栏背景与滑动优化
+
+侧栏面板填满工作区高度，整列统一使用 paper 底色。`style.css` 的 `sidebar-rail` / `sidebar-panel` 工具类维护固定面板宽度、外轨收缩与滑动，保留原测试钩子和折叠持久化。桌面及窄屏使用 280ms 过渡；应用“减少动态效果”下仅保留 140ms 导航位移，系统 `prefers-reduced-motion` 下关闭过渡。未新增依赖。
+
+本次 Chromium 使用合成 API 拦截验证整列高度/底色、折叠中间帧、快速反向点击、刷新持久化、两种减少动态设置及窄屏无横向溢出，并检查桌面/窄屏截图；本地脚本、截图及收据在 `.artifacts/sidebar-review/`。这属于前端视觉交互检查，未连接数据库或调用 Provider，不替代下方历史 STEP 门禁收据。
+
+## 2026-09-29 支持资源切换与删除会话刷新修复
+
+`/chat`、`/resources` 及其子路由共用无路径 `_support` 布局和身份查询实例，站内切换不再重建登录状态；首次访问仍验证身份。删除会话成功后只取消和移除该会话的查询、更新列表与删除处理记录；删除当前会话通过 Router 替换为 `/chat`，保留公共布局和登录缓存，删除其他会话保留当前草稿。确认、幂等重试、跨标签删除通知及退出后的身份检查沿用既有机制。
+
+回归入口为 `frontend/tests/support.spec.ts` 的导航全过程 DOM 监测、直接资源访问身份检查，以及 `frontend/tests/history.spec.ts` 的侧栏删除与原删除重试用例；后者检查无主文档导航且原布局节点仍连接。隔离验证使用 `scripts/check_step07.py`（包含 STEP06），不读取开发库、不调用真实模型。此次未修改后端接口或数据库结构。
+
+最终验证：`pnpm check`、`pnpm build` 及 `scripts/check_step07.py --web-port 3106 --api-port 8106 --tls-port 3446` 全部通过；包含 10 项 STEP06、5 项 STEP07 浏览器用例及数据库重启后删除内容/回执核对。最终本地收据：`.artifacts/psyevo-step07-27a74770c9ff/receipt.json`。验证过程中为 21 轮合成对话用例增加总时间余量、等待回执数据加载后再展开，并让新增侧栏删除用例使用独立合成账号，保留原回执计数断言；早期失败收据保留原样。未执行 WSL 内核隔离或真实模型验证。
+
 ## 2026-09-29 模型配置页面与自动生效
 
 普通 Windows 启动仍用 `scripts/start-dev.ps1` 或 frontend 中 `pnpm backend`（无显式数据库变量）。一次启动完成增量迁移、独立加密主密钥初始化和 API/Worker 统一管理。随后保存 `.env.step08.ps1` 自动影响新运行，无需手动重启；在途回答与标题使用原私有配置快照，文件错误保留上次有效配置。仅显式 `-MaxOutputTokens` 覆盖文件输出上限。
@@ -250,6 +324,8 @@ WSL 必须使用 Linux 版 Python/uv、Node 和 pnpm；在 Linux 文件系统的
 前端架构与依赖决策以[阶段1前端职责合同](PsyEvoAgent项目计划/阶段1/02-技术方案与实施计划.md#frontend-stack-contract)为准。STEP03账号页已按真实消费者接入Query、Form、Zod；Store和shadcn仍未接入，健康页保持Start/Router和局部状态。后续修改先核对实际消费者与锁文件。
 
 前端使用 Tailwind CSS 4.3.3，通过 `@tailwindcss/vite` 4.3.3 接入现有 Vite 构建。`frontend/src/style.css` 是唯一根样式入口：导入 Tailwind 并用 `@theme` 维护项目字体与颜色 token；页面布局和组件状态使用可静态扫描的 utility classes。当前无需 `postcss.config.*` 或 `tailwind.config.*`，不要另建第二套样式入口。
+
+2026-09-29 阶段1页面整体美化（对齐 ChatGPT 网页版观感）：样式统一收敛为 Tailwind utility 写法，旧手写语义组件类（`.support-shell`/`.composer`/`.message` 等）保留为测试钩子但不再携带样式；`style.css` 新增 `@utility` 公共控件（`btn`/`btn-primary`/`btn-danger`/`btn-ghost`/`btn-icon`/`field`/`card`/`link-inline`/`eyebrow`）、颜色 token（`accent`/`status-strong`/`user-bubble` 等）与两个自定义断点 variant `page:`（≥720px，页面导航布局）和 `side:`（≥900px，会话侧栏布局）。链接一律无默认下划线；只有正文段落内链接使用 `link-inline`（单下划线）。新引入直接依赖 `lucide-react` 1.48.0 用于 18px 细线图标（AGENTS.md 允许有真实消费者时接入；shadcn/cn/Sonner 仍不引入）。会话侧栏新增桌面端折叠/展开（状态持久化到 localStorage 键 `psyevo.chat-sidebar-collapsed`，属性 `data-sidebar-collapsed`，与窄屏抽屉 `data-sidebar-open` 互不影响）；会话列表项 hover/focus 显示删除入口按钮，复用既有确认删除流程（`SessionDeleteDialog`，当前会话删除后仍回 `/chat`）。所有测试依赖的语义 class 钩子与可访问名称保持不变。
 
 ## 启动与停止
 
