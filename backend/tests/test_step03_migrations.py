@@ -22,6 +22,7 @@ from app.models import (
     LoginAttempt,
     Personal,
     Preferences,
+    ProviderTest,
     Run,
     RunBranch,
     RunExecution,
@@ -58,6 +59,49 @@ class Conversation(Personal, HistoricalBase):
 
 pytestmark = pytest.mark.postgres
 BACKEND = Path(__file__).resolve().parents[1]
+
+
+def test_provider_test_migration_retains_identity_and_refuses_receipt_loss(
+    migration_url: str,
+) -> None:
+    config = Config(str(BACKEND / "alembic.ini"))
+    command.upgrade(config, "j010_provider_settings")
+    engine = make_engine(migration_url)
+    try:
+        with Session(engine) as db, db.begin():
+            user = User(email="probe-migration@example.com", password_hash="synthetic")
+            db.add(user)
+            db.flush()
+            identity = IdentitySession(
+                owner_id=user.id,
+                token_hash="synthetic-probe-token",
+                csrf_token="synthetic",
+                expires_at=now() + timedelta(hours=1),
+            )
+            db.add(identity)
+            db.flush()
+            owner, identity_id = user.id, identity.id
+        command.upgrade(config, "head")
+        command.check(config)
+        with Session(engine) as db, db.begin():
+            assert db.get(IdentitySession, identity_id) is not None
+            db.add(
+                ProviderTest(
+                    owner_id=owner,
+                    identity_id=identity_id,
+                    request_key="one-probe",
+                    settings_version=0,
+                    custom=False,
+                    status="interrupted",
+                    deadline_at=now(),
+                    receipt={"actual_tokens": None, "reserved_tokens": 8192},
+                )
+            )
+        with pytest.raises(RuntimeError, match="test receipts"):
+            command.downgrade(config, "j010_provider_settings")
+        command.check(config)
+    finally:
+        engine.dispose()
 
 
 def test_step05_upgrade_preserves_runs_and_refuses_lossy_downgrade(migration_url: str) -> None:
@@ -210,6 +254,7 @@ def test_empty_upgrade_is_repeatable(migration_url: str) -> None:
             "title_tasks",
             "provider_settings",
             "provider_bindings",
+            "provider_tests",
             "messages",
             "interaction_events",
             "feedback",
@@ -365,7 +410,7 @@ def test_no_expiry_migration_preserves_records_and_refuses_lossy_downgrade(
         with engine.connect() as connection:
             assert (
                 connection.scalar(text("SELECT version_num FROM alembic_version"))
-                == "j010_provider_settings"
+                == "k011_provider_tests"
             )
         command.check(config)
     finally:

@@ -5,7 +5,9 @@ import shutil
 import subprocess
 import sys
 import time
+import socket
 from pathlib import Path
+from uuid import uuid4
 
 import httpx
 import psutil
@@ -25,8 +27,12 @@ from sqlalchemy.orm import Session
 def main() -> None:
     url = os.environ["PSYEVO_TEST_DATABASE_URL"]
     Settings(environment="test", database_url=SecretStr(url))
-    destination = ROOT / ".artifacts" / "model-settings-validation"
+    for port in (8110, 3110):
+        with socket.socket() as listener:
+            listener.bind(("127.0.0.1", port))
+    destination = ROOT / ".artifacts" / ("model-settings-check-" + uuid4().hex[:12])
     destination.mkdir(parents=True, exist_ok=True)
+    print("Artifacts: " + str(destination), flush=True)
     engine = make_engine(url)
     with Session(engine) as db, db.begin():
         user = db.scalar(select(User).where(User.email == "model-settings@example.com"))
@@ -40,6 +46,8 @@ def main() -> None:
             db.add(Preferences(owner_id=user.id))
     engine.dispose()
     env = {k: v for k, v in os.environ.items() if not k.startswith("PSYEVO_")}
+    if os.environ.get("PSYEVO_CHECK_NETWORK"):
+        env["PSYEVO_CHECK_NETWORK"] = os.environ["PSYEVO_CHECK_NETWORK"]
     web_env = {
         **env,
         "PSYEVO_ENV": "test",

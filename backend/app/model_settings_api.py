@@ -122,6 +122,9 @@ def remove(body: Revision, request: Request, db: DB, auth: Auth) -> dict[str, An
 
     row = current(db, auth.owner_id)
     check_version(row, body.expected_version)
+    from app.provider_tests import cancel
+
+    cancel(db, auth.owner_id, custom=True)
     if row is not None:
         row.mode, row.encrypted_api_key, row.base_url, row.model = "official", None, None, None
         row.version, row.updated_at = row.version + 1, now()
@@ -144,25 +147,46 @@ def remove(body: Revision, request: Request, db: DB, auth: Auth) -> dict[str, An
 
 @router.post("/test")
 def test(body: Revision, request: Request, db: DB, auth: Auth) -> dict[str, Any]:
-    from app.provider_probe import probe
+    from app.models import ProviderTest
+    from app.provider_tests import execute, expire, reserve, result
 
-    check_version(current(db, auth.owner_id), body.expected_version)
     if request.app.state.settings.support_mode != "live":
         raise APIError(503, "provider_not_configured")
-    if db.scalar(
-        select(Run.id)
-        .where(Run.owner_id == auth.owner_id, Run.status.in_({"queued", "running"}))
-        .limit(1)
-    ):
-        raise APIError(409, "run_active")
+    key = request.headers.get("idempotency-key", "")
+    if not 1 <= len(key) <= 128 or not key.isascii():
+        raise APIError(422, "idempotency_key_required")
+    previous = db.scalar(
+        select(ProviderTest).where(
+            ProviderTest.owner_id == auth.owner_id, ProviderTest.request_key == key
+        )
+    )
+    if previous is not None:
+        if previous.settings_version != body.expected_version:
+            raise APIError(409, "idempotency_conflict")
+        expire(previous)
+        return result(previous)
+    check_version(current(db, auth.owner_id), body.expected_version)
     try:
         selected = for_owner(db, request.app.state.settings, auth.owner_id)
-        # The authorized snapshot is independent of the session. Release the owner
-        # lock before waiting for the provider so other account requests can proceed.
-        db.commit()
-        result = asyncio.run(probe(selected))
-        return {"passed": result["status"] == "passed", "reason": result["stop_reason"]}
     except (ValueError, ValidationError):
-        return {"passed": False, "reason": "provider_configuration_invalid"}
-    except Exception:
-        return {"passed": False, "reason": "provider_error"}
+        raise APIError(503, "provider_configuration_unavailable") from None
+    row = reserve(db, auth, key, body.expected_version, selected)
+    owner, test_id = auth.owner_id, row.id
+    db.commit()  # Durable reservation before I/O; do not hold the owner lock during transport.
+    return asyncio.run(execute(request.app.state.engine, owner, test_id, selected))
+
+
+@router.get("/test/{request_key}")
+def test_receipt(request_key: str, db: DB, auth: Auth) -> dict[str, Any]:
+    from app.models import ProviderTest
+    from app.provider_tests import expire, result
+
+    row = db.scalar(
+        select(ProviderTest).where(
+            ProviderTest.owner_id == auth.owner_id, ProviderTest.request_key == request_key
+        )
+    )
+    if row is None:
+        raise APIError(404, "not_found")
+    expire(row)
+    return {**result(row), "status": row.status, "receipt": row.receipt}

@@ -20,12 +20,14 @@ from app.models import (
     Message,
     ModelCall,
     Preferences,
+    ProviderTest,
     Run,
     RunEvent,
     RunExecution,
     User,
     now,
 )
+from app.run_reads import RunReads
 from app.security import digest
 from app.support import Budget, VersionBinding
 
@@ -85,8 +87,10 @@ def lock_owner(db: Session, owner: str) -> None:
     db.execute(select(User.id).where(User.id == owner).with_for_update())
 
 
-def sources_available(db: Session, run: Run, ex: RunExecution | None) -> bool:
-    source = db.get(Conversation, run.session_id)
+def sources_available(
+    db: Session, run: Run, ex: RunExecution | None, reads: RunReads | None = None
+) -> bool:
+    source = reads.sources.get(run.session_id) if reads else db.get(Conversation, run.session_id)
     if (
         source is None
         or source.owner_id != run.owner_id
@@ -98,7 +102,11 @@ def sources_available(db: Session, run: Run, ex: RunExecution | None) -> bool:
     if source.version != run.session_version:
         return False
     if ex is not None and run.status != "draft":
-        messages = db.scalars(select(Message).where(Message.run_id == run.id)).all()
+        messages = (
+            reads.messages[run.id]
+            if reads
+            else db.scalars(select(Message).where(Message.run_id == run.id)).all()
+        )
         source_message = next((m for m in messages if m.role == "user"), None)
         if (
             source_message is None
@@ -110,10 +118,12 @@ def sources_available(db: Session, run: Run, ex: RunExecution | None) -> bool:
     grant_ids = (
         ex.grant_ids
         if ex is not None
+        else reads.grant_ids[run.id]
+        if reads
         else db.scalars(select(ContextGrant.id).where(ContextGrant.run_id == run.id)).all()
     )
     for gid in grant_ids:
-        grant = db.get(ContextGrant, gid)
+        grant = reads.grants.get(gid) if reads else db.get(ContextGrant, gid)
         if (
             grant is None
             or grant.owner_id != run.owner_id
@@ -123,7 +133,9 @@ def sources_available(db: Session, run: Run, ex: RunExecution | None) -> bool:
             or grant.purpose != "current_run"
         ):
             return False
-        source = db.get(Conversation, grant.source_id)
+        source = (
+            reads.sources.get(grant.source_id) if reads else db.get(Conversation, grant.source_id)
+        )
         if (
             source is None
             or source.owner_id != run.owner_id
@@ -205,20 +217,30 @@ def terminal(
     return True
 
 
-def snapshot(db: Session, run: Run) -> dict[str, Any]:
-    ex = execution(db, run)
-    if not sources_available(db, run, ex):
+def snapshot(db: Session, run: Run, reads: RunReads | None = None) -> dict[str, Any]:
+    ex = reads.executions.get(run.id) if reads else execution(db, run)
+    if not sources_available(db, run, ex, reads):
         raise APIError(404, "not_found")
-    output = db.scalar(
-        select(Message).where(
-            Message.run_id == run.id, Message.role == "assistant", Message.deleted_at.is_(None)
+    output = (
+        next(
+            (m for m in reads.messages[run.id] if m.role == "assistant" and not m.deleted_at), None
+        )
+        if reads
+        else db.scalar(
+            select(Message).where(
+                Message.run_id == run.id, Message.role == "assistant", Message.deleted_at.is_(None)
+            )
         )
     )
-    calls = db.scalars(
-        select(ModelCall).where(
-            ModelCall.run_id == run.id, ModelCall.receipt["role"].astext == "support"
-        )
-    ).all()
+    calls = (
+        reads.calls[run.id]
+        if reads
+        else db.scalars(
+            select(ModelCall).where(
+                ModelCall.run_id == run.id, ModelCall.receipt["role"].astext == "support"
+            )
+        ).all()
+    )
     unknown = any(call.receipt.get("actual_tokens") is None for call in calls)
     used = sum(
         int(
@@ -255,6 +277,16 @@ def start_run(
         if not sources_available(db, run, ex):
             raise APIError(404, "not_found")
         return run
+    if db.scalar(
+        select(ProviderTest.id)
+        .where(
+            ProviderTest.owner_id == identity.owner_id,
+            ProviderTest.status == "running",
+            ProviderTest.deadline_at > now(),
+        )
+        .limit(1)
+    ):
+        raise APIError(409, "provider_test_active")
     from app.provider_settings import for_owner
 
     try:
@@ -577,6 +609,11 @@ def interactions(body: InteractionBatch, db: DB, auth: Auth) -> dict[str, Any]:
 
 
 def stop_identity_runs(db: Session, identity_id: str) -> None:
+    from app.provider_tests import cancel as cancel_tests
+
+    auth = db.get(IdentitySession, identity_id)
+    if auth is not None:
+        cancel_tests(db, auth.owner_id, identity_id=identity_id)
     for run in db.scalars(
         select(Run)
         .join(RunExecution, RunExecution.run_id == Run.id)

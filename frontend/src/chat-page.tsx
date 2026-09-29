@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
-import { getIdentity, request } from './account-api'
+import { getIdentity, request, RequestError } from './account-api'
 import { ChatTimeline, turnLabels } from './chat-timeline'
 import { modelFailure } from './model-settings'
 import { Button } from './components/ui/button'
@@ -404,6 +404,12 @@ function Conversation({
       await client.invalidateQueries({ queryKey })
       await client.invalidateQueries({ queryKey: ['timeline', sessionId] })
       notifyPrivateChange({ type: 'session-updated', sessionId })
+    },
+    onError: async (error) => {
+      // Another tab may have accepted a run before this draft was created.
+      // Recover its stop/status controls even though our send did not succeed.
+      if (error instanceof RequestError && error.code === 'run_active')
+        await client.invalidateQueries({ queryKey })
     },
   })
   const form = useForm({
