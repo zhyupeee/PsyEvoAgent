@@ -175,6 +175,43 @@ def test_draft_start_replay_and_persisted_output(client: TestClient) -> None:
         assert len(db.scalars(select(Message).where(Message.run_id == rid)).all()) == 2
 
 
+@pytest.mark.parametrize("evaluator_version", ["behavior-rules/1", "behavior-rules/2"])
+def test_worker_honors_queued_evaluator_version(client: TestClient, evaluator_version: str) -> None:
+    _, rid, body = create(client)
+    start(client, rid, body)
+    with Session(engine(client)) as db, db.begin():
+        ex = db.scalar(select(RunExecution).where(RunExecution.run_id == rid))
+        assert ex is not None and ex.versions["evaluator_version"] == "behavior-rules/2"
+        # Recreate a queued run bound before the evaluator upgrade.
+        ex.versions = {**ex.versions, "evaluator_version": evaluator_version}
+        bound_versions = dict(ex.versions)
+    selected = claim(engine(client))
+    assert selected and selected[0] == rid
+    text = "今天是2026年。"
+    asyncio.run(execute(engine(client), rid, selected[1], delayed_model(fake_message(text))))
+    allowed = evaluator_version == "behavior-rules/2"
+    final = client.get(f"/api/v1/runs/{rid}").json()
+    assert final["status"] == ("completed" if allowed else "failed")
+    assert final["stop_reason"] == (None if allowed else "output_blocked")
+    assert [event["type"] for event in events(client, rid)] == (
+        ["run.started", "message.delta", "run.completed"]
+        if allowed
+        else ["run.started", "run.failed"]
+    )
+    with Session(engine(client)) as db:
+        ex = db.scalar(select(RunExecution).where(RunExecution.run_id == rid))
+        assert ex is not None and ex.versions == bound_versions
+        calls = db.scalars(select(ModelCall).where(ModelCall.run_id == rid)).all()
+        assert len(calls) == 1 and calls[0].receipt["versions"] == bound_versions
+        output = db.scalar(
+            select(Message).where(Message.run_id == rid, Message.role == "assistant")
+        )
+        if allowed:
+            assert output is not None and output.content == text
+        else:
+            assert output is None and final["output"] is None
+
+
 def test_disabled_provider_replays_persisted_start(client: TestClient) -> None:
     _, rid, body = create(client)
     key = uuid4().hex

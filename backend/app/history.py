@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.api import DB, APIError, Auth, create_once, owned, resource
 from app.contracts import Input, Version
 from app.models import ContextGrant, Conversation, Feedback, Message, Run, RunBranch
+from app.run_reads import RunReads
 from app.runs import TERMINAL, RunInput, execution, snapshot, sources_available
 from app.support import (
     Budget,
@@ -53,54 +54,65 @@ def context_history(
         query.order_by(Run.created_at.desc(), Run.id.desc()).execution_options(yield_per=50)
     )
     try:
-        for prior in rows:
-            if not sources_available(db, prior, execution(db, prior)):
-                continue
-            messages = db.scalars(select(Message).where(Message.run_id == prior.id)).all()
-            user = next((m for m in messages if m.role == "user"), None)
-            assistant = next((m for m in messages if m.role == "assistant"), None)
-            if (
-                user is None
-                or assistant is None
-                or any(
-                    m.deleted_at or m.owner_id != run.owner_id or not m.content
-                    for m in (user, assistant)
+        for batch in rows.partitions(50):
+            reads = RunReads(db, batch)
+            for prior in batch:
+                if not sources_available(db, prior, reads.executions.get(prior.id), reads):
+                    continue
+                messages = reads.messages[prior.id]
+                user = next((m for m in messages if m.role == "user"), None)
+                assistant = next((m for m in messages if m.role == "assistant"), None)
+                if (
+                    user is None
+                    or assistant is None
+                    or any(
+                        m.deleted_at or m.owner_id != run.owner_id or not m.content
+                        for m in (user, assistant)
+                    )
+                ):
+                    continue
+                turn = ContextTurn(
+                    run_id=prior.id,
+                    user_id=user.id,
+                    user_version=user.version,
+                    assistant_id=assistant.id,
+                    assistant_version=assistant.version,
+                    user_text=user.content,
+                    assistant_text=assistant.content,
                 )
-            ):
-                continue
-            turn = ContextTurn(
-                run_id=prior.id,
-                user_id=user.id,
-                user_version=user.version,
-                assistant_id=assistant.id,
-                assistant_version=assistant.version,
-                user_text=user.content,
-                assistant_text=assistant.content,
-            )
-            remaining -= context_size(turn)
-            if remaining < 0:
-                break
-            selected.append(turn)
+                remaining -= context_size(turn)
+                if remaining < 0:
+                    return tuple(reversed(selected))
+                selected.append(turn)
     finally:
         rows.close()
     return tuple(reversed(selected))
 
 
 def context_available(db: Session, run: Run, history: tuple[ContextTurn, ...]) -> bool:
+    if not history:
+        return True
+    priors = {
+        row.id: row
+        for row in db.scalars(
+            main_runs(run.owner_id, run.session_id).where(Run.id.in_([t.run_id for t in history]))
+        )
+    }
+    reads = RunReads(db, list(priors.values()))
     for turn in history:
-        prior = db.scalar(main_runs(run.owner_id, run.session_id).where(Run.id == turn.run_id))
+        prior = priors.get(turn.run_id)
         if (
             prior is None
             or prior.status != "completed"
             or (prior.created_at, prior.id) >= (run.created_at, run.id)
-            or not sources_available(db, prior, execution(db, prior))
+            or not sources_available(db, prior, reads.executions.get(prior.id), reads)
         ):
             return False
         for mid, version in (
             (turn.user_id, turn.user_version),
             (turn.assistant_id, turn.assistant_version),
         ):
-            message = db.get(Message, mid)
+            message = next((m for m in reads.messages[prior.id] if m.id == mid), None)
             if (
                 message is None
                 or message.run_id != prior.id
@@ -184,14 +196,22 @@ def fork_run(
     return run
 
 
-def turn(db: Session, run: Run) -> dict[str, Any]:
-    result = snapshot(db, run)
-    message = db.scalar(
-        select(Message).where(
-            Message.run_id == run.id, Message.role == "user", Message.deleted_at.is_(None)
+def turn(db: Session, run: Run, reads: RunReads | None = None) -> dict[str, Any]:
+    result = snapshot(db, run, reads)
+    message = (
+        next((m for m in reads.messages[run.id] if m.role == "user" and not m.deleted_at), None)
+        if reads
+        else db.scalar(
+            select(Message).where(
+                Message.run_id == run.id, Message.role == "user", Message.deleted_at.is_(None)
+            )
         )
     )
-    edge = db.scalar(select(RunBranch).where(RunBranch.run_id == run.id))
+    edge = (
+        reads.branches.get(run.id)
+        if reads
+        else db.scalar(select(RunBranch).where(RunBranch.run_id == run.id))
+    )
     return {
         **result,
         "created_at": run.created_at.isoformat(),
@@ -200,8 +220,9 @@ def turn(db: Session, run: Run) -> dict[str, Any]:
         "input_version": message.version if message else None,
         "branch_id": run.id,
         "parent_run_id": edge.parent_run_id if edge else None,
-        "is_current": db.scalar(select(RunBranch.id).where(RunBranch.parent_run_id == run.id))
-        is None,
+        "is_current": run.id not in reads.superseded
+        if reads
+        else db.scalar(select(RunBranch.id).where(RunBranch.parent_run_id == run.id)) is None,
     }
 
 
@@ -233,13 +254,17 @@ def timeline(
         query.order_by(Run.created_at.desc(), Run.id.desc()).execution_options(yield_per=50)
     )
     try:
-        for row in rows:
-            if not sources_available(db, row, execution(db, row)):
-                continue
-            item = turn(db, row)
-            if not item["input_id"]:  # An empty send draft is not a conversation turn.
-                continue
-            items.append(item)
+        for batch in rows.partitions(50):
+            reads = RunReads(db, batch, details=True)
+            for row in batch:
+                if not sources_available(db, row, reads.executions.get(row.id), reads):
+                    continue
+                item = turn(db, row, reads)
+                if not item["input_id"]:  # An empty send draft is not a conversation turn.
+                    continue
+                items.append(item)
+                if len(items) > limit:
+                    break
             if len(items) > limit:
                 break
     finally:

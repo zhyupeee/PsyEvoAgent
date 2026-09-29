@@ -314,6 +314,27 @@ class ModelCall(Base):
     receipt: Mapped[dict[str, object]] = mapped_column(JSONB)
 
 
+class ProviderTest(Base):
+    """One explicit synthetic probe, with no conversation or saved credential."""
+
+    __tablename__ = "provider_tests"
+    __table_args__ = (
+        UniqueConstraint("owner_id", "request_key"),
+        CheckConstraint("status IN ('running','completed','failed','cancelled','interrupted')"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=opaque_id)
+    owner_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    identity_id: Mapped[str] = mapped_column(ForeignKey("identity_sessions.id"))
+    request_key: Mapped[str] = mapped_column(String(128))
+    settings_version: Mapped[int] = mapped_column(Integer)
+    custom: Mapped[bool] = mapped_column(Boolean)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    deadline_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    status: Mapped[str] = mapped_column(String(20), default="running")
+    reason: Mapped[str | None] = mapped_column(String(80))
+    receipt: Mapped[dict[str, object]] = mapped_column(JSONB, default=dict)
+
+
 class Interaction(Personal, Base):
     __tablename__ = "interaction_events"
     __table_args__ = (

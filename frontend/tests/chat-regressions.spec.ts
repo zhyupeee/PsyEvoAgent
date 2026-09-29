@@ -56,6 +56,40 @@ async function mockChat(page: Page, fontSize = 'normal') {
   await expect(page.locator('.user-message')).toHaveText(run.input_text)
 }
 
+test('a competing tab start restores the active run stop control after draft rejection', async ({
+  page,
+}) => {
+  await mockChat(page)
+  let status = 'completed'
+  const snapshot = () => ({
+    ...run,
+    status,
+    version: 3,
+    output: status === 'completed' ? run.output : null,
+  })
+  await page.route('**/api/v1/sessions/review-session/current-run', (route) =>
+    route.fulfill({ json: snapshot() }),
+  )
+  await page.route('**/api/v1/run-drafts', async (route) => {
+    status = 'running'
+    await route.fulfill({ status: 409, json: { code: 'run_active' } })
+  })
+  await page.route('**/api/v1/runs/review-run', (route) =>
+    route.fulfill({ json: snapshot() }),
+  )
+  await page.route('**/api/v1/runs/review-run/cancel', async (route) => {
+    status = 'cancelled'
+    await route.fulfill({ json: snapshot() })
+  })
+  await page.getByLabel('想说的事').fill('another tab accepted first')
+  await page.getByRole('button', { name: '发送', exact: true }).click()
+  await page.getByRole('button', { name: '停止生成', exact: true }).click()
+  await expect(page.getByRole('status')).toContainText('已停止')
+  await expect(page.getByLabel('想说的事')).toHaveValue(
+    'another tab accepted first',
+  )
+})
+
 for (const entry of ['sidebar', 'management']) {
   test(`${entry} deletion stays blocked after a lost response and dialog dismissal`, async ({
     page,

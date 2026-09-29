@@ -597,6 +597,12 @@ def create_draft(body: DraftCreate, request: Request, db: DB, auth: Auth) -> dic
         conversation = owned(db, Conversation, body.session_id, auth.owner_id)
         if conversation.version != body.expected_session_version or conversation.status != "active":
             raise APIError(409, "version_conflict")
+        if db.scalar(
+            select(Run.id)
+            .where(Run.session_id == conversation.id, Run.status.in_({"queued", "running"}))
+            .limit(1)
+        ):
+            raise APIError(409, "run_active")
         return Run(
             owner_id=auth.owner_id,
             session_id=conversation.id,

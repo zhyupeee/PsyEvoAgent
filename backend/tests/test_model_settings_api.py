@@ -201,14 +201,16 @@ def test_test_endpoint_requires_live_and_is_explicit(
     configure(client)
     calls: list[str] = []
 
-    async def probe(settings: Settings) -> dict[str, object]:
+    async def probe(settings: Settings, **kwargs: Any) -> dict[str, object]:
         calls.append(settings.provider_model)
         return {"status": "passed", "stop_reason": None}
 
     monkeypatch.setattr("app.provider_probe.probe", probe)
     save(client)
     assert calls == []
-    result = client.post(PATH + "/test", json={"expected_version": 1})
+    result = client.post(
+        PATH + "/test", json={"expected_version": 1}, headers={"Idempotency-Key": uuid4().hex}
+    )
     assert result.json() == {"passed": True, "reason": None}
     assert calls == ["custom-one"]
     assert (
@@ -245,7 +247,7 @@ def test_probe_releases_owner_lock_before_provider_call(
         assert run is not None
         owner = run.owner_id
 
-    async def probe(settings: Settings) -> dict[str, object]:
+    async def probe(settings: Settings, **kwargs: Any) -> dict[str, object]:
         with Session(engine(client)) as db, db.begin():
             row = db.scalar(select(ProviderSettings).where(ProviderSettings.owner_id == owner))
             assert row is not None
@@ -258,7 +260,9 @@ def test_probe_releases_owner_lock_before_provider_call(
         return {"status": "passed", "stop_reason": None}
 
     monkeypatch.setattr("app.provider_probe.probe", probe)
-    result = client.post(PATH + "/test", json={"expected_version": 1})
+    result = client.post(
+        PATH + "/test", json={"expected_version": 1}, headers={"Idempotency-Key": uuid4().hex}
+    )
     assert result.status_code == 200
     assert result.json() == {"passed": True, "reason": None}
     assert client.get(PATH).json()["custom"]["model"] == "changed-during-probe"

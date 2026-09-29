@@ -422,3 +422,12 @@ API和前端终端都设置相同的 `PSYEVO_BROWSER_ORIGIN=https://<指定主�
 普通回归复用 `backend/.venv/Scripts/python.exe -X utf8 scripts/check_step03.py --step07 --web-port 3127 --api-port 8127 --tls-port 3427`；新增受控模型与PostgreSQL用例自动参与原门禁，连续消息页面用例纳入STEP06浏览器组。
 
 仅显式执行真实两轮合成验证时，在独立PowerShell进程加载ignored配置：`. ./.env.step08.ps1`，再执行 `backend/.venv/Scripts/python.exe -X utf8 scripts/check_step03.py --multiturn-live --web-port 3127 --api-port 8127 --tls-port 3427`。该入口先跑fake回归，再在隔离合成库启动live API和独立Worker；前端/build/browser不接收Provider密钥。新live用例替代该次门禁的历史STEP08 live旅程，手动命名测试会话以避免额外标题调用，固定两次support调用，不自动重试。原 `--step08-live` 行为不变；本次收据写入新.artifacts目录，不覆盖STEP08历史记录。
+## 2026-09-29 第一阶段质量审查修复
+
+新增迁移`k011_provider_tests`为显式模型配置测试保存无正文回执。普通启动沿用已有增量迁移入口；手动启动前在backend执行`uv run --no-sync alembic upgrade head`。保留原数据库和历史回执，有测试记录时拒绝破坏性降级，不引入新配置文件或凭据读取方。
+
+模型配置测试要求`Idempotency-Key`，相同owner/键/配置版本只执行一次；同账号仅一个在途测试，启动间隔至少10秒。测试运行中不接收新聊天，已有聊天运行中也拒绝新测试。删除个人配置撤销相关测试，退出/密码操作撤销该身份的测试；超时和未知结果保留预占，不自动重发。`GET /api/v1/me/model-settings/test/{request_key}`核对本人的状态和无正文调用回执。原独立CLI合成probe仍沿显式调用流程，不自动执行。
+
+输出规则版本为`behavior-rules/2`；身份、来源、整稿发布、取消及普通run预算不变。第一阶段统一回归使用`backend/.venv/Scripts/python.exe -X utf8 scripts/check_step03.py --step07 --web-port 3197 --api-port 8197 --tls-port 3497`，额外需要模型设置检查的8110/3110空闲。所有服务顺序检查，避免多个Vite实例同时修改依赖优化缓存；`scripts/check_model_settings.py`每次生成新的`model-settings-check-*`产物目录。
+
+当前实现与验证状态见[本次修复记录](PsyEvoAgent项目计划/阶段1/evidence/S1-AUDIT-REPAIRS/README.md)，历史记录保持原时点。

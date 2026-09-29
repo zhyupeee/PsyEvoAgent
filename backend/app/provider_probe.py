@@ -6,6 +6,7 @@ import hashlib
 import json
 import logging
 import os
+from collections.abc import Callable
 from dataclasses import asdict
 from datetime import UTC, datetime
 from importlib.metadata import version
@@ -14,13 +15,23 @@ from uuid import uuid4
 
 from app.config import Settings, load_settings
 from app.provider import LiveProfile, open_provider
-from app.support import Budget, Source, SupportInput, SupportRuntime, VersionBinding
+from app.support import Budget, CallReceipt, Source, SupportInput, SupportRuntime, VersionBinding
 
 SYNTHETIC_INPUT = "这是独立合成测试：今天学习有点累，我只想说说，不需要建议。"
 
 
-async def probe(settings: Settings) -> dict[str, object]:
+async def probe(
+    settings: Settings,
+    *,
+    run_id: str | None = None,
+    authorize: Callable[[SupportInput], bool] = lambda _: True,
+    record_call: Callable[[CallReceipt], None] | None = None,
+) -> dict[str, object]:
     owner, session, run = uuid4(), uuid4(), uuid4()
+    if run_id is not None:
+        from uuid import UUID
+
+        run = UUID(run_id)
     profile = LiveProfile(model_ref=settings.provider_model, base_url=settings.provider_base_url)
     budget = Budget(
         max_calls=1,
@@ -43,7 +54,9 @@ async def probe(settings: Settings) -> dict[str, object]:
         ),
     )
     async with open_provider(settings) as provider:
-        runtime = SupportRuntime(provider, profile=profile, authorize=lambda _: True)
+        runtime = SupportRuntime(
+            provider, profile=profile, authorize=authorize, record_call=record_call
+        )
         result = await runtime.run(request, budget)
         passed = result.rule_verdict == "pass" and result.text is not None
         return {

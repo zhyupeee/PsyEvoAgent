@@ -1,0 +1,124 @@
+{
+  "passed": true,
+  "execution_kind": "isolated-synthetic-postgresql-and-controlled-model",
+  "commands": [
+    {
+      "label": "database-create",
+      "exit_code": 0,
+      "command": [
+        "docker",
+        "run",
+        "--pull=never",
+        "--name",
+        "psyevo-support-review-02facf0085f6",
+        "--label",
+        "psyevo.synthetic-support-review=true",
+        "-p",
+        "127.0.0.1::5432",
+        "-e",
+        "POSTGRES_USER=psyevo",
+        "-e",
+        "POSTGRES_PASSWORD=synthetic-check-only",
+        "-e",
+        "POSTGRES_DB=psyevo_synthetic_check",
+        "-d",
+        "postgres:16.13-bookworm@sha256:472efd9a66f2b2f1a5aeb18b28de74332e6ef88c2b93a1a5d812fb6db67a5f60"
+      ]
+    },
+    {
+      "label": "database-port",
+      "exit_code": 0,
+      "command": [
+        "docker",
+        "port",
+        "psyevo-support-review-02facf0085f6",
+        "5432/tcp"
+      ]
+    },
+    {
+      "label": "migration",
+      "exit_code": 0,
+      "command": [
+        "D:\\PsyEvoAgent\\backend\\.venv\\Scripts\\python.exe",
+        "-m",
+        "alembic",
+        "upgrade",
+        "head"
+      ]
+    },
+    {
+      "label": "postgres-tests",
+      "exit_code": 0,
+      "command": [
+        "D:\\PsyEvoAgent\\backend\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-m",
+        "postgres",
+        "tests/test_runs.py",
+        "tests/test_multiturn.py",
+        "tests/test_stage1_repairs.py",
+        "tests/test_model_settings_api.py",
+        "--junitxml=D:\\PsyEvoAgent\\.artifacts\\psyevo-support-review-02facf0085f6\\postgres-tests.xml"
+      ]
+    },
+    {
+      "label": "backend-tests",
+      "exit_code": 0,
+      "command": [
+        "D:\\PsyEvoAgent\\backend\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "--junitxml=D:\\PsyEvoAgent\\.artifacts\\psyevo-support-review-02facf0085f6\\backend-tests.xml"
+      ]
+    },
+    {
+      "label": "lint",
+      "exit_code": 0,
+      "command": [
+        "D:\\PsyEvoAgent\\backend\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ]
+    },
+    {
+      "label": "format",
+      "exit_code": 0,
+      "command": [
+        "D:\\PsyEvoAgent\\backend\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "format",
+        "--check",
+        "."
+      ]
+    },
+    {
+      "label": "types",
+      "exit_code": 0,
+      "command": [
+        "D:\\PsyEvoAgent\\backend\\.venv\\Scripts\\python.exe",
+        "-m",
+        "mypy"
+      ]
+    },
+    {
+      "label": "database-cleanup",
+      "exit_code": 0,
+      "command": [
+        "docker",
+        "rm",
+        "-f",
+        "psyevo-support-review-02facf0085f6"
+      ]
+    }
+  ],
+  "limitations": "No live Provider, SMTP, browser or kernel isolation checks.",
+  "source_sha256": {
+    "backend/app/support.py": "0bb8bbd7e76845d4757c084ef0c31b5bee71a0db44b46490a40a94df5caa949d",
+    "backend/tests/test_support.py": "f5d37cdc929277d347a55437d48d8b81deab79cc0ab78cd2e271dc185c1f11de",
+    "backend/tests/test_runs.py": "d126c5419592870d3e8c3c318777dcfb8b022ef317fc4b15d7ba807722f16ffa"
+  }
+}

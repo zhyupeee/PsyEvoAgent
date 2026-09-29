@@ -125,17 +125,23 @@ if args.step08_live:
 
 def run(label: str, args: list[str], cwd: Path = ROOT, timeout: int = 240) -> str:
     print(label, flush=True)
-    result = subprocess.run(
-        args,
-        cwd=cwd,
-        env=ENV,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        timeout=timeout,
-        check=False,
-    )
+    try:
+        result = subprocess.run(
+            args,
+            cwd=cwd,
+            env=ENV,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as error:
+        output = "\n".join(part.decode("utf-8", errors="replace") if isinstance(part, bytes) else part or "" for part in (error.stdout, error.stderr))
+        (RUN / (label + ".txt")).write_text(output, encoding="utf-8")
+        commands.append({"label": label, "exit_code": None, "timed_out": True, "log": label + ".txt"})
+        raise
     output = result.stdout + result.stderr
     (RUN / (label + ".txt")).write_text(output, encoding="utf-8")
     commands.append(
@@ -282,6 +288,8 @@ engine.dispose()
             finally:
                 worker.terminate()
                 worker.wait(timeout=15)
+        if args.step07:
+            run("model-settings-browser", [sys.executable, "scripts/check_model_settings.py"], timeout=240)
     if args.step08_live:
         run("seed-step08", [sys.executable, "-c", seed.replace("admin@example.com", "step08-live@example.com").replace("synthetic-admin-password", "synthetic-browser-password").replace("browser-b@example.com", "step08-other@example.com")], BACKEND)
         # Only API/Worker receive credentials. Browser/build/test environments remain scrubbed.

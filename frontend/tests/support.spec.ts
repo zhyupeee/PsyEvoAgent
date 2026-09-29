@@ -43,6 +43,15 @@ test('support navigation preserves the shell without flashing the identity check
 }) => {
   await login(page)
   await expect(page.locator('.support-shell')).toBeVisible()
+  // The initial authenticated mount is allowed to replace its loading shell.
+  // Observe navigation only after that mount, never compare a null loading box.
+  await expect(page.locator('#support-main')).toHaveAttribute(
+    'aria-busy',
+    'false',
+  )
+  await expect(
+    page.getByRole('heading', { name: '对话', exact: true }),
+  ).toBeVisible()
   const monitor = await page.evaluateHandle(() => {
     const shell = document.querySelector('.support-shell')
     const state = { flashed: false, unmounted: false }
@@ -66,6 +75,8 @@ test('support navigation preserves the shell without flashing the identity check
       const settings = page.getByRole('link', { name: '设置', exact: true })
       const entryBounds = await settings.boundingBox()
       const navBounds = await page.locator('.support-nav').boundingBox()
+      expect(entryBounds).not.toBeNull()
+      expect(navBounds).not.toBeNull()
       await page.getByRole('link', { name: '设置', exact: true }).click()
       await expect(
         page.getByRole('heading', { name: '设置', exact: true }),

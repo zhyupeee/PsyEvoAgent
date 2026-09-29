@@ -38,6 +38,32 @@ async function openRevisions(page: Page) {
   ).toBeVisible()
 }
 
+async function saveTitle(page: Page, title: string) {
+  const save = page.getByRole('button', { name: '保存标题', exact: true })
+  const response = page.waitForResponse(
+    (response) =>
+      /\/sessions\/[^/]+$/.test(response.url()) &&
+      response.request().method() === 'PATCH',
+  )
+  await save.click()
+  const result = await response
+  if (result.status() === 409) {
+    // Auto-title completion can advance the revision while the user is typing.
+    // Preserve the intentional CAS: the user sees the conflict and saves again.
+    expect((await result.json()).code).toBe('title_version_conflict')
+    await expect(page.getByRole('alert')).toContainText('修改未保存')
+    await expect(page.getByLabel('对话标题')).toHaveValue(title)
+    await expect(save).toBeEnabled()
+    const retry = page.waitForResponse(
+      (response) =>
+        /\/sessions\/[^/]+$/.test(response.url()) &&
+        response.request().method() === 'PATCH',
+    )
+    await save.click()
+    expect((await retry).status()).toBe(200)
+  } else expect(result.status()).toBe(200)
+}
+
 async function screenshot(page: Page, name: string) {
   const directory = process.env.PSYEVO_STEP07_ARTIFACTS
   if (!directory) throw new Error('Missing evidence directory')
@@ -105,7 +131,7 @@ test('rename search archive restore, revision and regenerate preserve separate h
   await conversation(page, 'STEP07旧输入不可混入')
   await page.getByText('管理此对话', { exact: true }).click()
   await page.getByLabel('对话标题').fill('STEP07检索对话')
-  await page.getByRole('button', { name: '保存标题' }).click()
+  await saveTitle(page, 'STEP07检索对话')
   await expect(
     page.getByRole('heading', { name: 'STEP07检索对话', exact: true }),
   ).toBeVisible()
@@ -209,7 +235,7 @@ test('ordinary changes refresh the affected tab and preserve unrelated unsent fo
   })
   await page.getByText('管理此对话', { exact: true }).click()
   await page.getByLabel('对话标题').fill('cross-tab renamed')
-  await page.getByRole('button', { name: '保存标题' }).click()
+  await saveTitle(page, 'cross-tab renamed')
   await expect(
     same.getByRole('heading', { name: 'cross-tab renamed', exact: true }),
   ).toBeVisible()

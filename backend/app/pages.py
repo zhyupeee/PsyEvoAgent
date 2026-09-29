@@ -3,11 +3,11 @@
 from typing import Any
 
 from fastapi import APIRouter, Request
-from sqlalchemy import select
+from sqlalchemy import case, select
 
 from app.api import DB, Auth, owned
 from app.history import superseded_runs, turn
-from app.models import Conversation, Run
+from app.models import Conversation, Message, Run
 
 router = APIRouter(prefix="/api/v1")
 
@@ -23,7 +23,25 @@ def current_run(session_id: str, db: DB, auth: Auth) -> dict[str, Any] | None:
             Run.deleted_at.is_(None),
             Run.id.not_in(superseded_runs()),
         )
-        .order_by(Run.created_at.desc(), Run.id.desc())
+        # An unsent draft in another tab must not hide the run that can be stopped.
+        .order_by(
+            case(
+                (Run.status.in_({"queued", "running"}), 0),
+                (
+                    select(Message.id)
+                    .where(
+                        Message.run_id == Run.id,
+                        Message.role == "user",
+                        Message.deleted_at.is_(None),
+                    )
+                    .exists(),
+                    1,
+                ),
+                else_=2,
+            ),
+            Run.created_at.desc(),
+            Run.id.desc(),
+        )
         .limit(1)
     )
     if run is None:

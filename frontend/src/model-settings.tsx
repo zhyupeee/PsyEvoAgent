@@ -1,8 +1,9 @@
 import { useForm } from '@tanstack/react-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { z } from 'zod'
 import { request, RequestError } from './account-api'
+import { Button } from './components/ui/button'
 
 export const modelSettingsSchema = z.object({
   version: z.number(),
@@ -38,6 +39,15 @@ const inputStyle = 'field'
 
 export function modelFailure(reason?: string | null) {
   switch (reason) {
+    case 'provider_test_active':
+    case 'provider_test_running':
+      return '模型配置测试正在进行，请稍后检查原请求。'
+    case 'provider_test_throttled':
+      return '测试过于频繁，请等待十秒后再试。'
+    case 'provider_configuration_revoked':
+    case 'identity_revoked':
+    case 'cancelled':
+      return '本次测试已取消。'
     case 'run_active':
       return '请等当前回答完成后再测试模型配置。'
     case 'provider_authentication':
@@ -179,23 +189,33 @@ function ModelForm({ saved, csrf }: { saved: Saved; csrf: string }) {
       await save.mutateAsync().catch(() => undefined)
     },
   })
+  const pendingTest = useRef<{ key: string; version: number } | null>(null)
   const test = useMutation({
-    mutationFn: () =>
-      request(
+    mutationFn: () => {
+      if (!pendingTest.current || pendingTest.current.version !== saved.version)
+        pendingTest.current = {
+          key: crypto.randomUUID(),
+          version: saved.version,
+        }
+      return request(
         '/me/model-settings/test',
         z.object({ passed: z.boolean(), reason: z.string().nullable() }),
         {
           method: 'POST',
           csrf,
+          key: pendingTest.current.key,
           body: { expected_version: saved.version },
         },
-      ),
-    onSuccess: (value) =>
+      )
+    },
+    onSuccess: (value) => {
+      if (value.reason !== 'provider_test_running') pendingTest.current = null
       setNotice(
         value.passed
           ? '测试通过：已收到完整、格式及用量检查通过的响应。'
           : modelFailure(value.reason),
-      ),
+      )
+    },
     onError: (error) =>
       setNotice(
         modelFailure(error instanceof RequestError ? error.code : undefined),
@@ -386,7 +406,7 @@ function ModelForm({ saved, csrf }: { saved: Saved; csrf: string }) {
         >
           {save.isPending ? '正在保存…' : '保存模型配置'}
         </button>
-        <button
+        <Button
           type="button"
           className="btn"
           disabled={busy}
@@ -396,7 +416,7 @@ function ModelForm({ saved, csrf }: { saved: Saved; csrf: string }) {
           }}
         >
           {test.isPending ? '正在测试…' : '测试已保存配置'}
-        </button>
+        </Button>
         {saved.custom.has_key ? (
           <button
             type="button"
