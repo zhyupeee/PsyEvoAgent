@@ -1,0 +1,16 @@
+
+Running 6 tests using 1 worker
+
+  ok 1 tests\records.spec.ts:51:1 › S2-A01 note persists after reopening, filters, edits and confirms deletion (5.3s)
+  ok 2 tests\records.spec.ts:74:1 › S2-A01 failed draft save keeps editor and lost acknowledgement is reconciled (3.5s)
+  ok 3 tests\records.spec.ts:112:1 › S2-A01 dirty navigation needs explicit discard and no localStorage body (2.7s)
+  ok 4 tests\records.spec.ts:133:1 › S2-A02 cross-day and unknown times, server data after login on mobile (3.8s)
+  ok 5 tests\records.spec.ts:164:1 › S2-A03 optional fields, conflict preserves edits, compare and clear (4.2s)
+  ok 6 tests\records.spec.ts:223:1 › S2-A01 excerpt preview, one-turn grant and source deletion (8.4s)
+
+  6 passed (36.2s)
+[WebServer] INFO:     Started server process [66624]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8198 (Press CTRL+C to quit)

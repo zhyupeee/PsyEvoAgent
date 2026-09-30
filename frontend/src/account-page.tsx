@@ -208,6 +208,9 @@ export function SettingsPage({
     <div className="support-content settings-page mx-auto w-full max-w-[840px] pt-6 pb-12 page:pt-8">
       <header className="support-header mb-5">
         <h1 className="text-2xl font-semibold tracking-tight">设置</h1>
+        <Link to="/me/support-card" className="btn mt-3">
+          支持备忘卡
+        </Link>
       </header>
       <nav
         className="resource-tabs mb-6 flex flex-wrap gap-x-6 gap-y-1 border-b border-line"

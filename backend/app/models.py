@@ -1,11 +1,13 @@
 """Identity/source persistence plus STEP05 messages, execution metadata and events."""
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from uuid import uuid4
 
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
+    Computed,
+    Date,
     DateTime,
     ForeignKey,
     ForeignKeyConstraint,
@@ -198,10 +200,18 @@ class ContextGrant(Personal, Base):
             ["run_id", "owner_id"], ["runs.id", "runs.owner_id"], name="fk_grant_run_owner"
         ),
         ForeignKeyConstraint(
-            ["source_id", "owner_id"],
+            ["conversation_source_id", "owner_id"],
             ["conversations.id", "conversations.owner_id"],
             name="fk_grant_source_owner",
         ),
+        ForeignKeyConstraint(["note_source_id", "owner_id"], ["notes.id", "notes.owner_id"]),
+        ForeignKeyConstraint(
+            ["sleep_source_id", "owner_id"], ["sleep_records.id", "sleep_records.owner_id"]
+        ),
+        ForeignKeyConstraint(
+            ["card_source_id", "owner_id"], ["support_cards.id", "support_cards.owner_id"]
+        ),
+        CheckConstraint("source_type IN ('conversation','note','sleep_record','support_card')"),
         ForeignKeyConstraint(
             ["consent_id", "owner_id"],
             ["consent_records.id", "consent_records.owner_id"],
@@ -211,7 +221,19 @@ class ContextGrant(Personal, Base):
         CheckConstraint("source_version > 0 AND version > 0"),
     )
     run_id: Mapped[str] = mapped_column(ForeignKey("runs.id"), index=True)
-    source_id: Mapped[str] = mapped_column(ForeignKey("conversations.id"))
+    source_id: Mapped[str] = mapped_column(String(36))
+    conversation_source_id: Mapped[str | None] = mapped_column(
+        String(36), Computed("CASE WHEN source_type = 'conversation' THEN source_id END")
+    )
+    note_source_id: Mapped[str | None] = mapped_column(
+        String(36), Computed("CASE WHEN source_type = 'note' THEN source_id END")
+    )
+    sleep_source_id: Mapped[str | None] = mapped_column(
+        String(36), Computed("CASE WHEN source_type = 'sleep_record' THEN source_id END")
+    )
+    card_source_id: Mapped[str | None] = mapped_column(
+        String(36), Computed("CASE WHEN source_type = 'support_card' THEN source_id END")
+    )
     source_type: Mapped[str] = mapped_column(String(30), default="conversation")
     source_version: Mapped[int] = mapped_column(Integer)
     consent_id: Mapped[str | None] = mapped_column(ForeignKey("consent_records.id"))
@@ -223,16 +245,39 @@ class DeletionJob(Personal, Base):
     __tablename__ = "deletion_jobs"
     __table_args__ = (
         ForeignKeyConstraint(
-            ["target", "owner_id"],
+            ["conversation_target_id", "owner_id"],
             ["conversations.id", "conversations.owner_id"],
             name="fk_deletion_target_owner",
         ),
+        ForeignKeyConstraint(["note_target_id", "owner_id"], ["notes.id", "notes.owner_id"]),
+        ForeignKeyConstraint(
+            ["sleep_target_id", "owner_id"], ["sleep_records.id", "sleep_records.owner_id"]
+        ),
+        ForeignKeyConstraint(
+            ["card_target_id", "owner_id"], ["support_cards.id", "support_cards.owner_id"]
+        ),
+        CheckConstraint("target_type IN ('conversation','note','sleep_record','support_card')"),
         CheckConstraint(
             "status IN ('requested','online_blocked','derivatives_purged',"
             "'backup_pending','completed','failed_retryable')"
         ),
     )
-    target: Mapped[str] = mapped_column(ForeignKey("conversations.id"))
+    target: Mapped[str] = mapped_column(String(36))
+    target_type: Mapped[str] = mapped_column(
+        String(30), default="conversation", server_default="conversation"
+    )
+    conversation_target_id: Mapped[str | None] = mapped_column(
+        String(36), Computed("CASE WHEN target_type = 'conversation' THEN target END")
+    )
+    note_target_id: Mapped[str | None] = mapped_column(
+        String(36), Computed("CASE WHEN target_type = 'note' THEN target END")
+    )
+    sleep_target_id: Mapped[str | None] = mapped_column(
+        String(36), Computed("CASE WHEN target_type = 'sleep_record' THEN target END")
+    )
+    card_target_id: Mapped[str | None] = mapped_column(
+        String(36), Computed("CASE WHEN target_type = 'support_card' THEN target END")
+    )
     scope: Mapped[list[str]] = mapped_column(JSONB, default=list)
     status: Mapped[str] = mapped_column(String(30), default="requested")
     completed_steps: Mapped[list[str]] = mapped_column(JSONB, default=list)
@@ -246,6 +291,70 @@ class Idempotency(Base):
     request_hash: Mapped[str] = mapped_column(String(64))
     resource_type: Mapped[str] = mapped_column(String(30))
     resource_id: Mapped[str] = mapped_column(String(36))
+
+
+class Note(Personal, Base):
+    __tablename__ = "notes"
+    __table_args__ = (
+        UniqueConstraint("id", "owner_id"),
+        CheckConstraint("version > 0"),
+        CheckConstraint("kind IN ('free','linked_excerpt')"),
+        CheckConstraint("status IN ('draft','saved','needs_review','deleted')"),
+        CheckConstraint("kind <> 'linked_excerpt' OR body IS NULL"),
+    )
+    kind: Mapped[str] = mapped_column(String(20))
+    title: Mapped[str] = mapped_column(String(120), default="")
+    body: Mapped[str | None] = mapped_column(Text)
+    annotation: Mapped[str] = mapped_column(Text, default="")
+    occurred_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    timezone: Mapped[str | None] = mapped_column(String(80))
+    tags: Mapped[list[str]] = mapped_column(JSONB, default=list)
+    status: Mapped[str] = mapped_column(String(20), default="saved")
+
+
+class NoteSource(Base):
+    __tablename__ = "note_sources"
+    __table_args__ = (
+        ForeignKeyConstraint(["note_id", "owner_id"], ["notes.id", "notes.owner_id"]),
+        ForeignKeyConstraint(["message_id", "owner_id"], ["messages.id", "messages.owner_id"]),
+        CheckConstraint("message_version > 0"),
+    )
+    note_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    message_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    owner_id: Mapped[str] = mapped_column(String(36))
+    message_version: Mapped[int] = mapped_column(Integer)
+
+
+class SleepRecord(Personal, Base):
+    __tablename__ = "sleep_records"
+    __table_args__ = (
+        UniqueConstraint("id", "owner_id"),
+        CheckConstraint("version > 0"),
+        CheckConstraint("deleted_at IS NOT NULL OR entry_date IS NOT NULL"),
+        CheckConstraint("interruptions IS NULL OR interruptions >= 0"),
+        CheckConstraint("bed_at IS NULL OR wake_at IS NULL OR wake_at > bed_at"),
+    )
+    entry_date: Mapped[date | None] = mapped_column(Date)
+    bed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    wake_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    timezone: Mapped[str | None] = mapped_column(String(80))
+    interruptions: Mapped[int | None] = mapped_column(Integer)
+    feeling: Mapped[str] = mapped_column(String(200), default="")
+    note: Mapped[str] = mapped_column(Text, default="")
+
+
+class SupportCard(Personal, Base):
+    __tablename__ = "support_cards"
+    __table_args__ = (
+        UniqueConstraint("id", "owner_id"),
+        UniqueConstraint("owner_id"),
+        CheckConstraint("version > 0"),
+    )
+    helpful_methods: Mapped[str] = mapped_column(Text, default="")
+    self_reminders: Mapped[str] = mapped_column(Text, default="")
+    contact_notes: Mapped[str] = mapped_column(Text, default="")
+    resource_refs: Mapped[list[dict[str, str]]] = mapped_column(JSONB, default=list)
+    previous_content: Mapped[dict[str, object] | None] = mapped_column(JSONB)
 
 
 class RunExecution(Personal, Base):
@@ -272,6 +381,7 @@ class RunExecution(Personal, Base):
 class Message(Personal, Base):
     __tablename__ = "messages"
     __table_args__ = (
+        UniqueConstraint("id", "owner_id", name="uq_message_owner"),
         ForeignKeyConstraint(["run_id", "owner_id"], ["runs.id", "runs.owner_id"]),
         UniqueConstraint("owner_id", "client_message_id"),
         UniqueConstraint("run_id", "role"),

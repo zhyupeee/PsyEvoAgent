@@ -1,0 +1,6 @@
+
+Running 1 test using 1 worker
+
+  ok 1 tests\model-settings.spec.ts:4:1 › account model settings persist, hide keys, switch modes and revoke (7.5s)
+
+  1 passed (8.8s)

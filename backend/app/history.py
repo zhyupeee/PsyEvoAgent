@@ -42,11 +42,17 @@ def context_history(
 ) -> tuple[ContextTurn, ...]:
     if request.versions.policy_version == "support-policy/1":
         return ()
-    remaining = history_capacity(request.source.content, select_mode(request), budget)
+    remaining = history_capacity(
+        request.source.content + request.record_context, select_mode(request), budget
+    )
     if remaining < 0:
         return ()
     query = main_runs(run.owner_id, run.session_id).where(
         Run.status == "completed",
+        # A one-turn record grant must not leak via a previous generated reply.
+        Run.id.not_in(
+            select(ContextGrant.run_id).where(ContextGrant.source_type != "conversation")
+        ),
         tuple_(Run.created_at, Run.id) < (run.created_at, run.id),
     )
     selected: list[ContextTurn] = []
@@ -176,6 +182,7 @@ def fork_run(
                     run_id=run.id,
                     source_id=grant.source_id,
                     source_version=grant.source_version,
+                    source_type=grant.source_type,
                     purpose="current_run",
                 )
             )
@@ -193,6 +200,10 @@ def fork_run(
         ]
     )
     db.flush()
+    if kind == "revision":
+        from app.records import invalidate_excerpts
+
+        invalidate_excerpts(db, parent.id)
     return run
 
 

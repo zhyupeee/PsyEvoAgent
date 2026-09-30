@@ -16,6 +16,8 @@ from app.models import (
     Interaction,
     Message,
     ModelCall,
+    Note,
+    NoteSource,
     ProviderBinding,
     Run,
     RunBranch,
@@ -43,6 +45,7 @@ def receipt(job: DeletionJob, db: Session) -> dict[str, Any]:
     result: dict[str, Any] = {
         "deletion_id": job.id,
         "target": job.target,
+        "target_type": job.target_type,
         "version": job.version,
         "status": job.status,
         "completed_steps": job.completed_steps,
@@ -62,16 +65,30 @@ def receipt(job: DeletionJob, db: Session) -> dict[str, Any]:
 
 
 def affected_runs(db: Session, target: str) -> list[Run]:
-    return list(
-        db.scalars(
+    targets = {target}
+    found: dict[str, Run] = {}
+    while True:
+        rows = db.scalars(
             select(Run).where(
                 or_(
-                    Run.session_id == target,
-                    Run.id.in_(select(ContextGrant.run_id).where(ContextGrant.source_id == target)),
+                    Run.session_id.in_(targets),
+                    Run.id.in_(
+                        select(ContextGrant.run_id).where(ContextGrant.source_id.in_(targets))
+                    ),
                 )
             )
+        ).all()
+        found.update((run.id, run) for run in rows)
+        note_ids = set(
+            db.scalars(
+                select(NoteSource.note_id)
+                .join(Message, Message.id == NoteSource.message_id)
+                .where(Message.run_id.in_(found))
+            )
         )
-    )
+        if note_ids <= targets:
+            return list(found.values())
+        targets.update(note_ids)
 
 
 def purge_step(db: Session, job: DeletionJob, step: str) -> None:
@@ -84,9 +101,24 @@ def purge_step(db: Session, job: DeletionJob, step: str) -> None:
         for message in db.scalars(select(Message).where(Message.run_id.in_(ids))):
             message.content, message.deleted_at = "", now()
             message.source_refs, message.consent_refs = [], []
-        source = db.get(Conversation, job.target)
+        from app.records import purge_record, source_model
+
+        source = db.get(source_model(job.target_type), job.target)
         assert source is not None
-        source.title, source.source_refs, source.consent_refs = "已删除的对话", [], []
+        if isinstance(source, Conversation):
+            source.title, source.source_refs, source.consent_refs = "已删除的对话", [], []
+        else:
+            purge_record(db, source)
+        for note in db.scalars(
+            select(Note).where(
+                Note.id.in_(
+                    select(NoteSource.note_id)
+                    .join(Message, Message.id == NoteSource.message_id)
+                    .where(Message.run_id.in_(ids))
+                )
+            )
+        ):
+            purge_record(db, note)
     elif step == "events":
         db.execute(delete(RunEvent).where(RunEvent.run_id.in_(ids)))
         db.execute(delete(Interaction).where(Interaction.run_id.in_(ids)))
@@ -142,6 +174,19 @@ class DeleteSession(Version):
     confirmed: Literal[True]
 
 
+@router.get("/sessions/{session_id}/deletion-preview")
+def preview(session_id: str, db: DB, auth: Auth) -> dict[str, Any]:
+    owned(db, Conversation, session_id, auth.owner_id)
+    from app.records import related_notes
+
+    return {
+        "linked_notes": [
+            {"id": note.id, "title": note.title or "未命名摘记"}
+            for note in related_notes(db, [run.id for run in affected_runs(db, session_id)])
+        ]
+    }
+
+
 @router.delete("/sessions/{session_id}", status_code=202)
 def remove(
     session_id: str, body: DeleteSession, request: Request, db: DB, auth: Auth
@@ -155,6 +200,11 @@ def remove(
         for run in affected_runs(db, source.id):
             terminal(db, run, execution(db, run), "cancelled", "source_deleted")
             run.deleted_at = now()
+        from app.records import related_notes
+
+        for note in related_notes(db, [run.id for run in affected_runs(db, source.id)]):
+            note.deleted_at = now()
+            bump(note, note.version)
         return DeletionJob(
             owner_id=auth.owner_id,
             target=source.id,

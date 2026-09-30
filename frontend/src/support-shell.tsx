@@ -4,7 +4,7 @@ import {
   useQuery,
 } from '@tanstack/react-query'
 import { Link, useLocation, useNavigate } from '@tanstack/react-router'
-import { HeartHandshake, MessageSquare, Settings } from 'lucide-react'
+import { BookOpen, HeartHandshake, MessageSquare, Settings } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { getIdentity, identitySchema } from './account-api'
 import { z } from 'zod'
@@ -177,6 +177,14 @@ function SupportLayout({
           >
             <MessageSquare size={18} aria-hidden="true" />
             对话
+          </Link>
+          <Link
+            to="/records"
+            className={navLinkClass}
+            activeProps={{ 'aria-current': 'page' }}
+          >
+            <BookOpen size={18} aria-hidden="true" />
+            我的记录
           </Link>
           <Link
             to="/resources"

@@ -1,6 +1,6 @@
 import { useForm } from '@tanstack/react-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import {
   ArrowUp,
   ArrowRight,
@@ -17,6 +17,7 @@ import { ChatTimeline, turnLabels } from './chat-timeline'
 import { modelFailure } from './model-settings'
 import { Button } from './components/ui/button'
 import { Textarea } from './components/ui/textarea'
+import { cardSchema, noteSchema, sleepSchema, recordPaths } from './records-api'
 import {
   BranchActions,
   FeedbackForm,
@@ -236,7 +237,13 @@ export function ChatPage({ sessionId }: { sessionId?: string }) {
   )
 }
 
-type Attempt = { text: string; id: string; draft?: string; grant?: string }
+type Attempt = {
+  text: string
+  id: string
+  draft?: string
+  grant?: string
+  recordGrant?: string
+}
 function Conversation({
   sessionId,
   csrf,
@@ -248,6 +255,30 @@ function Conversation({
   blocking: boolean
   onBlocking: () => void
 }) {
+  const search = useSearch({ strict: false })
+  const navigate = useNavigate()
+  const recordSelection =
+    search.record && search.recordType && search.recordVersion
+      ? {
+          id: search.record,
+          type: search.recordType,
+          version: search.recordVersion,
+        }
+      : null
+  const hasRecordSelection = recordSelection !== null
+  const attached = useQuery({
+    queryKey: ['record', recordSelection?.type, recordSelection?.id],
+    enabled: !!recordSelection,
+    queryFn: ({ signal }) =>
+      request(
+        recordPaths[recordSelection!.type] +
+          (recordSelection!.type === 'support_card'
+            ? ''
+            : `/${recordSelection!.id}`),
+        z.union([noteSchema, sleepSchema, cardSchema]),
+        { signal },
+      ),
+  })
   const client = useQueryClient()
   const preferences = useQuery(preferencesQuery)
   const session = useQuery({
@@ -387,6 +418,21 @@ function Conversation({
         )
         pending.grant = grant.id
       }
+      if (recordSelection && !pending.recordGrant) {
+        const grant = await write(
+          '/context-grants',
+          z.object({ id: z.string() }),
+          {
+            run_id: pending.draft,
+            source_type: recordSelection.type,
+            source_id: recordSelection.id,
+            source_version: recordSelection.version,
+            purpose: 'current_run',
+          },
+          '-record-grant',
+        )
+        pending.recordGrant = grant.id
+      }
       await write(
         `/runs/${pending.draft}/start`,
         runSchema,
@@ -395,11 +441,21 @@ function Conversation({
           expected_session_version: session.data.version,
           input: { message: pending.text },
           client_message_id: pending.id,
-          grant_ids: [pending.grant],
+          grant_ids: [
+            pending.grant,
+            ...(pending.recordGrant ? [pending.recordGrant] : []),
+          ],
         },
         '-start',
       )
       attempt.current = null
+      if (recordSelection)
+        await navigate({
+          to: '/chat/$sessionId',
+          params: { sessionId },
+          search: {},
+          replace: true,
+        })
       form.reset()
       await client.invalidateQueries({ queryKey })
       await client.invalidateQueries({ queryKey: ['timeline', sessionId] })
@@ -430,8 +486,15 @@ function Conversation({
       return
     attempt.current = null
     send.reset()
+    if (hasRecordSelection)
+      void navigate({
+        to: '/chat/$sessionId',
+        params: { sessionId },
+        search: {},
+        replace: true,
+      })
     if (form.state.values.message.trim() === pending.text) form.reset()
-  }, [run, send, form])
+  }, [run, send, form, hasRecordSelection, navigate, sessionId])
   const cancel = useMutation({
     mutationFn: async () => {
       if (!runId) return
@@ -561,6 +624,45 @@ function Conversation({
               <p role="alert" className="mb-2 text-sm text-danger">
                 发送未确认，输入已保留。服务可能尚未配置；重试原消息不会重复创建运行。
               </p>
+            ) : null}
+            {recordSelection ? (
+              <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl bg-paper p-3 text-sm">
+                <span>
+                  {attached.isError
+                    ? '所选记录不可用，请核对。'
+                    : attached.data
+                      ? `本次参考：${'title' in attached.data ? attached.data.title || '笔记' : 'entry_date' in attached.data ? attached.data.entry_date : '支持备忘卡'} · 版本 ${recordSelection.version}`
+                      : '正在读取所选记录…'}
+                  。仅用于本次发送。
+                </span>
+                <Button
+                  disabled={
+                    send.isPending ||
+                    (send.isError &&
+                      !(
+                        send.error instanceof RequestError &&
+                        [
+                          'source_or_run_changed',
+                          'grant_inactive',
+                          'source_unavailable',
+                          'not_found',
+                        ].includes(send.error.code ?? '')
+                      ))
+                  }
+                  onClick={() => {
+                    attempt.current = null
+                    send.reset()
+                    void navigate({
+                      to: '/chat/$sessionId',
+                      params: { sessionId },
+                      search: {},
+                      replace: true,
+                    })
+                  }}
+                >
+                  移除
+                </Button>
+              </div>
             ) : null}
             {cancel.isError ? (
               <p role="alert" className="mb-2 text-sm text-danger">

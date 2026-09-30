@@ -2,6 +2,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react'
 import { z } from 'zod'
 import { request } from './account-api'
+import { ExcerptButton } from './records-page'
 import { MarkdownMessage } from './markdown-message'
 import { runSchema, type Run } from './support-api'
 
@@ -154,6 +155,23 @@ export function ChatTimeline({
                 {item.output ? (
                   <div className="message assistant-message mt-3 w-full min-w-0 py-1">
                     <MarkdownMessage text={item.output.text} />
+                  </div>
+                ) : null}
+                {item.output?.id && item.output.version ? (
+                  <ExcerptButton
+                    messageId={item.output.id}
+                    version={item.output.version}
+                    content={item.output.text}
+                    role="assistant"
+                  />
+                ) : null}
+                {item.input_id && item.input_version && item.input_text ? (
+                  <div className="text-right">
+                    <ExcerptButton
+                      messageId={item.input_id}
+                      version={item.input_version}
+                      content={item.input_text}
+                    />
                   </div>
                 ) : null}
                 {item.run_id !== current?.run_id &&

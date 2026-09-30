@@ -528,7 +528,7 @@ test('navigation keeps core entry clear, settings drafts and exercise return acc
   ).toBeVisible()
   await expect(
     page.getByRole('navigation', { name: '主要导航' }).getByRole('link'),
-  ).toHaveCount(2)
+  ).toHaveCount(3)
   await expect(
     page.getByRole('link', { name: '对话', exact: true }),
   ).toHaveAttribute('aria-current', 'page')

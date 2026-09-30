@@ -16,10 +16,14 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as SupportChatRouteImport } from './routes/_support.chat'
 import { Route as SupportMeRouteImport } from './routes/_support.me'
+import { Route as SupportRecordsRouteImport } from './routes/_support.records'
 import { Route as SupportResourcesRouteImport } from './routes/_support.resources'
 import { Route as SupportChatIndexRouteImport } from './routes/_support.chat.index'
 import { Route as SupportChatSessionIdRouteImport } from './routes/_support.chat.$sessionId'
 import { Route as SupportMePrivacyRouteImport } from './routes/_support.me.privacy'
+import { Route as SupportMeSupportCardRouteImport } from './routes/_support.me_.support-card'
+import { Route as SupportRecordsIndexRouteImport } from './routes/_support.records.index'
+import { Route as SupportRecordsSleepRouteImport } from './routes/_support.records.sleep'
 import { Route as SupportResourcesIndexRouteImport } from './routes/_support.resources.index'
 import { Route as SupportResourcesExercisesExerciseIdRouteImport } from './routes/_support.resources.exercises.$exerciseId'
 
@@ -57,6 +61,11 @@ const SupportMeRoute = SupportMeRouteImport.update({
   path: '/me',
   getParentRoute: () => SupportRoute,
 } as any)
+const SupportRecordsRoute = SupportRecordsRouteImport.update({
+  id: '/records',
+  path: '/records',
+  getParentRoute: () => SupportRoute,
+} as any)
 const SupportResourcesRoute = SupportResourcesRouteImport.update({
   id: '/resources',
   path: '/resources',
@@ -77,6 +86,21 @@ const SupportMePrivacyRoute = SupportMePrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => SupportMeRoute,
 } as any)
+const SupportMeSupportCardRoute = SupportMeSupportCardRouteImport.update({
+  id: '/me_/support-card',
+  path: '/me/support-card',
+  getParentRoute: () => SupportRoute,
+} as any)
+const SupportRecordsIndexRoute = SupportRecordsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SupportRecordsRoute,
+} as any)
+const SupportRecordsSleepRoute = SupportRecordsSleepRouteImport.update({
+  id: '/sleep',
+  path: '/sleep',
+  getParentRoute: () => SupportRecordsRoute,
+} as any)
 const SupportResourcesIndexRoute = SupportResourcesIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -96,10 +120,14 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/chat': typeof SupportChatRouteWithChildren
   '/me': typeof SupportMeRouteWithChildren
+  '/records': typeof SupportRecordsRouteWithChildren
   '/resources': typeof SupportResourcesRouteWithChildren
   '/chat/$sessionId': typeof SupportChatSessionIdRoute
   '/me/privacy': typeof SupportMePrivacyRoute
+  '/me/support-card': typeof SupportMeSupportCardRoute
+  '/records/sleep': typeof SupportRecordsSleepRoute
   '/chat/': typeof SupportChatIndexRoute
+  '/records/': typeof SupportRecordsIndexRoute
   '/resources/': typeof SupportResourcesIndexRoute
   '/resources/exercises/$exerciseId': typeof SupportResourcesExercisesExerciseIdRoute
 }
@@ -111,7 +139,10 @@ export interface FileRoutesByTo {
   '/me': typeof SupportMeRouteWithChildren
   '/chat/$sessionId': typeof SupportChatSessionIdRoute
   '/me/privacy': typeof SupportMePrivacyRoute
+  '/me/support-card': typeof SupportMeSupportCardRoute
+  '/records/sleep': typeof SupportRecordsSleepRoute
   '/chat': typeof SupportChatIndexRoute
+  '/records': typeof SupportRecordsIndexRoute
   '/resources': typeof SupportResourcesIndexRoute
   '/resources/exercises/$exerciseId': typeof SupportResourcesExercisesExerciseIdRoute
 }
@@ -124,10 +155,14 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/_support/chat': typeof SupportChatRouteWithChildren
   '/_support/me': typeof SupportMeRouteWithChildren
+  '/_support/records': typeof SupportRecordsRouteWithChildren
   '/_support/resources': typeof SupportResourcesRouteWithChildren
   '/_support/chat/$sessionId': typeof SupportChatSessionIdRoute
   '/_support/me/privacy': typeof SupportMePrivacyRoute
+  '/_support/me_/support-card': typeof SupportMeSupportCardRoute
+  '/_support/records/sleep': typeof SupportRecordsSleepRoute
   '/_support/chat/': typeof SupportChatIndexRoute
+  '/_support/records/': typeof SupportRecordsIndexRoute
   '/_support/resources/': typeof SupportResourcesIndexRoute
   '/_support/resources/exercises/$exerciseId': typeof SupportResourcesExercisesExerciseIdRoute
 }
@@ -140,10 +175,14 @@ export interface FileRouteTypes {
     | '/register'
     | '/chat'
     | '/me'
+    | '/records'
     | '/resources'
     | '/chat/$sessionId'
     | '/me/privacy'
+    | '/me/support-card'
+    | '/records/sleep'
     | '/chat/'
+    | '/records/'
     | '/resources/'
     | '/resources/exercises/$exerciseId'
   fileRoutesByTo: FileRoutesByTo
@@ -155,7 +194,10 @@ export interface FileRouteTypes {
     | '/me'
     | '/chat/$sessionId'
     | '/me/privacy'
+    | '/me/support-card'
+    | '/records/sleep'
     | '/chat'
+    | '/records'
     | '/resources'
     | '/resources/exercises/$exerciseId'
   id:
@@ -167,10 +209,14 @@ export interface FileRouteTypes {
     | '/register'
     | '/_support/chat'
     | '/_support/me'
+    | '/_support/records'
     | '/_support/resources'
     | '/_support/chat/$sessionId'
     | '/_support/me/privacy'
+    | '/_support/me_/support-card'
+    | '/_support/records/sleep'
     | '/_support/chat/'
+    | '/_support/records/'
     | '/_support/resources/'
     | '/_support/resources/exercises/$exerciseId'
   fileRoutesById: FileRoutesById
@@ -234,6 +280,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SupportMeRouteImport
       parentRoute: typeof SupportRoute
     }
+    '/_support/records': {
+      id: '/_support/records'
+      path: '/records'
+      fullPath: '/records'
+      preLoaderRoute: typeof SupportRecordsRouteImport
+      parentRoute: typeof SupportRoute
+    }
     '/_support/resources': {
       id: '/_support/resources'
       path: '/resources'
@@ -261,6 +314,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/me/privacy'
       preLoaderRoute: typeof SupportMePrivacyRouteImport
       parentRoute: typeof SupportMeRoute
+    }
+    '/_support/me_/support-card': {
+      id: '/_support/me_/support-card'
+      path: '/me/support-card'
+      fullPath: '/me/support-card'
+      preLoaderRoute: typeof SupportMeSupportCardRouteImport
+      parentRoute: typeof SupportRoute
+    }
+    '/_support/records/': {
+      id: '/_support/records/'
+      path: '/'
+      fullPath: '/records/'
+      preLoaderRoute: typeof SupportRecordsIndexRouteImport
+      parentRoute: typeof SupportRecordsRoute
+    }
+    '/_support/records/sleep': {
+      id: '/_support/records/sleep'
+      path: '/sleep'
+      fullPath: '/records/sleep'
+      preLoaderRoute: typeof SupportRecordsSleepRouteImport
+      parentRoute: typeof SupportRecordsRoute
     }
     '/_support/resources/': {
       id: '/_support/resources/'
@@ -305,6 +379,20 @@ const SupportMeRouteWithChildren = SupportMeRoute._addFileChildren(
   SupportMeRouteChildren,
 )
 
+interface SupportRecordsRouteChildren {
+  SupportRecordsSleepRoute: typeof SupportRecordsSleepRoute
+  SupportRecordsIndexRoute: typeof SupportRecordsIndexRoute
+}
+
+const SupportRecordsRouteChildren: SupportRecordsRouteChildren = {
+  SupportRecordsSleepRoute: SupportRecordsSleepRoute,
+  SupportRecordsIndexRoute: SupportRecordsIndexRoute,
+}
+
+const SupportRecordsRouteWithChildren = SupportRecordsRoute._addFileChildren(
+  SupportRecordsRouteChildren,
+)
+
 interface SupportResourcesRouteChildren {
   SupportResourcesIndexRoute: typeof SupportResourcesIndexRoute
   SupportResourcesExercisesExerciseIdRoute: typeof SupportResourcesExercisesExerciseIdRoute
@@ -322,13 +410,17 @@ const SupportResourcesRouteWithChildren =
 interface SupportRouteChildren {
   SupportChatRoute: typeof SupportChatRouteWithChildren
   SupportMeRoute: typeof SupportMeRouteWithChildren
+  SupportRecordsRoute: typeof SupportRecordsRouteWithChildren
   SupportResourcesRoute: typeof SupportResourcesRouteWithChildren
+  SupportMeSupportCardRoute: typeof SupportMeSupportCardRoute
 }
 
 const SupportRouteChildren: SupportRouteChildren = {
   SupportChatRoute: SupportChatRouteWithChildren,
   SupportMeRoute: SupportMeRouteWithChildren,
+  SupportRecordsRoute: SupportRecordsRouteWithChildren,
   SupportResourcesRoute: SupportResourcesRouteWithChildren,
+  SupportMeSupportCardRoute: SupportMeSupportCardRoute,
 }
 
 const SupportRouteWithChildren =

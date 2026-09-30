@@ -17,6 +17,7 @@ from app.config import Settings
 from app.history import context_available, context_history
 from app.models import Message, ModelCall, Run, now
 from app.provider import InternalStreamProvider, LiveProfile, open_provider
+from app.records import record_context
 from app.runs import emit, executable, execution, lock_owner, terminal
 from app.support import (
     Budget,
@@ -142,6 +143,7 @@ async def execute(
                 content=message.content,
             ),
         )
+        request = request.model_copy(update={"record_context": record_context(db, run)})
         request = request.model_copy(
             update={"history": context_history(db, run, request, bound_budget)}
         )

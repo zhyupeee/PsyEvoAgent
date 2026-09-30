@@ -49,7 +49,14 @@ export const runSchema = z.object({
   generation: z.number().default(0),
   last_event_id: z.string().default('0'),
   stop_reason: z.string().nullable().optional(),
-  output: z.object({ text: z.string() }).nullable().optional(),
+  output: z
+    .object({
+      text: z.string(),
+      id: z.string().optional(),
+      version: z.number().optional(),
+    })
+    .nullable()
+    .optional(),
   input_text: z.string().nullable().optional(),
   input_id: z.string().nullable().optional(),
   input_version: z.number().nullable().optional(),

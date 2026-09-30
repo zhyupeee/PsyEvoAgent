@@ -105,7 +105,7 @@ class DraftCreate(Input):
 
 class GrantCreate(Input):
     run_id: str = Field(max_length=36)
-    source_type: Literal["conversation"]
+    source_type: Literal["conversation", "note", "sleep_record", "support_card"]
     source_id: str = Field(max_length=36)
     source_version: int = Field(gt=0, strict=True)
     purpose: Literal["current_run"]

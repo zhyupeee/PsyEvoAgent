@@ -97,6 +97,7 @@ class SupportInput(Frozen):
     synthetic: Literal[True]
     versions: VersionBinding = Field(default_factory=VersionBinding)
     history: tuple[ContextTurn, ...] = ()
+    record_context: str = ""
 
 
 class Budget(Frozen):
@@ -334,7 +335,9 @@ def history_capacity(content: str, mode: Mode, budget: Budget) -> int:
 def fit_history(request: SupportInput, budget: Budget) -> tuple[ContextTurn, ...]:
     if request.versions.policy_version == "support-policy/1":
         return ()
-    remaining = history_capacity(request.source.content, select_mode(request), budget)
+    remaining = history_capacity(
+        request.source.content + request.record_context, select_mode(request), budget
+    )
     selected: list[ContextTurn] = []
     for turn in reversed(request.history):
         remaining -= context_size(turn)
@@ -425,12 +428,17 @@ class SupportRuntime:
             return {}
         budget, ledger = state["budget"], state["ledger"]
         request = state["request"]
-        if history_capacity(request.source.content, state["mode"], budget) < 0:
+        if (
+            history_capacity(request.source.content + request.record_context, state["mode"], budget)
+            < 0
+        ):
             return {"stop_reason": "token_budget"}
         system = LEGACY_SYSTEM if request.versions.policy_version == "support-policy/1" else SYSTEM
         messages: list[BaseMessage] = [SystemMessage(system + state["mode"])]
         for turn in fit_history(request, budget):
             messages.extend([HumanMessage(turn.user_text), AIMessage(turn.assistant_text)])
+        if request.record_context:
+            messages.append(HumanMessage(request.record_context))
         messages.append(HumanMessage(request.source.content))
         # Live PoC reserves the entire envelope, not the fake UTF-8 token estimator.
         reserved = (

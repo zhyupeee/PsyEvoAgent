@@ -1,5 +1,9 @@
 # 本地工程开发（S1-STEP02～08内部实验工程交付）
 
+## 2026-09-30 S2-STEP02 审查修复
+
+发送恢复清除当次记录附件，明确缺失的记录可移除；保存恢复保留后续编辑并继续更新同一记录；删除确认每次重新核对关联摘记。睡眠顺序和跨度按 UTC 瞬时值计算，笔记日期按记录时区筛选。未新增依赖、迁移或配置读取方式。本次实现及独立验证记录见[审查修复](PsyEvoAgent项目计划/阶段2/evidence/S2-STEP02/review-repairs.md)，历史 STEP02 收据保留。
+
 ## 2026-09-29 审查回归修复
 
 侧栏与会话管理共用 Radix Dialog 删除确认组件（锁定 `@radix-ui/react-dialog` 1.1.23）。确认后先阻断对应会话的正文、历史、SSE 订阅和输入；请求未确认时保持隐藏，关闭再打开弹窗仍使用原幂等键。保留取消、键盘焦点约束与关闭后的焦点恢复。修订入口复用现有 Collapsible，收起保留草稿。
@@ -431,6 +435,18 @@ API和前端终端都设置相同的 `PSYEVO_BROWSER_ORIGIN=https://<指定主�
 输出规则版本为`behavior-rules/2`；身份、来源、整稿发布、取消及普通run预算不变。第一阶段统一回归使用`backend/.venv/Scripts/python.exe -X utf8 scripts/check_step03.py --step07 --web-port 3197 --api-port 8197 --tls-port 3497`，额外需要模型设置检查的8110/3110空闲。所有服务顺序检查，避免多个Vite实例同时修改依赖优化缓存；`scripts/check_model_settings.py`每次生成新的`model-settings-check-*`产物目录。
 
 当前实现与验证状态见[本次修复记录](PsyEvoAgent项目计划/阶段1/evidence/S1-AUDIT-REPAIRS/README.md)，历史记录保持原时点。
+
+## 阶段2 STEP02记录验收（2026-09-30）
+
+在仓库根目录执行：
+
+```powershell
+backend/.venv/Scripts/python.exe -X utf8 scripts/check_step03.py --s2-step02 --web-port 3198 --api-port 8198 --tls-port 3498
+```
+
+复用现有随机隔离PostgreSQL容器、白名单测试环境、fake Worker及浏览器入口；端口需空闲，不接管开发服务。追加迁移`l012_records`，不重置数据；普通开发启动继续由既有启动脚本升级到head。本次没有向开发库应用迁移；手动启动者应按既有流程先执行`uv run --no-sync alembic upgrade head`。
+
+入口执行143项数据库/API/迁移和188项后端测试、前端check/build、本步6条及既有35条浏览器检查，另比较真实PostgreSQL重启前后记录、来源关联和删除收据的行数/哈希。最终输出在独立`.artifacts/psyevo-step07-*`目录，目录名沿用已有门禁；receipt.step_id为S2-STEP02。`PSYEVO_S2_STEP02_ARTIFACTS`仅由检查器提供给测试保存截图，不是产品配置，也不读取Provider密钥。没有新依赖、配置文件、SMTP或模型凭据读取方；不可将fake输入捕获称为live兼容验证。实际证据见[本步记录](PsyEvoAgent项目计划/阶段2/evidence/S2-STEP02/README.md)。
 
 ## 阶段2 STEP01合同检查（2026-09-29）
 

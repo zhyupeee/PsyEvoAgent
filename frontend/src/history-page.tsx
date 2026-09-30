@@ -49,6 +49,7 @@ export const privateChangeSchema = z.discriminatedUnion('type', [
     sessionId: z.string(),
   }),
   z.object({ origin: z.string(), type: z.literal('signed-out') }),
+  z.object({ origin: z.string(), type: z.literal('records-deleted') }),
 ])
 
 type PrivateChange = z.infer<typeof privateChangeSchema>
@@ -56,7 +57,7 @@ type PrivateChange = z.infer<typeof privateChangeSchema>
 export function notifyPrivateChange(
   change:
     | Omit<Extract<PrivateChange, { sessionId: string }>, 'origin'>
-    | { type: 'signed-out' },
+    | { type: 'signed-out' | 'records-deleted' },
 ) {
   const channel = new BroadcastChannel('psyevo-private-change')
   channel.postMessage({ ...change, origin: privateChangeOrigin })
@@ -131,6 +132,21 @@ function SessionDeleteDialog({
 }) {
   const finishDeletion = useFinishSessionDeletion()
   const [open, setOpen] = useState(false)
+  const preview = useQuery({
+    queryKey: ['deletion-preview', session.id],
+    enabled: open,
+    staleTime: 0,
+    queryFn: ({ signal }) =>
+      request(
+        `/sessions/${session.id}/deletion-preview`,
+        z.object({
+          linked_notes: z.array(
+            z.object({ id: z.string(), title: z.string() }),
+          ),
+        }),
+        { signal },
+      ),
+  })
   const changeOpen = (value: boolean) => {
     setOpen(value)
     onOpenChange?.(value)
@@ -168,6 +184,17 @@ function SessionDeleteDialog({
         <p className="mt-2 text-sm text-muted">
           完成情况可在“设置 → 数据管理 → 删除处理记录”中查询。
         </p>
+        {preview.isPending || preview.isFetching ? (
+          <p role="status">正在核对关联摘记…</p>
+        ) : preview.isError ? (
+          <p role="alert">暂时无法核对关联摘记，请稍后重试。</p>
+        ) : (
+          <p className="mt-2 text-sm">
+            一并删除的关联摘记：
+            {preview.data.linked_notes.map((note) => note.title).join('、') ||
+              '无'}
+          </p>
+        )}
         {remove.isError ? (
           <p role="alert" className="mt-2 text-sm text-danger">
             删除状态尚未确认。请重试原请求，或在设置的数据管理中查询删除处理记录。
@@ -179,7 +206,11 @@ function SessionDeleteDialog({
           </DialogClose>
           <Button
             className="btn-danger"
-            disabled={remove.isPending}
+            disabled={
+              remove.isPending ||
+              (!remove.isError &&
+                (preview.isPending || preview.isFetching || preview.isError))
+            }
             onClick={() => remove.mutate()}
           >
             {remove.isPending ? '正在处理…' : '确认删除'}

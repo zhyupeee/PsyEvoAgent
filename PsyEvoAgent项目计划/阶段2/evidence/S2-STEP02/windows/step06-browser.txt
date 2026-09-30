@@ -1,0 +1,27 @@
+
+Running 17 tests using 1 worker
+
+  ok  1 tests\chat-regressions.spec.ts:60:1 › a competing tab start restores the active run stop control after draft rejection (2.4s)
+  ok  2 tests\chat-regressions.spec.ts:95:3 › sidebar deletion stays blocked after a lost response and dialog dismissal (1.5s)
+  ok  3 tests\chat-regressions.spec.ts:95:3 › management deletion stays blocked after a lost response and dialog dismissal (1.4s)
+  ok  4 tests\chat-regressions.spec.ts:170:1 › short viewport keeps an expanded composer send button reachable at both font sizes (2.3s)
+  ok  5 tests\chat-regressions.spec.ts:204:1 › revision disclosure supports keyboard, retained draft and focus return (1.1s)
+  ok  6 tests\chat-regressions.spec.ts:227:1 › fallback scrolling preserves the timeline pagination anchor (2.1s)
+  ok  7 tests\feedback-ui.spec.ts:3:1 › feedback components support keyboard, drafts, cancellation and idempotent retry (2.4s)
+  ok  8 tests\support.spec.ts:41:1 › support navigation preserves the shell without flashing the identity check (3.0s)
+  ok  9 tests\support.spec.ts:127:1 › direct resource access still requires identity and recovers from identity errors (3.5s)
+  ok 10 tests\support.spec.ts:149:1 › multi-turn timeline: pagination, reload, switching and mobile sidebar (45.3s)
+  ok 11 tests\support.spec.ts:248:1 › chat: real send, lost acknowledgement retry, snapshot reload, account isolation (8.5s)
+  ok 12 tests\support.spec.ts:313:1 › unaccepted send reports its unchanged state and retries the original message (4.8s)
+  ok 13 tests\support.spec.ts:340:1 › confirmed lost start clears pending send and preserves a revised next message (7.2s)
+  ok 14 tests\support.spec.ts:378:1 › stop reflects backend terminal even when completion wins; stream loss recovers without send (3.9s)
+  ok 15 tests\support.spec.ts:415:1 › preferences: failure is not saved; persistence, mobile keyboard and title display (4.6s)
+  ok 16 tests\support.spec.ts:472:1 › independent exercise: no model requests, skip, exit, refresh, unknown resources (3.8s)
+  ok 17 tests\support.spec.ts:514:1 › navigation keeps core entry clear, settings drafts and exercise return accessible (5.4s)
+
+  17 passed (1.8m)
+[WebServer] INFO:     Started server process [10224]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8198 (Press CTRL+C to quit)

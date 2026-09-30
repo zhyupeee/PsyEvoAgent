@@ -1,0 +1,33 @@
+{
+  "step_id": "S2-STEP02",
+  "passed": true,
+  "execution": ".artifacts\\psyevo-step07-737cb86b8315",
+  "finished": "2026-09-30T02:15:04.384137+00:00",
+  "postgres_api_migration": 143,
+  "backend": 188,
+  "browser_counts": {
+    "browser.txt": 10,
+    "https-browser.txt": 1,
+    "s2-step02-browser.txt": 6,
+    "step05-gateway.txt": 1,
+    "step06-browser.txt": 17,
+    "step07-browser.txt": 5,
+    "model-settings-browser-tests.txt": 1
+  },
+  "browser_total": 41,
+  "source_hashes_matched": 198,
+  "record_restart": "matching rows and SHA-256 before/after actual PostgreSQL restart",
+  "live_provider_calls": 0,
+  "new_dependencies": 0,
+  "limits": [
+    "No live Provider/SMTP or remote publication",
+    "No WSL kernel gate rerun",
+    "No jobs/LangMem/profile implementation",
+    "No verified public resource content"
+  ],
+  "final_document_checks": {
+    "documents-final": 0,
+    "contract-final": 0,
+    "diff-final": 0
+  }
+}
