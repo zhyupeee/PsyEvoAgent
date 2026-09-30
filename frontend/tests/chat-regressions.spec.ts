@@ -47,6 +47,7 @@ async function mockChat(page: Page, fontSize = 'normal') {
       json = { items: [session], next_cursor: null, has_pending_titles: false }
     else if (endpoint.endsWith('/sessions/' + session.id)) json = session
     else if (endpoint.endsWith('/current-run')) json = run
+    else if (endpoint.endsWith('/deletion-preview')) json = { linked_notes: [] }
     else if (endpoint.endsWith('/timeline'))
       json = { items: [run], next_cursor: null }
     else json = { items: [], next_cursor: null }

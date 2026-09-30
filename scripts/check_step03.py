@@ -25,9 +25,12 @@ parser.add_argument("--tls-port", type=int, default=3443)
 parser.add_argument("--step05", action="store_true", help="Also verify durable fake runs and gateway SSE")
 parser.add_argument("--step06", action="store_true", help="Also verify chat, preferences and independent exercise UI")
 parser.add_argument("--step07", action="store_true", help="Also verify history, revisions, deletion and feedback")
+parser.add_argument("--s2-step02", action="store_true", help="Verify records CRUD, source grants and record pages")
 parser.add_argument("--step08-live", action="store_true", help="Explicit live integration after fake regression")
 parser.add_argument("--multiturn-live", action="store_true", help="Two synthetic live context turns instead of historical STEP08 live journey")
 args = parser.parse_args()
+if args.s2_step02:
+    args.step07 = True
 if args.multiturn_live:
     args.step08_live = True
 if args.step08_live:
@@ -121,6 +124,12 @@ if args.step08_live:
         "Provider price, data region and retention remain unknown",
         "Windows network guards apply to regression; live API/Worker explicitly permit provider access",
     ]
+
+if args.s2_step02:
+    RECEIPT["step_id"] = "S2-STEP02"
+    RECEIPT["acceptance_ids"] = ["S2-A01", "S2-A02", "S2-A03"]
+    RECEIPT["limitations"] = ["Synthetic PostgreSQL/API/browser and controlled model inputs; no live calls", "No background jobs, LangMem, memory retrieval or profiles", "No verified public resources; no remote publication", "Windows language egress guards are not kernel isolation"]
+    ENV["PSYEVO_S2_STEP02_ARTIFACTS"] = str(RUN)
 
 
 def run(label: str, args: list[str], cwd: Path = ROOT, timeout: int = 240) -> str:
@@ -252,6 +261,8 @@ with Session(engine) as db, db.begin():
 engine.dispose()
 """
     run("seed-synthetic", [sys.executable, "-c", seed], BACKEND)
+    if args.s2_step02:
+        run("seed-s2-records", [sys.executable, "-c", seed.replace("admin@example.com", "s2-records-browser@example.com").replace("synthetic-admin-password", "synthetic-browser-password").replace("browser-b@example.com", "s2-records-other@example.com")], BACKEND)
     run("frontend-build", [PNPM, "build"], ROOT / "frontend")
     run("frontend-check", [PNPM, "check"], ROOT / "frontend")
     run(
@@ -278,6 +289,8 @@ engine.dispose()
         with (RUN / "support-worker.txt").open("w", encoding="utf-8") as worker_log:
             worker = subprocess.Popen([sys.executable, "-m", "app.worker", "--support"], cwd=BACKEND, env=ENV, stdout=worker_log, stderr=subprocess.STDOUT)
             try:
+                if args.s2_step02:
+                    run("s2-step02-browser", [PNPM, "exec", "playwright", "test", "--config", "playwright.records.config.ts"], ROOT / "frontend")
                 run("step05-gateway", [PNPM, "exec", "playwright", "test", "--config", "playwright.step05.config.ts"], ROOT / "frontend")
                 if args.step06:
                     run("step06-browser", [PNPM, "exec", "playwright", "test", "--config", "playwright.step06.config.ts"], ROOT / "frontend")
@@ -312,6 +325,8 @@ engine.dispose()
                 worker.terminate()
                 api.wait(timeout=15)
                 worker.wait(timeout=15)
+    if args.s2_step02:
+        run("s2-records-before-restart", [sys.executable, "-m", "tests.records_receipt", "before", str(RUN / "records-restart.json")], BACKEND)
     run("database-restart", ["docker", "restart", NAME])
     # Docker may assign a new published port after restart when HostPort was random.
     port = (
@@ -334,6 +349,8 @@ engine.dispose()
         time.sleep(1)
     else:
         raise RuntimeError("PostgreSQL restart readiness timed out")
+    if args.s2_step02:
+        run("s2-records-after-restart", [sys.executable, "-m", "tests.records_receipt", "after", str(RUN / "records-restart.json")], BACKEND)
     persisted = """
 from sqlalchemy import select
 from sqlalchemy.orm import Session

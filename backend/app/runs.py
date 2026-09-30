@@ -133,6 +133,12 @@ def sources_available(
             or grant.purpose != "current_run"
         ):
             return False
+        if grant.source_type != "conversation":
+            from app.records import source_available
+
+            if not source_available(db, grant):
+                return False
+            continue
         source = (
             reads.sources.get(grant.source_id) if reads else db.get(Conversation, grant.source_id)
         )

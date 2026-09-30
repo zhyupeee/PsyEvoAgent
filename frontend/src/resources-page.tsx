@@ -34,6 +34,9 @@ export function ResourcesPage({ tab }: { tab: 'exercise' | 'support' }) {
     <div className="support-content mx-auto w-full max-w-[1000px] pt-6 pb-12 page:pt-8">
       <header className="support-header mb-5">
         <h1 className="text-2xl font-semibold tracking-tight">支持资源</h1>
+        <Link to="/me/support-card" className="btn mt-3">
+          我的支持备忘卡
+        </Link>
       </header>
       <nav
         className="resource-tabs flex flex-wrap gap-x-6 gap-y-1 border-b border-line"

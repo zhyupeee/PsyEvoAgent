@@ -20,6 +20,7 @@ from app.models import (
     Feedback,
     IdentitySession,
     LoginAttempt,
+    Note,
     Personal,
     Preferences,
     ProviderTest,
@@ -55,6 +56,17 @@ class Conversation(Personal, HistoricalBase):
     __tablename__ = "conversations"
     title: Mapped[str] = mapped_column(String(120), default="新的对话")
     status: Mapped[str] = mapped_column(String(20), default="active")
+
+
+class HistoricalGrant(Personal, HistoricalBase):
+    """Seed the pre-record schema without new generated reference columns."""
+
+    __tablename__ = "context_grants"
+    run_id: Mapped[str] = mapped_column(String(36))
+    source_id: Mapped[str] = mapped_column(String(36))
+    source_type: Mapped[str] = mapped_column(String(30), default="conversation")
+    source_version: Mapped[int] = mapped_column(Integer)
+    consent_id: Mapped[str | None] = mapped_column(String(36))
 
 
 pytestmark = pytest.mark.postgres
@@ -177,7 +189,7 @@ def test_default_configuration_migration_preserves_history(migration_url: str) -
             run = Run(owner_id=uid, session_id=source.id, session_version=1)
             db.add(run)
             db.flush()
-            grant = ContextGrant(
+            grant = HistoricalGrant(
                 owner_id=uid,
                 purpose="current_run",
                 source_id=source.id,
@@ -228,6 +240,34 @@ def migration_url(monkeypatch: pytest.MonkeyPatch) -> str:
     return value
 
 
+def test_records_migration_preserves_content_and_refuses_loss(migration_url: str) -> None:
+    config = Config(str(BACKEND / "alembic.ini"))
+    command.upgrade(config, "k011_provider_tests")
+    engine = make_engine(migration_url)
+    try:
+        with Session(engine) as db, db.begin():
+            user = User(email="record-migration@example.com", password_hash="synthetic")
+            db.add(user)
+            db.flush()
+            owner = user.id
+        command.upgrade(config, "head")
+        with Session(engine) as db, db.begin():
+            note = Note(
+                owner_id=owner, kind="free", body="preserved synthetic draft", status="draft"
+            )
+            db.add(note)
+            db.flush()
+            note_id = note.id
+        with pytest.raises(RuntimeError, match="Record/source receipts"):
+            command.downgrade(config, "k011_provider_tests")
+        with Session(engine) as db:
+            retained = db.get(Note, note_id)
+            assert retained is not None and retained.body == "preserved synthetic draft"
+        command.check(config)
+    finally:
+        engine.dispose()
+
+
 def test_empty_upgrade_is_repeatable(migration_url: str) -> None:
     config = Config(str(BACKEND / "alembic.ini"))
     command.upgrade(config, "head")
@@ -236,6 +276,10 @@ def test_empty_upgrade_is_repeatable(migration_url: str) -> None:
     engine = make_engine(migration_url)
     try:
         assert set(inspect(engine).get_table_names()) == {
+            "notes",
+            "note_sources",
+            "sleep_records",
+            "support_cards",
             "alembic_version",
             "users",
             "email_codes",
@@ -409,8 +453,7 @@ def test_no_expiry_migration_preserves_records_and_refuses_lossy_downgrade(
             command.downgrade(config, "c1756470d092")
         with engine.connect() as connection:
             assert (
-                connection.scalar(text("SELECT version_num FROM alembic_version"))
-                == "k011_provider_tests"
+                connection.scalar(text("SELECT version_num FROM alembic_version")) == "l012_records"
             )
         command.check(config)
     finally:

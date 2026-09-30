@@ -17,7 +17,16 @@ from sqlalchemy import Engine, select
 from sqlalchemy.orm import Session
 
 from app.config import Settings
-from app.models import Conversation, Message, ModelCall, Run, RunBranch, TitleTask, now
+from app.models import (
+    ContextGrant,
+    Conversation,
+    Message,
+    ModelCall,
+    Run,
+    RunBranch,
+    TitleTask,
+    now,
+)
 from app.provider import InternalStreamProvider, open_provider
 from app.runs import execution, lock_owner, sources_available
 from app.support import CallReceipt, VersionBinding, output_policy
@@ -89,6 +98,13 @@ def enqueue(db: Session, completed: Run) -> None:
     for run in candidates:
         ex = execution(db, run)
         if ex is None or not sources_available(db, run, ex):
+            continue
+        # A one-turn record must not become a persistent generated title.
+        if db.scalar(
+            select(ContextGrant.id).where(
+                ContextGrant.run_id == run.id, ContextGrant.source_type != "conversation"
+            )
+        ):
             continue
         messages = list(db.scalars(select(Message).where(Message.run_id == run.id)))
         if len(messages) != 2 or any(m.deleted_at or not m.content for m in messages):

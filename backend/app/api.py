@@ -195,8 +195,10 @@ def consent_valid(row: Consent) -> bool:
 
 
 def grant_valid(db: Session, grant: ContextGrant) -> bool:
+    from app.records import source_available, source_model
+
     run = db.get(Run, grant.run_id)
-    source = db.get(Conversation, grant.source_id)
+    source = db.get(source_model(grant.source_type), grant.source_id)
     if run is None or source is None:
         return False
     session = db.get(Conversation, run.session_id)
@@ -211,8 +213,7 @@ def grant_valid(db: Session, grant: ContextGrant) -> bool:
         and session.deleted_at is None
         and session.status == "active"
         and source.deleted_at is None
-        and source.status == "active"
-        and source.version == grant.source_version
+        and source_available(db, grant)
     )
 
 
@@ -623,20 +624,25 @@ def get_run(resource_id: str, db: DB, auth: Auth) -> dict[str, Any]:
 
 @router.post("/context-grants", status_code=201)
 def create_grant(body: GrantCreate, request: Request, db: DB, auth: Auth) -> dict[str, Any]:
+    from app.records import source_available, source_model
+
     def build() -> ContextGrant:
         run = owned(db, Run, body.run_id, auth.owner_id)
-        source = owned(db, Conversation, body.source_id, auth.owner_id)
+        source = owned(db, source_model(body.source_type), body.source_id, auth.owner_id)
         if (
             source.version != body.source_version
-            or source.status != "active"
+            or (isinstance(source, Conversation) and source.status != "active")
             or run.status != "draft"
         ):
             raise APIError(409, "source_or_run_changed")
-        return ContextGrant(
+        grant = ContextGrant(
             owner_id=auth.owner_id,
             **body.model_dump(),
             consent_refs=[],
         )
+        if not source_available(db, grant):
+            raise APIError(409, "source_or_run_changed")
+        return grant
 
     row = create_once(db, request, auth, ContextGrant, body.model_dump(), build)
     if not grant_valid(db, row):

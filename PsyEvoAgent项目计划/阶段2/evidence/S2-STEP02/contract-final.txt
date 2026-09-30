@@ -1,0 +1,3 @@
+S2-STEP01 contract material: passed 
+Expected: 28 bindings; 11 dimensions / 33 examples; 5 profile scenarios; 15 corruptions
+Stage2 product cases remain planned; no API/database/model execution by this checker
