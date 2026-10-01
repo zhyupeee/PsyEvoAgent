@@ -1,0 +1,26 @@
+{
+  "notes": {
+    "count": 9,
+    "sha256": "30889564696805a02967436fe7cd6ea814e082c30bc1fda9754d4c5988d67080"
+  },
+  "sleep_records": {
+    "count": 2,
+    "sha256": "99fa9b6753958a610976955f79618a0e36a64ce3c06a18e105b0712f54942142"
+  },
+  "support_cards": {
+    "count": 1,
+    "sha256": "e72dea90368d251a485208c98002fcf4b18446cf1e2b300769f23718fb88bdc4"
+  },
+  "note_sources": {
+    "count": 2,
+    "sha256": "4fadf73e40693c397ebb7a57087ebbd206a0da61914457a14daf9db3c2ff1dc3"
+  },
+  "context_grants": {
+    "count": 9,
+    "sha256": "892f2ce6769b5fb740863b001342d95064a5bc7f7439bf591f239fdc3260a0b8"
+  },
+  "deletion_jobs": {
+    "count": 4,
+    "sha256": "2e1dba56b6bc4e104d629803802b22d3727f56fe95513068d89073c513cf4458"
+  }
+}

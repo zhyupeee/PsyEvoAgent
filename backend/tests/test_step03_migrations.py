@@ -240,6 +240,55 @@ def migration_url(monkeypatch: pytest.MonkeyPatch) -> str:
     return value
 
 
+def test_jobs_migration_preserves_sources_and_refuses_receipt_loss(migration_url: str) -> None:
+    from pydantic import SecretStr
+
+    from app import jobs
+    from app.config import Settings
+    from app.models import BackgroundJob, JobBudget
+
+    config = Config(str(BACKEND / "alembic.ini"))
+    command.upgrade(config, "l012_records")
+    engine = make_engine(migration_url)
+    try:
+        with Session(engine) as db, db.begin():
+            user = User(email="jobs-migration@example.com", password_hash="preserved-hash")
+            db.add(user)
+            db.flush()
+            note = Note(
+                owner_id=user.id, body="preserved synthetic source", status="saved", kind="free"
+            )
+            db.add(note)
+            db.flush()
+            owner, nid = user.id, note.id
+        command.upgrade(config, "head")
+        command.downgrade(config, "l012_records")  # Empty additive tables can roll back.
+        command.upgrade(config, "head")
+        command.check(config)
+        with Session(engine) as db, db.begin():
+            retained = db.get(Note, nid)
+            assert retained is not None and retained.body == "preserved synthetic source"
+            row = jobs.enqueue(
+                db,
+                Settings(
+                    environment="test", support_mode="fake", database_url=SecretStr(migration_url)
+                ),
+                owner,
+                [jobs.JobSource(source_type="note", source_id=nid, source_version=1)],
+            )
+            jid, bid = row.id, row.budget_ref
+        with pytest.raises(RuntimeError, match="Durable job/budget receipts"):
+            command.downgrade(config, "l012_records")
+        with Session(engine) as db:
+            assert db.get(BackgroundJob, jid) is not None
+            assert db.get(JobBudget, bid) is not None
+            retained_user = db.get(User, owner)
+            assert retained_user is not None and retained_user.password_hash == "preserved-hash"
+        command.check(config)
+    finally:
+        engine.dispose()
+
+
 def test_records_migration_preserves_content_and_refuses_loss(migration_url: str) -> None:
     config = Config(str(BACKEND / "alembic.ini"))
     command.upgrade(config, "k011_provider_tests")
@@ -276,6 +325,8 @@ def test_empty_upgrade_is_repeatable(migration_url: str) -> None:
     engine = make_engine(migration_url)
     try:
         assert set(inspect(engine).get_table_names()) == {
+            "background_jobs",
+            "job_budgets",
             "notes",
             "note_sources",
             "sleep_records",
@@ -453,7 +504,8 @@ def test_no_expiry_migration_preserves_records_and_refuses_lossy_downgrade(
             command.downgrade(config, "c1756470d092")
         with engine.connect() as connection:
             assert (
-                connection.scalar(text("SELECT version_num FROM alembic_version")) == "l012_records"
+                connection.scalar(text("SELECT version_num FROM alembic_version"))
+                == "m013_background_jobs"
             )
         command.check(config)
     finally:

@@ -197,6 +197,14 @@ def consent_valid(row: Consent) -> bool:
 def grant_valid(db: Session, grant: ContextGrant) -> bool:
     from app.records import source_available, source_model
 
+    if grant.job_id is not None:
+        from app.jobs import ACTIVE, eligible
+        from app.models import BackgroundJob
+
+        job = db.get(BackgroundJob, grant.job_id)
+        return bool(job and job.status in ACTIVE and eligible(db, job))
+    if grant.run_id is None:
+        return False
     run = db.get(Run, grant.run_id)
     source = db.get(source_model(grant.source_type), grant.source_id)
     if run is None or source is None:

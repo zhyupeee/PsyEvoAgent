@@ -26,9 +26,12 @@ parser.add_argument("--step05", action="store_true", help="Also verify durable f
 parser.add_argument("--step06", action="store_true", help="Also verify chat, preferences and independent exercise UI")
 parser.add_argument("--step07", action="store_true", help="Also verify history, revisions, deletion and feedback")
 parser.add_argument("--s2-step02", action="store_true", help="Verify records CRUD, source grants and record pages")
+parser.add_argument("--s2-step03", action="store_true", help="Verify durable jobs, leases and real Worker crash recovery")
 parser.add_argument("--step08-live", action="store_true", help="Explicit live integration after fake regression")
 parser.add_argument("--multiturn-live", action="store_true", help="Two synthetic live context turns instead of historical STEP08 live journey")
 args = parser.parse_args()
+if args.s2_step03:
+    args.s2_step02 = True
 if args.s2_step02:
     args.step07 = True
 if args.multiturn_live:
@@ -130,6 +133,12 @@ if args.s2_step02:
     RECEIPT["acceptance_ids"] = ["S2-A01", "S2-A02", "S2-A03"]
     RECEIPT["limitations"] = ["Synthetic PostgreSQL/API/browser and controlled model inputs; no live calls", "No background jobs, LangMem, memory retrieval or profiles", "No verified public resources; no remote publication", "Windows language egress guards are not kernel isolation"]
     ENV["PSYEVO_S2_STEP02_ARTIFACTS"] = str(RUN)
+
+if args.s2_step03:
+    RECEIPT["step_id"] = "S2-STEP03"
+    RECEIPT["acceptance_ids"] = ["S2-A09 (job scope)", "S2-A10 (job scope)"]
+    RECEIPT["limitations"] = ["Actual PostgreSQL/process-kill recovery with a synthetic probe; no real LangMem or memory writes", "STEP04 extraction and later consumers remain unimplemented", "No live Provider/SMTP, development DB access or publication", "Windows language egress guards are not kernel isolation"]
+    ENV["PSYEVO_S2_STEP03_ARTIFACTS"] = str(RUN)
 
 
 def run(label: str, args: list[str], cwd: Path = ROOT, timeout: int = 240) -> str:
@@ -240,9 +249,11 @@ try:
             "pytest",
             "-m",
             "postgres",
+            "--durations=10",
             "--junitxml=" + str(RUN / "postgres-tests.xml"),
         ],
         BACKEND,
+        timeout=480 if args.s2_step03 else 240,
     )
     run("foundation", [sys.executable, "-m", "pytest"], BACKEND)
     seed = """
@@ -327,6 +338,8 @@ engine.dispose()
                 worker.wait(timeout=15)
     if args.s2_step02:
         run("s2-records-before-restart", [sys.executable, "-m", "tests.records_receipt", "before", str(RUN / "records-restart.json")], BACKEND)
+    if args.s2_step03:
+        run("s2-jobs-before-restart", [sys.executable, "-m", "tests.jobs_receipt", "before", str(RUN / "jobs-restart.json")], BACKEND)
     run("database-restart", ["docker", "restart", NAME])
     # Docker may assign a new published port after restart when HostPort was random.
     port = (
@@ -351,6 +364,8 @@ engine.dispose()
         raise RuntimeError("PostgreSQL restart readiness timed out")
     if args.s2_step02:
         run("s2-records-after-restart", [sys.executable, "-m", "tests.records_receipt", "after", str(RUN / "records-restart.json")], BACKEND)
+    if args.s2_step03:
+        run("s2-jobs-after-restart", [sys.executable, "-m", "tests.jobs_receipt", "after", str(RUN / "jobs-restart.json")], BACKEND)
     persisted = """
 from sqlalchemy import select
 from sqlalchemy.orm import Session

@@ -1,0 +1,13 @@
+.....................................................................    [100%]
+============================ slowest 10 durations =============================
+14.27s call     tests/test_jobs.py::test_claim_scans_past_locked_owner_batches[201]
+11.68s call     tests/test_jobs.py::test_database_unavailable_is_bounded
+9.47s call     tests/test_jobs.py::test_real_killed_worker_recovers_once[before_commit]
+8.78s call     tests/test_jobs.py::test_real_killed_worker_recovers_once[after_claim]
+6.02s call     tests/test_jobs.py::test_claim_scans_past_locked_owner_batches[100]
+5.51s call     tests/test_jobs.py::test_worker_renews_and_cancels_in_flight[False]
+3.62s call     tests/test_jobs.py::test_real_killed_worker_recovers_once[after_commit]
+1.65s call     tests/test_records.py::test_selected_record_reaches_actual_model_only_once
+1.62s call     tests/test_records.py::test_excerpt_revision_delete_and_no_copied_body
+1.22s call     tests/test_records.py::test_source_delete_blocks_excerpt_even_when_cleanup_fails
+69 passed in 105.99s (0:01:45)

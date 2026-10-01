@@ -1,0 +1,139 @@
+{
+  "step_id": "S2-STEP03-review-repairs",
+  "started": "2026-09-30T05:41:56.322182+00:00",
+  "passed": true,
+  "commands": [
+    {
+      "label": "database-create",
+      "command": [
+        "docker",
+        "run",
+        "--pull=never",
+        "--name",
+        "psyevo-s2-review-5f4d53980856",
+        "--label",
+        "psyevo.synthetic-check=true",
+        "-p",
+        "127.0.0.1::5432",
+        "-e",
+        "POSTGRES_USER=psyevo",
+        "-e",
+        "POSTGRES_PASSWORD=synthetic-check-only",
+        "-e",
+        "POSTGRES_DB=psyevo_synthetic_check",
+        "-d",
+        "postgres:16.13-bookworm@sha256:472efd9a66f2b2f1a5aeb18b28de74332e6ef88c2b93a1a5d812fb6db67a5f60"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "database-port",
+      "command": [
+        "docker",
+        "port",
+        "psyevo-s2-review-5f4d53980856",
+        "5432/tcp"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "migration",
+      "command": [
+        "D:\\PsyEvoAgent\\backend\\.venv\\Scripts\\python.exe",
+        "-m",
+        "alembic",
+        "upgrade",
+        "head"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "postgres-tests",
+      "command": [
+        "D:\\PsyEvoAgent\\backend\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-m",
+        "postgres",
+        "tests/test_jobs.py",
+        "--durations=10",
+        "--junitxml=D:\\PsyEvoAgent\\.artifacts\\psyevo-s2-review-5f4d53980856\\postgres-tests.xml",
+        "tests/test_records.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "foundation",
+      "command": [
+        "D:\\PsyEvoAgent\\backend\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "lint",
+      "command": [
+        "D:\\PsyEvoAgent\\backend\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "format",
+      "command": [
+        "D:\\PsyEvoAgent\\backend\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "format",
+        "--check",
+        "."
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "types",
+      "command": [
+        "D:\\PsyEvoAgent\\backend\\.venv\\Scripts\\python.exe",
+        "-m",
+        "mypy"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "schema-drift",
+      "command": [
+        "D:\\PsyEvoAgent\\backend\\.venv\\Scripts\\python.exe",
+        "-m",
+        "alembic",
+        "check"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "database-cleanup",
+      "command": [
+        "docker",
+        "rm",
+        "-f",
+        "-v",
+        "psyevo-s2-review-5f4d53980856"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "model_live_calls": 0,
+  "execution_kind": "isolated-synthetic-postgresql-api-worker",
+  "limitations": [
+    "No browser, PostgreSQL restart or WSL kernel-isolation rerun"
+  ],
+  "source_sha256": {
+    "backend/app/jobs.py": "943d1bd8d4515a3d9f6fc89b54fdd1a9ffc55a4edb93a49b19aac1eafeed05b9",
+    "backend/app/job_worker.py": "a36010af1bcbe72523d231c9ea1773da2d0fb84603eef5e3ecd0184989561a29",
+    "backend/tests/test_jobs.py": "2e78848633cf089c79b2cf7a0e6a58cd2709cd589e7f6a53730f8f302036e259"
+  },
+  "ended": "2026-09-30T05:44:53.090347+00:00"
+}

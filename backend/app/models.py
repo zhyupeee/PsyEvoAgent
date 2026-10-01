@@ -11,6 +11,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     ForeignKeyConstraint,
+    Index,
     Integer,
     String,
     Text,
@@ -217,10 +218,18 @@ class ContextGrant(Personal, Base):
             ["consent_records.id", "consent_records.owner_id"],
             name="fk_grant_consent_owner",
         ),
-        CheckConstraint("purpose = 'current_run'"),
+        ForeignKeyConstraint(
+            ["job_id", "owner_id"], ["background_jobs.id", "background_jobs.owner_id"]
+        ),
+        CheckConstraint(
+            "(purpose = 'current_run' AND run_id IS NOT NULL AND job_id IS NULL) OR "
+            "(purpose = 'candidate_extraction' AND run_id IS NULL AND job_id IS NOT NULL)",
+            name="ck_grant_execution_scope",
+        ),
         CheckConstraint("source_version > 0 AND version > 0"),
     )
-    run_id: Mapped[str] = mapped_column(ForeignKey("runs.id"), index=True)
+    run_id: Mapped[str | None] = mapped_column(ForeignKey("runs.id"), index=True)
+    job_id: Mapped[str | None] = mapped_column(String(36), index=True)
     source_id: Mapped[str] = mapped_column(String(36))
     conversation_source_id: Mapped[str | None] = mapped_column(
         String(36), Computed("CASE WHEN source_type = 'conversation' THEN source_id END")
@@ -291,6 +300,59 @@ class Idempotency(Base):
     request_hash: Mapped[str] = mapped_column(String(64))
     resource_type: Mapped[str] = mapped_column(String(30))
     resource_id: Mapped[str] = mapped_column(String(36))
+
+
+class JobBudget(Record, Base):
+    """Immutable limits and reservations shared by every generation of a job lineage."""
+
+    __tablename__ = "job_budgets"
+    __table_args__ = (UniqueConstraint("id", "owner_id"),)
+    owner_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    limits: Mapped[dict[str, object]] = mapped_column(JSONB)
+    deadline_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    calls: Mapped[list[dict[str, object]]] = mapped_column(JSONB, default=list)
+
+
+class BackgroundJob(Personal, Base):
+    __tablename__ = "background_jobs"
+    __table_args__ = (
+        UniqueConstraint("id", "owner_id"),
+        UniqueConstraint("owner_id", "kind", "source_key", "generation"),
+        ForeignKeyConstraint(
+            ["budget_ref", "owner_id"], ["job_budgets.id", "job_budgets.owner_id"]
+        ),
+        CheckConstraint("purpose = 'candidate_extraction'"),
+        CheckConstraint(
+            "status IN ('queued','running','retry_wait','succeeded','failed',"
+            "'cancelled','invalidated')"
+        ),
+        CheckConstraint("version > 0 AND generation > 0 AND lease_token >= 0"),
+        CheckConstraint(
+            "attempt >= 0 AND max_attempts BETWEEN 1 AND 5 AND attempt <= max_attempts"
+        ),
+        CheckConstraint(
+            "(status = 'running' AND lease_owner IS NOT NULL AND lease_until IS NOT NULL) OR "
+            "(status <> 'running' AND lease_owner IS NULL AND lease_until IS NULL)"
+        ),
+        Index("ix_background_jobs_recovery", "status", "available_at", "lease_until"),
+    )
+    kind: Mapped[str] = mapped_column(String(40))
+    source_key: Mapped[str] = mapped_column(String(64))
+    generation: Mapped[int] = mapped_column(Integer)
+    experiment_config_version: Mapped[str] = mapped_column(String(80))
+    status: Mapped[str] = mapped_column(String(20), default="queued")
+    attempt: Mapped[int] = mapped_column(Integer, default=0)
+    max_attempts: Mapped[int] = mapped_column(Integer, default=3)
+    available_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    deadline_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    budget_ref: Mapped[str] = mapped_column(String(36))
+    lease_owner: Mapped[str | None] = mapped_column(String(36))
+    lease_token: Mapped[int] = mapped_column(Integer, default=0)
+    lease_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    cancelled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    error_code: Mapped[str | None] = mapped_column(String(60))
+    result_ref: Mapped[str | None] = mapped_column(String(36))
+    lease_losses: Mapped[int] = mapped_column(Integer, default=0)
 
 
 class Note(Personal, Base):

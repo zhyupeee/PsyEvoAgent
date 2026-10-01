@@ -436,6 +436,22 @@ API和前端终端都设置相同的 `PSYEVO_BROWSER_ORIGIN=https://<指定主�
 
 当前实现与验证状态见[本次修复记录](PsyEvoAgent项目计划/阶段1/evidence/S1-AUDIT-REPAIRS/README.md)，历史记录保持原时点。
 
+## 阶段2 STEP03持久任务验收（2026-09-30）
+
+在仓库根目录执行：
+
+```powershell
+backend/.venv/Scripts/python.exe -X utf8 scripts/check_step03.py --s2-step03 --web-port 3199 --api-port 8199 --tls-port 3499
+```
+
+复用原随机隔离PostgreSQL容器与白名单测试环境，包含STEP02/既有浏览器回归、任务租约/取消/重试、三个真实Worker强杀点、真实PG事务连接中断及数据库重启指纹。`receipt.step_id`为S2-STEP03，证据写入独立`.artifacts/psyevo-step07-*`目录。`PSYEVO_S2_STEP03_ARTIFACTS`仅供测试保存无正文崩溃收据，不是产品配置。
+
+追加迁移`m013_background_jobs`沿现有Alembic启动流程升级，保留原数据；本次验收不访问或迁移开发数据库。有任务/预算收据时拒绝有损降级。普通启动仍管理原Support与标题Worker，不启动记忆提取。
+
+仅在已迁移的独立合成检查数据库显式配置`PSYEVO_ENV=test`、`PSYEVO_SUPPORT_MODE=fake`、`PSYEVO_DATABASE_URL`后，可在backend运行`uv run --no-sync python -m app.worker --jobs-probe`；`--once`只做一次恢复扫描，`--probe-pause after_claim|before_commit|after_commit`是门禁专用强杀注入点。不要在普通开发库设置测试变量；该入口拒绝development/live装配，不读取配置文件，不调用Provider。任务仅由合成服务调用入队，记录保存目前不触发任务；真实LangMem提取属于STEP04。
+
+新API仅提供本人`GET /api/v1/jobs`统计、`GET /api/v1/jobs/{id}`无正文状态及`POST /api/v1/jobs/{id}/cancel`版本化取消；没有新前端页或公共入队接口。任务持久字段、来源scope、预算与限制见[当前合同](PsyEvoAgent项目计划/阶段2/02-技术方案与实施计划.md#s2-step03-implementation)。无新依赖、凭据读取方或部署动作。
+
 ## 阶段2 STEP02记录验收（2026-09-30）
 
 在仓库根目录执行：

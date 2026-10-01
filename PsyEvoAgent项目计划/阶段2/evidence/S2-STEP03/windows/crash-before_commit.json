@@ -1,0 +1,71 @@
+{
+  "case_id": "S2-A10",
+  "execution_kind": "real-postgresql-process-kill/fake-model",
+  "phase": "before_commit",
+  "job_id": "2a226b1e-b401-4e4e-bea3-d6cca9f1becf",
+  "before": {
+    "id": "2a226b1e-b401-4e4e-bea3-d6cca9f1becf",
+    "version": 4,
+    "kind": "recovery_probe",
+    "generation": 1,
+    "status": "running",
+    "attempt": 1,
+    "max_attempts": 3,
+    "available_at": "2026-09-30T04:52:36.747697Z",
+    "deadline_at": "2026-09-30T04:54:36.743426Z",
+    "lease_token": 1,
+    "lease_until": "2026-09-30T04:52:43.722221Z",
+    "cancelled_at": null,
+    "error_code": null,
+    "result_ref": null,
+    "budget_ref": "1fcb6782-34e4-483f-a315-a938488ba983",
+    "lease_losses": 0
+  },
+  "after": {
+    "id": "2a226b1e-b401-4e4e-bea3-d6cca9f1becf",
+    "version": 9,
+    "kind": "recovery_probe",
+    "generation": 1,
+    "status": "succeeded",
+    "attempt": 2,
+    "max_attempts": 3,
+    "available_at": "2026-09-30T04:52:45.013154Z",
+    "deadline_at": "2026-09-30T04:54:36.743426Z",
+    "lease_token": 2,
+    "lease_until": null,
+    "cancelled_at": null,
+    "error_code": null,
+    "result_ref": "2a226b1e-b401-4e4e-bea3-d6cca9f1becf",
+    "budget_ref": "1fcb6782-34e4-483f-a315-a938488ba983",
+    "lease_losses": 1
+  },
+  "calls": [
+    {
+      "cost": "0",
+      "job_id": "2a226b1e-b401-4e4e-bea3-d6cca9f1becf",
+      "status": "reserved",
+      "attempt": 1,
+      "currency": "SYNTHETIC",
+      "generation": 1,
+      "request_id": "8b23fd8b-70e9-4c94-84b8-f1cd47d03218",
+      "lease_token": 1,
+      "actual_tokens": null,
+      "charged_tokens": 522,
+      "reserved_tokens": 522
+    },
+    {
+      "cost": "0",
+      "job_id": "2a226b1e-b401-4e4e-bea3-d6cca9f1becf",
+      "status": "settled",
+      "attempt": 2,
+      "currency": "SYNTHETIC",
+      "generation": 1,
+      "request_id": "e0996348-f450-45af-ac18-a7dd6a9f50b2",
+      "lease_token": 2,
+      "actual_tokens": 20,
+      "charged_tokens": 20,
+      "reserved_tokens": 522
+    }
+  ],
+  "result_count": 1
+}

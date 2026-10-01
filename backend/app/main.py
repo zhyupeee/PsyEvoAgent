@@ -20,6 +20,7 @@ from app.config import Settings, load_settings
 from app.database import make_engine
 from app.deletion import router as deletion_router
 from app.history import router as history_router
+from app.jobs import router as jobs_router
 from app.mail import Mailer, SMTPMailer
 from app.model_settings_api import router as model_settings_router
 from app.models import opaque_id
@@ -87,6 +88,7 @@ def create_app(settings: Settings | None = None, mailer: Mailer | None = None) -
     application.include_router(records_router)
     application.include_router(deletion_router)
     application.include_router(history_router)
+    application.include_router(jobs_router)
     application.state.run_connections = Connections()
 
     @application.middleware("http")
