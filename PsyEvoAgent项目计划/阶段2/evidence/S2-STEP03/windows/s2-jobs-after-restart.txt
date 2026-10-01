@@ -1,0 +1,22 @@
+{
+  "phase": "after",
+  "passed": true,
+  "tables": {
+    "background_jobs": {
+      "count": 30,
+      "sha256": "ecdacb31c7265c01ea2053f35ebe3d576ab0b57b0b60a51064e591aa29882a2c"
+    },
+    "job_budgets": {
+      "count": 28,
+      "sha256": "3b978bfa69f0b05752c4a3a1d830d5f77d8636970ceac66f57bfd50e58a816f6"
+    },
+    "job_grants": {
+      "count": 30,
+      "sha256": "90ab9cfbe588c7947f1076fa7d83a1cbded09f40cea53aaf7436764a555a3fbd"
+    },
+    "job_results": {
+      "count": 6,
+      "sha256": "c5d1daf32b148dcff7231891f2c283016721c899f382a197dcc8f4f3d4acf88d"
+    }
+  }
+}

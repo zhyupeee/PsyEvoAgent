@@ -39,6 +39,7 @@ def test_import_has_no_worker_or_consumer_side_effects(monkeypatch: pytest.Monke
     # Poison the module: importing a worker from the API must fail this regression.
     monkeypatch.setitem(sys.modules, "app.worker", None)
     monkeypatch.setitem(sys.modules, "app.run_worker", None)
+    monkeypatch.setitem(sys.modules, "app.job_worker", None)
     import app.main
 
     importlib.reload(app.main)

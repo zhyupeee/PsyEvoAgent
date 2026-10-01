@@ -1,0 +1,393 @@
+..............................................................FFFFFF.... [ 40%]
+........................................................................ [ 80%]
+F..................................                                      [100%]
+================================== FAILURES ===================================
+_________________ test_timeline_pagination_revision_and_scope _________________
+
+client = <starlette.testclient.TestClient object at 0x000001F27EF41B80>
+
+    @pytest.mark.postgres
+    def test_timeline_pagination_revision_and_scope(client: TestClient) -> None:
+        sid, rid, body = create(client)
+        start(client, rid, body)
+        assert execute_one(engine(client))
+        second = send(client, sid, "第二轮")
+        assert execute_one(engine(client))
+        newest = client.get(f"/api/v1/sessions/{sid}/timeline?limit=1").json()
+        assert [t["run_id"] for t in newest["items"]] == [second]
+        old = client.get(
+            f"/api/v1/sessions/{sid}/timeline?cursor={newest['next_cursor']}&limit=1"
+        ).json()
+        assert [t["run_id"] for t in old["items"]] == [rid] and old["next_cursor"] is None
+        current = newest["items"][0]
+        versions_url = f"/api/v1/sessions/{sid}/history?old_only=true&limit=1"
+        assert client.get(versions_url).json() == {"items": [], "next_cursor": None}
+        draft = post(
+            client,
+            f"/sessions/{sid}/messages/{current['input_id']}/revisions",
+            {"expected_version": current["input_version"], "content": "替代输入"},
+        ).json()
+        timeline = client.get(f"/api/v1/sessions/{sid}/timeline").json()["items"]
+        assert [t["run_id"] for t in timeline] == [rid, draft["run_id"]]
+        assert timeline[-1]["status"] == "draft"
+        versions = client.get(versions_url).json()
+        assert [item["run_id"] for item in versions["items"]] == [second]
+        assert versions["next_cursor"] is None
+        with Session(engine(client)) as db:
+            revised = db.get(Run, draft["run_id"])
+            assert revised
+>           assert [t.run_id for t in context_history(db, revised, request(), Budget())] == [rid]
+E           AssertionError: assert [] == ['cec2dbca-e5...3ba6a5e86ee0']
+E             
+E             Right contains one more item: 'cec2dbca-e56d-4fe9-96d1-3ba6a5e86ee0'
+E             Use -v to get more diff
+
+tests\test_multiturn.py:155: AssertionError
+______________ test_worker_context_and_source_invalidation[None] ______________
+
+client = <starlette.testclient.TestClient object at 0x000001F27F34C920>
+invalidate = None
+
+    @pytest.mark.postgres
+    @pytest.mark.parametrize("invalidate", [None, "revoked", "deleted", "version"])
+    def test_worker_context_and_source_invalidation(client: TestClient, invalidate: str | None) -> None:
+        sid, rid, body = create(client, grant=True)
+        start(client, rid, body)
+        assert execute_one(engine(client))
+        config = live_settings(client)
+        second = send(client, sid, "请参考上一轮")
+        selected = claim(engine(client))
+        assert selected and selected[0] == second
+        captures: list[dict[str, Any]] = []
+    
+        async def check() -> None:
+            async def handle(req: httpx.Request) -> httpx.Response:
+                captures.append(json.loads(req.content))
+                if invalidate:
+                    with Session(engine(client)) as db, db.begin():
+                        if invalidate == "revoked":
+                            grant = db.get(ContextGrant, body["grant_ids"][0])
+                            assert grant
+                            grant.revoked_at = now()
+                        else:
+                            message = db.scalar(
+                                select(Message).where(
+                                    Message.run_id == rid, Message.role == "assistant"
+                                )
+                            )
+                            assert message
+                            if invalidate == "deleted":
+                                message.deleted_at = now()
+                            else:
+                                message.version += 1
+                return httpx.Response(
+                    200, content=response(), headers={"content-type": "text/event-stream"}
+                )
+    
+            async with open_provider(config, transport=httpx.MockTransport(handle)) as adapter:
+                await execute(
+                    engine(client),
+                    second,
+                    selected[1],
+                    adapter,
+                    LiveProfile(model_ref=config.provider_model, base_url=config.provider_base_url),
+                )
+    
+        asyncio.run(check())
+>       assert [m["role"] for m in captures[0]["messages"]] == ["system", "user", "assistant", "user"]
+E       AssertionError: assert ['system', 'user'] == ['system', 'u...tant', 'user']
+E         
+E         Right contains 2 more items, first extra item: 'assistant'
+E         Use -v to get more diff
+
+tests\test_multiturn.py:231: AssertionError
+____________ test_worker_context_and_source_invalidation[revoked] _____________
+
+client = <starlette.testclient.TestClient object at 0x000001F27FA9B6B0>
+invalidate = 'revoked'
+
+    @pytest.mark.postgres
+    @pytest.mark.parametrize("invalidate", [None, "revoked", "deleted", "version"])
+    def test_worker_context_and_source_invalidation(client: TestClient, invalidate: str | None) -> None:
+        sid, rid, body = create(client, grant=True)
+        start(client, rid, body)
+        assert execute_one(engine(client))
+        config = live_settings(client)
+        second = send(client, sid, "请参考上一轮")
+        selected = claim(engine(client))
+        assert selected and selected[0] == second
+        captures: list[dict[str, Any]] = []
+    
+        async def check() -> None:
+            async def handle(req: httpx.Request) -> httpx.Response:
+                captures.append(json.loads(req.content))
+                if invalidate:
+                    with Session(engine(client)) as db, db.begin():
+                        if invalidate == "revoked":
+                            grant = db.get(ContextGrant, body["grant_ids"][0])
+                            assert grant
+                            grant.revoked_at = now()
+                        else:
+                            message = db.scalar(
+                                select(Message).where(
+                                    Message.run_id == rid, Message.role == "assistant"
+                                )
+                            )
+                            assert message
+                            if invalidate == "deleted":
+                                message.deleted_at = now()
+                            else:
+                                message.version += 1
+                return httpx.Response(
+                    200, content=response(), headers={"content-type": "text/event-stream"}
+                )
+    
+            async with open_provider(config, transport=httpx.MockTransport(handle)) as adapter:
+                await execute(
+                    engine(client),
+                    second,
+                    selected[1],
+                    adapter,
+                    LiveProfile(model_ref=config.provider_model, base_url=config.provider_base_url),
+                )
+    
+        asyncio.run(check())
+>       assert [m["role"] for m in captures[0]["messages"]] == ["system", "user", "assistant", "user"]
+E       AssertionError: assert ['system', 'user'] == ['system', 'u...tant', 'user']
+E         
+E         Right contains 2 more items, first extra item: 'assistant'
+E         Use -v to get more diff
+
+tests\test_multiturn.py:231: AssertionError
+____________ test_worker_context_and_source_invalidation[deleted] _____________
+
+client = <starlette.testclient.TestClient object at 0x000001F2000EBF80>
+invalidate = 'deleted'
+
+    @pytest.mark.postgres
+    @pytest.mark.parametrize("invalidate", [None, "revoked", "deleted", "version"])
+    def test_worker_context_and_source_invalidation(client: TestClient, invalidate: str | None) -> None:
+        sid, rid, body = create(client, grant=True)
+        start(client, rid, body)
+        assert execute_one(engine(client))
+        config = live_settings(client)
+        second = send(client, sid, "请参考上一轮")
+        selected = claim(engine(client))
+        assert selected and selected[0] == second
+        captures: list[dict[str, Any]] = []
+    
+        async def check() -> None:
+            async def handle(req: httpx.Request) -> httpx.Response:
+                captures.append(json.loads(req.content))
+                if invalidate:
+                    with Session(engine(client)) as db, db.begin():
+                        if invalidate == "revoked":
+                            grant = db.get(ContextGrant, body["grant_ids"][0])
+                            assert grant
+                            grant.revoked_at = now()
+                        else:
+                            message = db.scalar(
+                                select(Message).where(
+                                    Message.run_id == rid, Message.role == "assistant"
+                                )
+                            )
+                            assert message
+                            if invalidate == "deleted":
+                                message.deleted_at = now()
+                            else:
+                                message.version += 1
+                return httpx.Response(
+                    200, content=response(), headers={"content-type": "text/event-stream"}
+                )
+    
+            async with open_provider(config, transport=httpx.MockTransport(handle)) as adapter:
+                await execute(
+                    engine(client),
+                    second,
+                    selected[1],
+                    adapter,
+                    LiveProfile(model_ref=config.provider_model, base_url=config.provider_base_url),
+                )
+    
+        asyncio.run(check())
+>       assert [m["role"] for m in captures[0]["messages"]] == ["system", "user", "assistant", "user"]
+E       AssertionError: assert ['system', 'user'] == ['system', 'u...tant', 'user']
+E         
+E         Right contains 2 more items, first extra item: 'assistant'
+E         Use -v to get more diff
+
+tests\test_multiturn.py:231: AssertionError
+____________ test_worker_context_and_source_invalidation[version] _____________
+
+client = <starlette.testclient.TestClient object at 0x000001F200112F60>
+invalidate = 'version'
+
+    @pytest.mark.postgres
+    @pytest.mark.parametrize("invalidate", [None, "revoked", "deleted", "version"])
+    def test_worker_context_and_source_invalidation(client: TestClient, invalidate: str | None) -> None:
+        sid, rid, body = create(client, grant=True)
+        start(client, rid, body)
+        assert execute_one(engine(client))
+        config = live_settings(client)
+        second = send(client, sid, "请参考上一轮")
+        selected = claim(engine(client))
+        assert selected and selected[0] == second
+        captures: list[dict[str, Any]] = []
+    
+        async def check() -> None:
+            async def handle(req: httpx.Request) -> httpx.Response:
+                captures.append(json.loads(req.content))
+                if invalidate:
+                    with Session(engine(client)) as db, db.begin():
+                        if invalidate == "revoked":
+                            grant = db.get(ContextGrant, body["grant_ids"][0])
+                            assert grant
+                            grant.revoked_at = now()
+                        else:
+                            message = db.scalar(
+                                select(Message).where(
+                                    Message.run_id == rid, Message.role == "assistant"
+                                )
+                            )
+                            assert message
+                            if invalidate == "deleted":
+                                message.deleted_at = now()
+                            else:
+                                message.version += 1
+                return httpx.Response(
+                    200, content=response(), headers={"content-type": "text/event-stream"}
+                )
+    
+            async with open_provider(config, transport=httpx.MockTransport(handle)) as adapter:
+                await execute(
+                    engine(client),
+                    second,
+                    selected[1],
+                    adapter,
+                    LiveProfile(model_ref=config.provider_model, base_url=config.provider_base_url),
+                )
+    
+        asyncio.run(check())
+>       assert [m["role"] for m in captures[0]["messages"]] == ["system", "user", "assistant", "user"]
+E       AssertionError: assert ['system', 'user'] == ['system', 'u...tant', 'user']
+E         
+E         Right contains 2 more items, first extra item: 'assistant'
+E         Use -v to get more diff
+
+tests\test_multiturn.py:231: AssertionError
+________ test_history_selection_excludes_cancelled_deleted_and_revoked ________
+
+client = <starlette.testclient.TestClient object at 0x000001F27F6EA450>
+
+    @pytest.mark.postgres
+    def test_history_selection_excludes_cancelled_deleted_and_revoked(client: TestClient) -> None:
+        sid, rid, body = create(client, grant=True)
+        start(client, rid, body)
+        assert execute_one(engine(client))
+        cancelled = send(client, sid, "取消的输入")
+        snap = client.get(f"/api/v1/runs/{cancelled}").json()
+        assert (
+            client.post(
+                f"/api/v1/runs/{cancelled}/cancel", json={"expected_version": snap["version"]}
+            ).status_code
+            == 200
+        )
+        newest = send(client, sid, "当前消息")
+        with Session(engine(client)) as db, db.begin():
+            run = db.get(Run, newest)
+            assert run
+            data = request()
+            history = context_history(db, run, data, Budget())
+>           assert [t.run_id for t in history] == [rid]
+E           AssertionError: assert [] == ['8b2eb3a0-dc...5001c9ce2b19']
+E             
+E             Right contains one more item: '8b2eb3a0-dc7a-4372-989c-5001c9ce2b19'
+E             Use -v to get more diff
+
+tests\test_multiturn.py:259: AssertionError
+__________ test_bulk_history_bounds_queries_and_rechecks_revocation ___________
+
+client = <starlette.testclient.TestClient object at 0x000001F200AD9C10>
+
+    def test_bulk_history_bounds_queries_and_rechecks_revocation(client: TestClient) -> None:
+        sid, rid, body = create(client)
+        start(client, rid, body)
+        with Session(engine(client)) as db, db.begin():
+            run = db.get(Run, rid)
+            ex = db.scalar(select(RunExecution).where(RunExecution.run_id == rid))
+            assert run and ex
+            run.status = "completed"
+            db.add(Message(owner_id=run.owner_id, run_id=rid, role="assistant", content="合成回复"))
+            for index in range(24):
+                prior = Run(
+                    owner_id=run.owner_id,
+                    session_id=sid,
+                    session_version=1,
+                    status="completed",
+                    source_message_version=1,
+                )
+                db.add(prior)
+                db.flush()
+                grant = ContextGrant(
+                    owner_id=run.owner_id,
+                    run_id=prior.id,
+                    source_id=sid,
+                    source_version=1,
+                    purpose="current_run",
+                )
+                db.add(grant)
+                db.flush()
+                db.add(
+                    RunExecution(
+                        owner_id=run.owner_id,
+                        run_id=prior.id,
+                        identity_id=ex.identity_id,
+                        request_hash="a" * 64,
+                        versions=ex.versions,
+                        budget=ex.budget,
+                        grant_ids=[grant.id],
+                        preference="listen",
+                        deadline_at=now(),
+                    )
+                )
+                db.add_all(
+                    [
+                        Message(
+                            owner_id=run.owner_id, run_id=prior.id, role=role, content=f"合成{index}"
+                        )
+                        for role in ("user", "assistant")
+                    ]
+                )
+            current = Run(owner_id=run.owner_id, session_id=sid, session_version=1)
+            db.add(current)
+            db.flush()
+            current_id, grant_id = current.id, grant.id
+        queries: list[str] = []
+    
+        def count(*args: Any) -> None:
+            queries.append(str(args[2]))
+    
+        event.listen(engine(client), "before_cursor_execute", count)
+        try:
+            timeline = client.get(f"/api/v1/sessions/{sid}/timeline")
+            assert timeline.status_code == 200 and len(timeline.json()["items"]) == 20
+            assert len(queries) <= 15
+            with Session(engine(client)) as db:
+                active_run = db.get(Run, current_id)
+                assert active_run
+                queries.clear()
+                turns = context_history(db, active_run, request(), Budget())
+>               assert len(turns) == 25 and len(queries) <= 5
+E               assert (0 == 25)
+E                +  where 0 = len(())
+
+tests\test_stage1_repairs.py:243: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_multiturn.py::test_timeline_pagination_revision_and_scope
+FAILED tests/test_multiturn.py::test_worker_context_and_source_invalidation[None]
+FAILED tests/test_multiturn.py::test_worker_context_and_source_invalidation[revoked]
+FAILED tests/test_multiturn.py::test_worker_context_and_source_invalidation[deleted]
+FAILED tests/test_multiturn.py::test_worker_context_and_source_invalidation[version]
+FAILED tests/test_multiturn.py::test_history_selection_excludes_cancelled_deleted_and_revoked
+FAILED tests/test_stage1_repairs.py::test_bulk_history_bounds_queries_and_rechecks_revocation
+7 failed, 172 passed, 190 deselected in 183.56s (0:03:03)

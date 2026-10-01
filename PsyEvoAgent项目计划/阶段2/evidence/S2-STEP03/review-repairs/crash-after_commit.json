@@ -1,0 +1,58 @@
+{
+  "case_id": "S2-A10",
+  "execution_kind": "real-postgresql-process-kill/fake-model",
+  "phase": "after_commit",
+  "job_id": "0ee5d748-caaf-474e-868f-fb53aff04f4f",
+  "before": {
+    "id": "0ee5d748-caaf-474e-868f-fb53aff04f4f",
+    "version": 5,
+    "kind": "recovery_probe",
+    "generation": 1,
+    "status": "succeeded",
+    "attempt": 1,
+    "max_attempts": 3,
+    "available_at": "2026-09-30T05:43:11.324663Z",
+    "deadline_at": "2026-09-30T05:45:11.317166Z",
+    "lease_token": 1,
+    "lease_until": null,
+    "cancelled_at": null,
+    "error_code": null,
+    "result_ref": "0ee5d748-caaf-474e-868f-fb53aff04f4f",
+    "budget_ref": "4abccaac-cf94-400d-bec6-b7930a1ea938",
+    "lease_losses": 0
+  },
+  "after": {
+    "id": "0ee5d748-caaf-474e-868f-fb53aff04f4f",
+    "version": 5,
+    "kind": "recovery_probe",
+    "generation": 1,
+    "status": "succeeded",
+    "attempt": 1,
+    "max_attempts": 3,
+    "available_at": "2026-09-30T05:43:11.324663Z",
+    "deadline_at": "2026-09-30T05:45:11.317166Z",
+    "lease_token": 1,
+    "lease_until": null,
+    "cancelled_at": null,
+    "error_code": null,
+    "result_ref": "0ee5d748-caaf-474e-868f-fb53aff04f4f",
+    "budget_ref": "4abccaac-cf94-400d-bec6-b7930a1ea938",
+    "lease_losses": 0
+  },
+  "calls": [
+    {
+      "cost": "0",
+      "job_id": "0ee5d748-caaf-474e-868f-fb53aff04f4f",
+      "status": "settled",
+      "attempt": 1,
+      "currency": "SYNTHETIC",
+      "generation": 1,
+      "request_id": "440cc24c-bf81-487d-a5ba-760f7bf17932",
+      "lease_token": 1,
+      "actual_tokens": 20,
+      "charged_tokens": 20,
+      "reserved_tokens": 522
+    }
+  ],
+  "result_count": 1
+}

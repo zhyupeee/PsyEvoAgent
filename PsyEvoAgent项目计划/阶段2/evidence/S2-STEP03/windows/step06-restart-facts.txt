@@ -1,0 +1,1 @@
+STEP06 restart: preferences and title persisted; one input/run/support call/title call/initiation

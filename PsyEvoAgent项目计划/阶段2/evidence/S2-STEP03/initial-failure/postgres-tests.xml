@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="7" skipped="0" tests="179" time="183.497" timestamp="2026-09-30T12:40:55.866966+08:00" hostname="zyp"><testcase classname="tests.test_email_identity" name="test_email_lifecycle" time="5.114" /><testcase classname="tests.test_email_identity" name="test_challenge_expiry_attempts_resend_quotas_and_concurrency" time="0.276" /><testcase classname="tests.test_email_identity" name="test_local_cleanup_is_transactional_and_preserves_email_accounts" time="0.258" /><testcase classname="tests.test_history" name="test_draft_branch_rechecks_inherited_sources[revoked]" time="1.139" /><testcase classname="tests.test_history" name="test_draft_branch_rechecks_inherited_sources[deleted]" time="1.155" /><testcase classname="tests.test_history" name="test_draft_branch_rechecks_inherited_sources[source_version]" time="1.023" /><testcase classname="tests.test_history" name="test_feedback_idempotency_optional_reason_and_scope" time="0.991" /><testcase classname="tests.test_history" name="test_delete_real_content_events_grants_feedback_and_replay" time="1.392" /><testcase classname="tests.test_history" name="test_delete_failure_is_durable_retryable_and_never_reopens" time="0.903" /><testcase classname="tests.test_history" name="test_revision_regeneration_branch_context_and_idempotency" time="1.540" /><testcase classname="tests.test_history" name="test_history_search_archive_versions_and_source_revoke" time="1.247" /><testcase classname="tests.test_history" name="test_delete_inflight_fences_late_output_and_preserves_usage" time="1.151" /><testcase classname="tests.test_history" name="test_history_feedback_revision_delete_are_owner_scoped" time="1.791" /><testcase classname="tests.test_history" name="test_delete_source_cleans_derived_regenerated_runs" time="1.559" /><testcase classname="tests.test_history" name="test_cursor_pagination_and_no_persistent_checkpointer" time="0.411" /><testcase classname="tests.test_jobs" name="test_enqueue_atomic_dedupe_owner_and_purpose" time="0.572" /><testcase classname="tests.test_jobs" name="test_concurrent_claim_and_fencing" time="0.604" /><testcase classname="tests.test_jobs" name="test_invalidation_blocks_late_read_and_commit[revoke]" time="0.603" /><testcase classname="tests.test_jobs" name="test_invalidation_blocks_late_read_and_commit[delete]" time="0.531" /><testcase classname="tests.test_jobs" name="test_invalidation_blocks_late_read_and_commit[edit]" time="0.404" /><testcase classname="tests.test_jobs" name="test_invalidation_blocks_late_read_and_commit[cancel]" time="0.440" /><testcase classname="tests.test_jobs" name="test_invalidation_blocks_late_read_and_commit[config]" time="0.368" /><testcase classname="tests.test_jobs" name="test_invalidation_blocks_late_read_and_commit[generation]" time="0.381" /><testcase classname="tests.test_jobs" name="test_retry_classification_and_attempt_limit[temporary_io-True]" time="0.528" /><testcase classname="tests.test_jobs" name="test_retry_classification_and_attempt_limit[timeout-True]" time="0.692" /><testcase classname="tests.test_jobs" name="test_retry_classification_and_attempt_limit[schema-False]" time="0.300" /><testcase classname="tests.test_jobs" name="test_retry_classification_and_attempt_limit[parameters-False]" time="0.276" /><testcase classname="tests.test_jobs" name="test_retry_classification_and_attempt_limit[permission-False]" time="0.301" /><testcase classname="tests.test_jobs" name="test_retry_classification_and_attempt_limit[deleted-False]" time="0.330" /><testcase classname="tests.test_jobs" name="test_retry_classification_and_attempt_limit[unknown_mutation-False]" time="0.270" /><testcase classname="tests.test_jobs" name="test_retry_classification_and_attempt_limit[PRIVATE exception body-False]" time="0.309" /><testcase classname="tests.test_jobs" name="test_reservations_survive_generation_and_exhaustion" time="0.401" /><testcase classname="tests.test_jobs" name="test_commit_storage_failure_and_unknown_ack" time="0.671" /><testcase classname="tests.test_jobs" name="test_deadline_and_old_lease_during_transaction" time="0.366" /><testcase classname="tests.test_jobs" name="test_probe_validates_schema_and_reads_real_source" time="0.425" /><testcase classname="tests.test_jobs" name="test_worker_renews_and_cancels_in_flight[False]" time="5.631" /><testcase classname="tests.test_jobs" name="test_worker_renews_and_cancels_in_flight[True]" time="0.506" /><testcase classname="tests.test_jobs" name="test_unknown_usage_is_charged_and_total_calls_are_bounded" time="0.504" /><testcase classname="tests.test_jobs" name="test_real_killed_worker_recovers_once[after_claim]" time="9.865" /><testcase classname="tests.test_jobs" name="test_real_killed_worker_recovers_once[before_commit]" time="9.860" /><testcase classname="tests.test_jobs" name="test_real_killed_worker_recovers_once[after_commit]" time="2.346" /><testcase classname="tests.test_jobs" name="test_database_unavailable_is_bounded" time="11.461" /><testcase classname="tests.test_jobs" name="test_job_grant_and_budget_database_owner_constraints" time="0.397" /><testcase classname="tests.test_live_runs" name="test_long_checked_answer_reaches_sse_and_replay[33000-ascii]" time="1.124" /><testcase classname="tests.test_live_runs" name="test_long_checked_answer_reaches_sse_and_replay[utf8-limit]" time="1.077" /><testcase classname="tests.test_live_runs" name="test_long_checked_answer_reaches_sse_and_replay[escaped-limit]" time="1.043" /><testcase classname="tests.test_live_runs" name="test_live_buffer_persistence_and_cancel[False]" time="0.891" /><testcase classname="tests.test_live_runs" name="test_live_buffer_persistence_and_cancel[True]" time="1.097" /><testcase classname="tests.test_live_runs" name="test_live_completion_transaction_failure_does_not_repeat_call[write]" time="0.634" /><testcase classname="tests.test_live_runs" name="test_live_completion_transaction_failure_does_not_repeat_call[commit_ack]" time="0.689" /><testcase classname="tests.test_live_runs" name="test_live_configuration_drift_rejects_before_network[provider_model-different-model]" time="0.487" /><testcase classname="tests.test_live_runs" name="test_live_configuration_drift_rejects_before_network[provider_base_url-https://different.example/v1]" time="0.455" /><testcase classname="tests.test_model_settings_api" name="test_saved_key_encryption_revisions_and_mode_switch" time="0.248" /><testcase classname="tests.test_model_settings_api" name="test_binding_survives_save_and_titles_use_same_provider" time="1.269" /><testcase classname="tests.test_model_settings_api" name="test_delete_revokes_snapshots_and_queued_runs" time="0.578" /><testcase classname="tests.test_model_settings_api" name="test_official_snapshot_is_independent_from_next_process_config" time="0.740" /><testcase classname="tests.test_model_settings_api" name="test_test_endpoint_requires_live_and_is_explicit" time="0.327" /><testcase classname="tests.test_model_settings_api" name="test_personal_mode_works_without_official_key" time="0.521" /><testcase classname="tests.test_model_settings_api" name="test_probe_releases_owner_lock_before_provider_call" time="0.507" /><testcase classname="tests.test_model_settings_api" name="test_missing_official_key_rejects_start_without_execution[False]" time="0.365" /><testcase classname="tests.test_model_settings_api" name="test_missing_official_key_rejects_start_without_execution[True]" time="0.347" /><testcase classname="tests.test_model_settings_api" name="test_second_account_cannot_read_or_delete_first_key" time="0.284" /><testcase classname="tests.test_multiturn" name="test_timeline_pagination_revision_and_scope" time="1.366"><failure message="AssertionError: assert [] == ['cec2dbca-e5...3ba6a5e86ee0']&#10;  &#10;  Right contains one more item: 'cec2dbca-e56d-4fe9-96d1-3ba6a5e86ee0'&#10;  Use -v to get more diff">client = &lt;starlette.testclient.TestClient object at 0x000001F27EF41B80&gt;
+
+    @pytest.mark.postgres
+    def test_timeline_pagination_revision_and_scope(client: TestClient) -&gt; None:
+        sid, rid, body = create(client)
+        start(client, rid, body)
+        assert execute_one(engine(client))
+        second = send(client, sid, "第二轮")
+        assert execute_one(engine(client))
+        newest = client.get(f"/api/v1/sessions/{sid}/timeline?limit=1").json()
+        assert [t["run_id"] for t in newest["items"]] == [second]
+        old = client.get(
+            f"/api/v1/sessions/{sid}/timeline?cursor={newest['next_cursor']}&amp;limit=1"
+        ).json()
+        assert [t["run_id"] for t in old["items"]] == [rid] and old["next_cursor"] is None
+        current = newest["items"][0]
+        versions_url = f"/api/v1/sessions/{sid}/history?old_only=true&amp;limit=1"
+        assert client.get(versions_url).json() == {"items": [], "next_cursor": None}
+        draft = post(
+            client,
+            f"/sessions/{sid}/messages/{current['input_id']}/revisions",
+            {"expected_version": current["input_version"], "content": "替代输入"},
+        ).json()
+        timeline = client.get(f"/api/v1/sessions/{sid}/timeline").json()["items"]
+        assert [t["run_id"] for t in timeline] == [rid, draft["run_id"]]
+        assert timeline[-1]["status"] == "draft"
+        versions = client.get(versions_url).json()
+        assert [item["run_id"] for item in versions["items"]] == [second]
+        assert versions["next_cursor"] is None
+        with Session(engine(client)) as db:
+            revised = db.get(Run, draft["run_id"])
+            assert revised
+&gt;           assert [t.run_id for t in context_history(db, revised, request(), Budget())] == [rid]
+E           AssertionError: assert [] == ['cec2dbca-e5...3ba6a5e86ee0']
+E             
+E             Right contains one more item: 'cec2dbca-e56d-4fe9-96d1-3ba6a5e86ee0'
+E             Use -v to get more diff
+
+tests\test_multiturn.py:155: AssertionError</failure></testcase><testcase classname="tests.test_multiturn" name="test_worker_context_and_source_invalidation[None]" time="1.066"><failure message="AssertionError: assert ['system', 'user'] == ['system', 'u...tant', 'user']&#10;  &#10;  Right contains 2 more items, first extra item: 'assistant'&#10;  Use -v to get more diff">client = &lt;starlette.testclient.TestClient object at 0x000001F27F34C920&gt;
+invalidate = None
+
+    @pytest.mark.postgres
+    @pytest.mark.parametrize("invalidate", [None, "revoked", "deleted", "version"])
+    def test_worker_context_and_source_invalidation(client: TestClient, invalidate: str | None) -&gt; None:
+        sid, rid, body = create(client, grant=True)
+        start(client, rid, body)
+        assert execute_one(engine(client))
+        config = live_settings(client)
+        second = send(client, sid, "请参考上一轮")
+        selected = claim(engine(client))
+        assert selected and selected[0] == second
+        captures: list[dict[str, Any]] = []
+    
+        async def check() -&gt; None:
+            async def handle(req: httpx.Request) -&gt; httpx.Response:
+                captures.append(json.loads(req.content))
+                if invalidate:
+                    with Session(engine(client)) as db, db.begin():
+                        if invalidate == "revoked":
+                            grant = db.get(ContextGrant, body["grant_ids"][0])
+                            assert grant
+                            grant.revoked_at = now()
+                        else:
+                            message = db.scalar(
+                                select(Message).where(
+                                    Message.run_id == rid, Message.role == "assistant"
+                                )
+                            )
+                            assert message
+                            if invalidate == "deleted":
+                                message.deleted_at = now()
+                            else:
+                                message.version += 1
+                return httpx.Response(
+                    200, content=response(), headers={"content-type": "text/event-stream"}
+                )
+    
+            async with open_provider(config, transport=httpx.MockTransport(handle)) as adapter:
+                await execute(
+                    engine(client),
+                    second,
+                    selected[1],
+                    adapter,
+                    LiveProfile(model_ref=config.provider_model, base_url=config.provider_base_url),
+                )
+    
+        asyncio.run(check())
+&gt;       assert [m["role"] for m in captures[0]["messages"]] == ["system", "user", "assistant", "user"]
+E       AssertionError: assert ['system', 'user'] == ['system', 'u...tant', 'user']
+E         
+E         Right contains 2 more items, first extra item: 'assistant'
+E         Use -v to get more diff
+
+tests\test_multiturn.py:231: AssertionError</failure></testcase><testcase classname="tests.test_multiturn" name="test_worker_context_and_source_invalidation[revoked]" time="1.062"><failure message="AssertionError: assert ['system', 'user'] == ['system', 'u...tant', 'user']&#10;  &#10;  Right contains 2 more items, first extra item: 'assistant'&#10;  Use -v to get more diff">client = &lt;starlette.testclient.TestClient object at 0x000001F27FA9B6B0&gt;
+invalidate = 'revoked'
+
+    @pytest.mark.postgres
+    @pytest.mark.parametrize("invalidate", [None, "revoked", "deleted", "version"])
+    def test_worker_context_and_source_invalidation(client: TestClient, invalidate: str | None) -&gt; None:
+        sid, rid, body = create(client, grant=True)
+        start(client, rid, body)
+        assert execute_one(engine(client))
+        config = live_settings(client)
+        second = send(client, sid, "请参考上一轮")
+        selected = claim(engine(client))
+        assert selected and selected[0] == second
+        captures: list[dict[str, Any]] = []
+    
+        async def check() -&gt; None:
+            async def handle(req: httpx.Request) -&gt; httpx.Response:
+                captures.append(json.loads(req.content))
+                if invalidate:
+                    with Session(engine(client)) as db, db.begin():
+                        if invalidate == "revoked":
+                            grant = db.get(ContextGrant, body["grant_ids"][0])
+                            assert grant
+                            grant.revoked_at = now()
+                        else:
+                            message = db.scalar(
+                                select(Message).where(
+                                    Message.run_id == rid, Message.role == "assistant"
+                                )
+                            )
+                            assert message
+                            if invalidate == "deleted":
+                                message.deleted_at = now()
+                            else:
+                                message.version += 1
+                return httpx.Response(
+                    200, content=response(), headers={"content-type": "text/event-stream"}
+                )
+    
+            async with open_provider(config, transport=httpx.MockTransport(handle)) as adapter:
+                await execute(
+                    engine(client),
+                    second,
+                    selected[1],
+                    adapter,
+                    LiveProfile(model_ref=config.provider_model, base_url=config.provider_base_url),
+                )
+    
+        asyncio.run(check())
+&gt;       assert [m["role"] for m in captures[0]["messages"]] == ["system", "user", "assistant", "user"]
+E       AssertionError: assert ['system', 'user'] == ['system', 'u...tant', 'user']
+E         
+E         Right contains 2 more items, first extra item: 'assistant'
+E         Use -v to get more diff
+
+tests\test_multiturn.py:231: AssertionError</failure></testcase><testcase classname="tests.test_multiturn" name="test_worker_context_and_source_invalidation[deleted]" time="1.398"><failure message="AssertionError: assert ['system', 'user'] == ['system', 'u...tant', 'user']&#10;  &#10;  Right contains 2 more items, first extra item: 'assistant'&#10;  Use -v to get more diff">client = &lt;starlette.testclient.TestClient object at 0x000001F2000EBF80&gt;
+invalidate = 'deleted'
+
+    @pytest.mark.postgres
+    @pytest.mark.parametrize("invalidate", [None, "revoked", "deleted", "version"])
+    def test_worker_context_and_source_invalidation(client: TestClient, invalidate: str | None) -&gt; None:
+        sid, rid, body = create(client, grant=True)
+        start(client, rid, body)
+        assert execute_one(engine(client))
+        config = live_settings(client)
+        second = send(client, sid, "请参考上一轮")
+        selected = claim(engine(client))
+        assert selected and selected[0] == second
+        captures: list[dict[str, Any]] = []
+    
+        async def check() -&gt; None:
+            async def handle(req: httpx.Request) -&gt; httpx.Response:
+                captures.append(json.loads(req.content))
+                if invalidate:
+                    with Session(engine(client)) as db, db.begin():
+                        if invalidate == "revoked":
+                            grant = db.get(ContextGrant, body["grant_ids"][0])
+                            assert grant
+                            grant.revoked_at = now()
+                        else:
+                            message = db.scalar(
+                                select(Message).where(
+                                    Message.run_id == rid, Message.role == "assistant"
+                                )
+                            )
+                            assert message
+                            if invalidate == "deleted":
+                                message.deleted_at = now()
+                            else:
+                                message.version += 1
+                return httpx.Response(
+                    200, content=response(), headers={"content-type": "text/event-stream"}
+                )
+    
+            async with open_provider(config, transport=httpx.MockTransport(handle)) as adapter:
+                await execute(
+                    engine(client),
+                    second,
+                    selected[1],
+                    adapter,
+                    LiveProfile(model_ref=config.provider_model, base_url=config.provider_base_url),
+                )
+    
+        asyncio.run(check())
+&gt;       assert [m["role"] for m in captures[0]["messages"]] == ["system", "user", "assistant", "user"]
+E       AssertionError: assert ['system', 'user'] == ['system', 'u...tant', 'user']
+E         
+E         Right contains 2 more items, first extra item: 'assistant'
+E         Use -v to get more diff
+
+tests\test_multiturn.py:231: AssertionError</failure></testcase><testcase classname="tests.test_multiturn" name="test_worker_context_and_source_invalidation[version]" time="1.209"><failure message="AssertionError: assert ['system', 'user'] == ['system', 'u...tant', 'user']&#10;  &#10;  Right contains 2 more items, first extra item: 'assistant'&#10;  Use -v to get more diff">client = &lt;starlette.testclient.TestClient object at 0x000001F200112F60&gt;
+invalidate = 'version'
+
+    @pytest.mark.postgres
+    @pytest.mark.parametrize("invalidate", [None, "revoked", "deleted", "version"])
+    def test_worker_context_and_source_invalidation(client: TestClient, invalidate: str | None) -&gt; None:
+        sid, rid, body = create(client, grant=True)
+        start(client, rid, body)
+        assert execute_one(engine(client))
+        config = live_settings(client)
+        second = send(client, sid, "请参考上一轮")
+        selected = claim(engine(client))
+        assert selected and selected[0] == second
+        captures: list[dict[str, Any]] = []
+    
+        async def check() -&gt; None:
+            async def handle(req: httpx.Request) -&gt; httpx.Response:
+                captures.append(json.loads(req.content))
+                if invalidate:
+                    with Session(engine(client)) as db, db.begin():
+                        if invalidate == "revoked":
+                            grant = db.get(ContextGrant, body["grant_ids"][0])
+                            assert grant
+                            grant.revoked_at = now()
+                        else:
+                            message = db.scalar(
+                                select(Message).where(
+                                    Message.run_id == rid, Message.role == "assistant"
+                                )
+                            )
+                            assert message
+                            if invalidate == "deleted":
+                                message.deleted_at = now()
+                            else:
+                                message.version += 1
+                return httpx.Response(
+                    200, content=response(), headers={"content-type": "text/event-stream"}
+                )
+    
+            async with open_provider(config, transport=httpx.MockTransport(handle)) as adapter:
+                await execute(
+                    engine(client),
+                    second,
+                    selected[1],
+                    adapter,
+                    LiveProfile(model_ref=config.provider_model, base_url=config.provider_base_url),
+                )
+    
+        asyncio.run(check())
+&gt;       assert [m["role"] for m in captures[0]["messages"]] == ["system", "user", "assistant", "user"]
+E       AssertionError: assert ['system', 'user'] == ['system', 'u...tant', 'user']
+E         
+E         Right contains 2 more items, first extra item: 'assistant'
+E         Use -v to get more diff
+
+tests\test_multiturn.py:231: AssertionError</failure></testcase><testcase classname="tests.test_multiturn" name="test_history_selection_excludes_cancelled_deleted_and_revoked" time="0.959"><failure message="AssertionError: assert [] == ['8b2eb3a0-dc...5001c9ce2b19']&#10;  &#10;  Right contains one more item: '8b2eb3a0-dc7a-4372-989c-5001c9ce2b19'&#10;  Use -v to get more diff">client = &lt;starlette.testclient.TestClient object at 0x000001F27F6EA450&gt;
+
+    @pytest.mark.postgres
+    def test_history_selection_excludes_cancelled_deleted_and_revoked(client: TestClient) -&gt; None:
+        sid, rid, body = create(client, grant=True)
+        start(client, rid, body)
+        assert execute_one(engine(client))
+        cancelled = send(client, sid, "取消的输入")
+        snap = client.get(f"/api/v1/runs/{cancelled}").json()
+        assert (
+            client.post(
+                f"/api/v1/runs/{cancelled}/cancel", json={"expected_version": snap["version"]}
+            ).status_code
+            == 200
+        )
+        newest = send(client, sid, "当前消息")
+        with Session(engine(client)) as db, db.begin():
+            run = db.get(Run, newest)
+            assert run
+            data = request()
+            history = context_history(db, run, data, Budget())
+&gt;           assert [t.run_id for t in history] == [rid]
+E           AssertionError: assert [] == ['8b2eb3a0-dc...5001c9ce2b19']
+E             
+E             Right contains one more item: '8b2eb3a0-dc7a-4372-989c-5001c9ce2b19'
+E             Use -v to get more diff
+
+tests\test_multiturn.py:259: AssertionError</failure></testcase><testcase classname="tests.test_pages" name="test_current_turn_recovery_and_revoked_source" time="0.822" /><testcase classname="tests.test_pages" name="test_current_turn_owner_and_deleted_session" time="0.288" /><testcase classname="tests.test_pages" name="test_current_turn_excludes_deleted_run" time="0.727" /><testcase classname="tests.test_pages" name="test_exercise_independent_of_model_and_unreviewed_content_gate" time="0.197" /><testcase classname="tests.test_records" name="test_notes_drafts_retry_conflict_and_owner" time="0.557" /><testcase classname="tests.test_records" name="test_note_date_filter_uses_record_timezone[2026-09-30T00:30:00+08:00-Asia/Shanghai-2026-09-30-2026-09-29]" time="0.225" /><testcase classname="tests.test_records" name="test_note_date_filter_uses_record_timezone[2026-09-29T23:30:00-04:00-America/New_York-2026-09-29-2026-09-30]" time="0.226" /><testcase classname="tests.test_records" name="test_note_date_filter_uses_record_timezone[2026-11-01T01:30:00-05:00-America/New_York-2026-11-01-2026-10-31]" time="0.557" /><testcase classname="tests.test_records" name="test_note_date_filter_uses_record_timezone[2026-09-30T00:30:00+08:00-None-2026-09-29-2026-09-30]" time="0.226" /><testcase classname="tests.test_records" name="test_sleep_time_semantics[fields0-480]" time="0.243" /><testcase classname="tests.test_records" name="test_sleep_time_semantics[fields1-40]" time="0.243" /><testcase classname="tests.test_records" name="test_sleep_time_semantics[fields2-None]" time="0.246" /><testcase classname="tests.test_records" name="test_sleep_time_semantics[fields3-None]" time="0.246" /><testcase classname="tests.test_records" name="test_sleep_time_semantics[fields4-60]" time="0.274" /><testcase classname="tests.test_records" name="test_sleep_time_semantics[fields5-540]" time="0.251" /><testcase classname="tests.test_records" name="test_sleep_time_semantics[fields6-420]" time="0.237" /><testcase classname="tests.test_records" name="test_sleep_patch_rejects_reversed_instants_in_repeated_hour" time="0.197" /><testcase classname="tests.test_records" name="test_invalid_sleep_never_saved[fields0]" time="0.177" /><testcase classname="tests.test_records" name="test_invalid_sleep_never_saved[fields1]" time="0.182" /><testcase classname="tests.test_records" name="test_invalid_sleep_never_saved[fields2]" time="0.179" /><testcase classname="tests.test_records" name="test_invalid_sleep_never_saved[fields3]" time="0.163" /><testcase classname="tests.test_records" name="test_invalid_sleep_never_saved[fields4]" time="0.174" /><testcase classname="tests.test_records" name="test_invalid_sleep_never_saved[fields5]" time="0.495" /><testcase classname="tests.test_records" name="test_invalid_sleep_never_saved[fields6]" time="0.176" /><testcase classname="tests.test_records" name="test_invalid_sleep_never_saved[fields7]" time="0.159" /><testcase classname="tests.test_records" name="test_sleep_concurrent_versions_and_deletion" time="0.592" /><testcase classname="tests.test_records" name="test_card_singleton_previous_conflict_clear" time="0.723" /><testcase classname="tests.test_records" name="test_excerpt_revision_delete_and_no_copied_body" time="1.539" /><testcase classname="tests.test_records" name="test_selected_record_reaches_actual_model_only_once" time="1.204" /><testcase classname="tests.test_records" name="test_stale_record_cannot_publish[revision]" time="0.528" /><testcase classname="tests.test_records" name="test_stale_record_cannot_publish[delete]" time="1.212" /><testcase classname="tests.test_records" name="test_stale_record_cannot_publish[revoke]" time="0.553" /><testcase classname="tests.test_records" name="test_cross_owner_typed_database_reference_rejected" time="0.441" /><testcase classname="tests.test_records" name="test_cleanup_failure_blocks_then_retries" time="0.524" /><testcase classname="tests.test_records" name="test_partial_updates_preserve_unspecified_fields" time="0.322" /><testcase classname="tests.test_records" name="test_running_provider_cannot_publish_after_record_changes" time="0.994" /><testcase classname="tests.test_records" name="test_source_delete_blocks_excerpt_even_when_cleanup_fails" time="1.436" /><testcase classname="tests.test_registration" name="test_register_login_defaults_and_legacy_account" time="1.979" /><testcase classname="tests.test_runs" name="test_draft_start_replay_and_persisted_output" time="3.313" /><testcase classname="tests.test_runs" name="test_worker_honors_queued_evaluator_version[behavior-rules/1]" time="1.461" /><testcase classname="tests.test_runs" name="test_worker_honors_queued_evaluator_version[behavior-rules/2]" time="1.073" /><testcase classname="tests.test_runs" name="test_disabled_provider_replays_persisted_start" time="0.427" /><testcase classname="tests.test_runs" name="test_cancel_terminal_and_no_late_output[draft]" time="0.538" /><testcase classname="tests.test_runs" name="test_cancel_terminal_and_no_late_output[queued]" time="0.758" /><testcase classname="tests.test_runs" name="test_cancel_terminal_and_no_late_output[running]" time="0.726" /><testcase classname="tests.test_runs" name="test_parallel_start_and_cas_race" time="0.789" /><testcase classname="tests.test_runs" name="test_replay_and_snapshot_reauthorize[source_deleted]" time="1.084" /><testcase classname="tests.test_runs" name="test_replay_and_snapshot_reauthorize[source_version]" time="1.152" /><testcase classname="tests.test_runs" name="test_replay_and_snapshot_reauthorize[grant_revoked]" time="0.954" /><testcase classname="tests.test_runs" name="test_replay_and_snapshot_reauthorize[owner]" time="1.340" /><testcase classname="tests.test_runs" name="test_replay_and_snapshot_reauthorize[message_deleted]" time="0.785" /><testcase classname="tests.test_runs" name="test_replay_and_snapshot_reauthorize[message_version]" time="0.964" /><testcase classname="tests.test_runs" name="test_cursor_handshake_expiry_and_snapshot" time="1.741" /><testcase classname="tests.test_runs" name="test_deadline_recovery_logout_and_disabled_provider" time="0.782" /><testcase classname="tests.test_runs" name="test_deadline_expires_after_claim_before_execute" time="0.595" /><testcase classname="tests.test_runs" name="test_deadline_expires_during_model_call" time="0.719" /><testcase classname="tests.test_runs" name="test_start_rejects_nul_message[False]" time="0.221" /><testcase classname="tests.test_runs" name="test_start_rejects_nul_message[True]" time="0.202" /><testcase classname="tests.test_runs" name="test_worker_output_gate_and_unknown_cost[unsafe]" time="0.838" /><testcase classname="tests.test_runs" name="test_worker_output_gate_and_unknown_cost[unknown_usage]" time="0.716" /><testcase classname="tests.test_runs" name="test_worker_output_gate_and_unknown_cost[cancel]" time="1.138" /><testcase classname="tests.test_runs" name="test_interaction_dedupe_union_idle_and_clock_drift" time="0.562" /><testcase classname="tests.test_runs" name="test_send_convenience_client_id_and_csrf" time="0.414" /><testcase classname="tests.test_runs" name="test_message_sent_recorded_at_client_id_limit[123]" time="0.385" /><testcase classname="tests.test_runs" name="test_message_sent_recorded_at_client_id_limit[124]" time="0.386" /><testcase classname="tests.test_runs" name="test_message_sent_recorded_at_client_id_limit[128]" time="0.436" /><testcase classname="tests.test_runs" name="test_inflight_stop_persists_unknown_charge[cancel]" time="0.654" /><testcase classname="tests.test_runs" name="test_inflight_stop_persists_unknown_charge[logout]" time="0.617" /><testcase classname="tests.test_runs" name="test_inflight_stop_persists_unknown_charge[delete_source]" time="0.565" /><testcase classname="tests.test_runs" name="test_start_failure_is_atomic_and_no_disabled_live_execution" time="0.275" /><testcase classname="tests.test_runs" name="test_optional_event_storage_failure_does_not_block_support" time="0.781" /><testcase classname="tests.test_stage1_repairs" name="test_active_run_precedes_existing_empty_draft_and_rejects_new_draft" time="0.994" /><testcase classname="tests.test_stage1_repairs" name="test_probe_reservation_replay_receipt_and_cancellation[delete]" time="0.525" /><testcase classname="tests.test_stage1_repairs" name="test_probe_reservation_replay_receipt_and_cancellation[logout]" time="0.444" /><testcase classname="tests.test_stage1_repairs" name="test_probe_reservation_replay_receipt_and_cancellation[complete]" time="0.523" /><testcase classname="tests.test_stage1_repairs" name="test_expired_probe_is_not_reissued" time="0.376" /><testcase classname="tests.test_stage1_repairs" name="test_bulk_history_bounds_queries_and_rechecks_revocation" time="0.631"><failure message="assert (0 == 25)&#10; +  where 0 = len(())">client = &lt;starlette.testclient.TestClient object at 0x000001F200AD9C10&gt;
+
+    def test_bulk_history_bounds_queries_and_rechecks_revocation(client: TestClient) -&gt; None:
+        sid, rid, body = create(client)
+        start(client, rid, body)
+        with Session(engine(client)) as db, db.begin():
+            run = db.get(Run, rid)
+            ex = db.scalar(select(RunExecution).where(RunExecution.run_id == rid))
+            assert run and ex
+            run.status = "completed"
+            db.add(Message(owner_id=run.owner_id, run_id=rid, role="assistant", content="合成回复"))
+            for index in range(24):
+                prior = Run(
+                    owner_id=run.owner_id,
+                    session_id=sid,
+                    session_version=1,
+                    status="completed",
+                    source_message_version=1,
+                )
+                db.add(prior)
+                db.flush()
+                grant = ContextGrant(
+                    owner_id=run.owner_id,
+                    run_id=prior.id,
+                    source_id=sid,
+                    source_version=1,
+                    purpose="current_run",
+                )
+                db.add(grant)
+                db.flush()
+                db.add(
+                    RunExecution(
+                        owner_id=run.owner_id,
+                        run_id=prior.id,
+                        identity_id=ex.identity_id,
+                        request_hash="a" * 64,
+                        versions=ex.versions,
+                        budget=ex.budget,
+                        grant_ids=[grant.id],
+                        preference="listen",
+                        deadline_at=now(),
+                    )
+                )
+                db.add_all(
+                    [
+                        Message(
+                            owner_id=run.owner_id, run_id=prior.id, role=role, content=f"合成{index}"
+                        )
+                        for role in ("user", "assistant")
+                    ]
+                )
+            current = Run(owner_id=run.owner_id, session_id=sid, session_version=1)
+            db.add(current)
+            db.flush()
+            current_id, grant_id = current.id, grant.id
+        queries: list[str] = []
+    
+        def count(*args: Any) -&gt; None:
+            queries.append(str(args[2]))
+    
+        event.listen(engine(client), "before_cursor_execute", count)
+        try:
+            timeline = client.get(f"/api/v1/sessions/{sid}/timeline")
+            assert timeline.status_code == 200 and len(timeline.json()["items"]) == 20
+            assert len(queries) &lt;= 15
+            with Session(engine(client)) as db:
+                active_run = db.get(Run, current_id)
+                assert active_run
+                queries.clear()
+                turns = context_history(db, active_run, request(), Budget())
+&gt;               assert len(turns) == 25 and len(queries) &lt;= 5
+E               assert (0 == 25)
+E                +  where 0 = len(())
+
+tests\test_stage1_repairs.py:243: AssertionError</failure></testcase><testcase classname="tests.test_step03" name="test_identity_purpose_versions_and_storage" time="3.113" /><testcase classname="tests.test_step03" name="test_grant_rechecks_current_facts[expired_grant]" time="0.157" /><testcase classname="tests.test_step03" name="test_grant_rechecks_current_facts[expired_consent]" time="0.090" /><testcase classname="tests.test_step03" name="test_grant_rechecks_current_facts[expired_run]" time="0.094" /><testcase classname="tests.test_step03" name="test_grant_rechecks_current_facts[terminal_run]" time="0.088" /><testcase classname="tests.test_step03" name="test_grant_rechecks_current_facts[deleted_source]" time="0.094" /><testcase classname="tests.test_step03" name="test_grant_rechecks_current_facts[revoked_grant]" time="0.088" /><testcase classname="tests.test_step03_migrations" name="test_provider_test_migration_retains_identity_and_refuses_receipt_loss" time="1.862" /><testcase classname="tests.test_step03_migrations" name="test_step05_upgrade_preserves_runs_and_refuses_lossy_downgrade" time="1.896" /><testcase classname="tests.test_step03_migrations" name="test_default_configuration_migration_preserves_history" time="1.702" /><testcase classname="tests.test_step03_migrations" name="test_jobs_migration_preserves_sources_and_refuses_receipt_loss" time="1.965" /><testcase classname="tests.test_step03_migrations" name="test_records_migration_preserves_content_and_refuses_loss" time="1.202" /><testcase classname="tests.test_step03_migrations" name="test_empty_upgrade_is_repeatable" time="1.111" /><testcase classname="tests.test_step03_migrations" name="test_title_migration_preserves_titles_and_provenance" time="1.542" /><testcase classname="tests.test_step03_migrations" name="test_previous_schema_upgrade_and_downgrade_preserve_data" time="2.197" /><testcase classname="tests.test_step03_migrations" name="test_failed_owner_constraint_upgrade_rolls_back_and_can_recover" time="1.662" /><testcase classname="tests.test_step03_migrations" name="test_no_expiry_migration_preserves_records_and_refuses_lossy_downgrade" time="1.427" /><testcase classname="tests.test_step03_migrations" name="test_email_migration_preserves_legacy_and_refuses_lossy_downgrade" time="1.337" /><testcase classname="tests.test_step03_migrations" name="test_login_attempt_migration_preserves_existing_lockout" time="1.340" /><testcase classname="tests.test_step03_migrations" name="test_step07_upgrade_preserves_history_and_refuses_loss[feedback]" time="1.994" /><testcase classname="tests.test_step03_migrations" name="test_step07_upgrade_preserves_history_and_refuses_loss[branch]" time="1.507" /><testcase classname="tests.test_title_tasks" name="test_legacy_binding_does_not_fail_next_reply" time="1.070" /><testcase classname="tests.test_title_tasks" name="test_title_persists_searches_and_does_not_invalidate_active_run" time="1.328" /><testcase classname="tests.test_title_tasks" name="test_late_title_never_overwrites_manual_or_deleted_source[rename]" time="0.778" /><testcase classname="tests.test_title_tasks" name="test_late_title_never_overwrites_manual_or_deleted_source[delete]" time="0.924" /><testcase classname="tests.test_title_tasks" name="test_late_title_never_overwrites_manual_or_deleted_source[source_changed]" time="0.832" /><testcase classname="tests.test_title_tasks" name="test_failure_keeps_default_and_never_retries[invalid]" time="0.767" /><testcase classname="tests.test_title_tasks" name="test_failure_keeps_default_and_never_retries[missing_usage]" time="1.298" /><testcase classname="tests.test_title_tasks" name="test_failure_keeps_default_and_never_retries[provider_error]" time="1.801" /><testcase classname="tests.test_title_tasks" name="test_failure_keeps_default_and_never_retries[deadline]" time="0.868" /><testcase classname="tests.test_title_tasks" name="test_manual_creation_and_stale_title_revision" time="0.806" /><testcase classname="tests.test_title_tasks" name="test_expired_claim_is_not_reissued" time="2.683" /><testcase classname="tests.test_title_tasks" name="test_old_default_session_uses_earliest_valid_turn" time="1.095" /><testcase classname="tests.test_title_tasks" name="test_title_uses_actual_sdk_and_retains_external_receipt" time="1.024" /></testsuite></testsuites>

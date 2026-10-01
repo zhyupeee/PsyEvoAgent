@@ -1,0 +1,224 @@
+FFF.FFF                                                                  [100%]
+================================== FAILURES ===================================
+_______________ test_claim_scans_past_locked_owner_batches[100] _______________
+
+client = <starlette.testclient.TestClient object at 0x000001F7B74E29F0>
+other = <starlette.testclient.TestClient object at 0x000001F7B7BF5AC0>
+job = ('cc74becd-263f-411c-9957-d6d16c68f99c', 'dc66dbf9-74de-401a-8610-2b15a17f7d26', {'id': '86fe9e7e-2b0f-462a-82b4-bcfac5763c0f', 'schema_version': 1, 'version': 1, 'created_at': '2026-09-30T05:40:39.738639+00:00', ...})
+blocked_count = 100
+
+    @pytest.mark.parametrize("blocked_count", [100, 201])
+    def test_claim_scans_past_locked_owner_batches(
+        client: TestClient,
+        other: TestClient,
+        job: tuple[str, str, dict[str, Any]],
+        blocked_count: int,
+    ) -> None:
+        jid, _, _ = job
+        source = saved_note(other)
+        with Session(engine(client)) as db, db.begin():
+            note = db.get(Note, source["id"])
+            assert note is not None
+            blocked_owner = note.owner_id
+            at = jobs.clock(db) - timedelta(seconds=2)
+            blocked_ids = []
+            for _ in range(blocked_count):
+                note = Note(
+                    owner_id=blocked_owner, body="synthetic queued source", kind="free", status="saved"
+                )
+                db.add(note)
+                db.flush()
+                row = enqueue(db, blocked_owner, {"id": note.id, "version": note.version})
+                # Equal timestamps require the pagination cursor to include the job ID.
+                row.available_at = at
+                blocked_ids.append(row.id)
+            target = db.get(BackgroundJob, jid)
+            assert target is not None
+            target.available_at = at + timedelta(seconds=1)
+        try:
+            with Session(engine(client)) as locked, locked.begin():
+                locked.scalar(select(User.id).where(User.id == blocked_owner).with_for_update())
+                lease = jobs.claim(engine(client), "unblocked-owner", lease_seconds=60)
+>               assert lease is not None and lease.job_id == jid
+E               assert (None is not None)
+
+tests\test_jobs.py:215: AssertionError
+_______________ test_claim_scans_past_locked_owner_batches[201] _______________
+
+client = <starlette.testclient.TestClient object at 0x000001F7B7D6C8F0>
+other = <starlette.testclient.TestClient object at 0x000001F7B7EB6E70>
+job = ('4cb07470-1f0a-4898-920a-898f4b5ab950', '52f71b5a-1f0b-4b57-978e-d252cb5bc8e7', {'id': '17f2e824-c096-47bb-878f-18c5263f2e2d', 'schema_version': 1, 'version': 1, 'created_at': '2026-09-30T05:40:44.461744+00:00', ...})
+blocked_count = 201
+
+    @pytest.mark.parametrize("blocked_count", [100, 201])
+    def test_claim_scans_past_locked_owner_batches(
+        client: TestClient,
+        other: TestClient,
+        job: tuple[str, str, dict[str, Any]],
+        blocked_count: int,
+    ) -> None:
+        jid, _, _ = job
+        source = saved_note(other)
+        with Session(engine(client)) as db, db.begin():
+            note = db.get(Note, source["id"])
+            assert note is not None
+            blocked_owner = note.owner_id
+            at = jobs.clock(db) - timedelta(seconds=2)
+            blocked_ids = []
+            for _ in range(blocked_count):
+                note = Note(
+                    owner_id=blocked_owner, body="synthetic queued source", kind="free", status="saved"
+                )
+                db.add(note)
+                db.flush()
+                row = enqueue(db, blocked_owner, {"id": note.id, "version": note.version})
+                # Equal timestamps require the pagination cursor to include the job ID.
+                row.available_at = at
+                blocked_ids.append(row.id)
+            target = db.get(BackgroundJob, jid)
+            assert target is not None
+            target.available_at = at + timedelta(seconds=1)
+        try:
+            with Session(engine(client)) as locked, locked.begin():
+                locked.scalar(select(User.id).where(User.id == blocked_owner).with_for_update())
+                lease = jobs.claim(engine(client), "unblocked-owner", lease_seconds=60)
+>               assert lease is not None and lease.job_id == jid
+E               assert (None is not None)
+
+tests\test_jobs.py:215: AssertionError
+________________ test_probe_rejects_note_api_receipt_collision ________________
+
+client = <starlette.testclient.TestClient object at 0x000001F7B7EB69F0>
+job = ('c335baeb-df71-4e0b-abea-c2356941fad9', 'ed333687-a01d-4d92-a467-f2a94969f5d9', {'id': 'c2e59500-2d73-4433-85f1-ad58822149c6', 'schema_version': 1, 'version': 1, 'created_at': '2026-09-30T05:40:54.729698+00:00', ...})
+
+    def test_probe_rejects_note_api_receipt_collision(
+        client: TestClient,
+        job: tuple[str, str, dict[str, Any]],
+    ) -> None:
+        jid, owner, _ = job
+        key = "job-probe:" + jid
+        body = {"body": "synthetic unrelated note"}
+        response = write(client, "POST", "/notes", body, key)
+        assert response.status_code == 201, response.text
+        note_id = response.json()["id"]
+        assert job_worker.execute_one(engine(client), settings(), "receipt-collision")
+        result = state(client, jid)
+>       assert result["status"] == "failed" and result["error_code"] == "schema"
+E       AssertionError: assert ('succeeded' == 'failed'
+E         
+E         - failed
+E         + succeeded)
+
+tests\test_jobs.py:243: AssertionError
+____________ test_probe_validates_existing_receipt[resource_type] _____________
+
+client = <starlette.testclient.TestClient object at 0x000001F7B7DEB170>
+job = ('9fff0019-884f-404a-b6ca-cc95f3c450f6', 'eccc35ff-dd9a-4098-a1c7-35854e26b880', {'id': '92ed8c09-0946-4ab5-baad-584e993bafd3', 'schema_version': 1, 'version': 1, 'created_at': '2026-09-30T05:40:56.901057+00:00', ...})
+mismatch = 'resource_type'
+
+    @pytest.mark.parametrize("mismatch", [None, "resource_type", "resource_id", "request_hash"])
+    def test_probe_validates_existing_receipt(
+        client: TestClient,
+        job: tuple[str, str, dict[str, Any]],
+        mismatch: str | None,
+    ) -> None:
+        jid, owner, _ = job
+        expected = {"resource_type": "job_probe", "resource_id": jid, "request_hash": digest(jid)}
+        if mismatch:
+            expected[mismatch] = {
+                "resource_type": "Note",
+                "resource_id": str(uuid4()),
+                "request_hash": digest("different"),
+            }[mismatch]
+        with Session(engine(client)) as db, db.begin():
+            db.add(Idempotency(owner_id=owner, key="job-probe:" + jid, **expected))
+        assert job_worker.execute_one(engine(client), settings(), "existing-receipt")
+        result = state(client, jid)
+>       assert result["status"] == ("failed" if mismatch else "succeeded")
+E       AssertionError: assert 'succeeded' == 'failed'
+E         
+E         - failed
+E         + succeeded
+
+tests\test_jobs.py:271: AssertionError
+_____________ test_probe_validates_existing_receipt[resource_id] ______________
+
+client = <starlette.testclient.TestClient object at 0x000001F7B78283E0>
+job = ('d6b4d1fe-5d98-4ec1-998b-8177d130cfc5', 'f2a5e174-b7f6-497a-a949-088a811eb583', {'id': '72104570-06de-4dcf-b5d3-0926d9558028', 'schema_version': 1, 'version': 1, 'created_at': '2026-09-30T05:40:57.669558+00:00', ...})
+mismatch = 'resource_id'
+
+    @pytest.mark.parametrize("mismatch", [None, "resource_type", "resource_id", "request_hash"])
+    def test_probe_validates_existing_receipt(
+        client: TestClient,
+        job: tuple[str, str, dict[str, Any]],
+        mismatch: str | None,
+    ) -> None:
+        jid, owner, _ = job
+        expected = {"resource_type": "job_probe", "resource_id": jid, "request_hash": digest(jid)}
+        if mismatch:
+            expected[mismatch] = {
+                "resource_type": "Note",
+                "resource_id": str(uuid4()),
+                "request_hash": digest("different"),
+            }[mismatch]
+        with Session(engine(client)) as db, db.begin():
+            db.add(Idempotency(owner_id=owner, key="job-probe:" + jid, **expected))
+        assert job_worker.execute_one(engine(client), settings(), "existing-receipt")
+        result = state(client, jid)
+>       assert result["status"] == ("failed" if mismatch else "succeeded")
+E       AssertionError: assert 'succeeded' == 'failed'
+E         
+E         - failed
+E         + succeeded
+
+tests\test_jobs.py:271: AssertionError
+_____________ test_probe_validates_existing_receipt[request_hash] _____________
+
+client = <starlette.testclient.TestClient object at 0x000001F7B836E4B0>
+job = ('62207590-c29a-49d7-bec0-875dc2bd1cad', '6b9f2c39-8a7b-40ef-be46-7c0acee3def9', {'id': '7f60c836-22a0-4766-ac47-6534095e2225', 'schema_version': 1, 'version': 1, 'created_at': '2026-09-30T05:40:58.342476+00:00', ...})
+mismatch = 'request_hash'
+
+    @pytest.mark.parametrize("mismatch", [None, "resource_type", "resource_id", "request_hash"])
+    def test_probe_validates_existing_receipt(
+        client: TestClient,
+        job: tuple[str, str, dict[str, Any]],
+        mismatch: str | None,
+    ) -> None:
+        jid, owner, _ = job
+        expected = {"resource_type": "job_probe", "resource_id": jid, "request_hash": digest(jid)}
+        if mismatch:
+            expected[mismatch] = {
+                "resource_type": "Note",
+                "resource_id": str(uuid4()),
+                "request_hash": digest("different"),
+            }[mismatch]
+        with Session(engine(client)) as db, db.begin():
+            db.add(Idempotency(owner_id=owner, key="job-probe:" + jid, **expected))
+        assert job_worker.execute_one(engine(client), settings(), "existing-receipt")
+        result = state(client, jid)
+>       assert result["status"] == ("failed" if mismatch else "succeeded")
+E       AssertionError: assert 'succeeded' == 'failed'
+E         
+E         - failed
+E         + succeeded
+
+tests\test_jobs.py:271: AssertionError
+============================ slowest 10 durations =============================
+9.73s call     tests/test_jobs.py::test_claim_scans_past_locked_owner_batches[201]
+3.95s call     tests/test_jobs.py::test_claim_scans_past_locked_owner_batches[100]
+0.77s call     tests/test_jobs.py::test_probe_rejects_note_api_receipt_collision
+0.55s call     tests/test_jobs.py::test_probe_validates_existing_receipt[None]
+0.40s setup    tests/test_jobs.py::test_probe_rejects_note_api_receipt_collision
+0.38s call     tests/test_jobs.py::test_probe_validates_existing_receipt[resource_type]
+0.38s setup    tests/test_jobs.py::test_claim_scans_past_locked_owner_batches[100]
+0.36s call     tests/test_jobs.py::test_probe_validates_existing_receipt[resource_id]
+0.33s setup    tests/test_jobs.py::test_probe_validates_existing_receipt[resource_type]
+0.33s setup    tests/test_jobs.py::test_probe_validates_existing_receipt[resource_id]
+=========================== short test summary info ===========================
+FAILED tests/test_jobs.py::test_claim_scans_past_locked_owner_batches[100] - ...
+FAILED tests/test_jobs.py::test_claim_scans_past_locked_owner_batches[201] - ...
+FAILED tests/test_jobs.py::test_probe_rejects_note_api_receipt_collision - As...
+FAILED tests/test_jobs.py::test_probe_validates_existing_receipt[resource_type]
+FAILED tests/test_jobs.py::test_probe_validates_existing_receipt[resource_id]
+FAILED tests/test_jobs.py::test_probe_validates_existing_receipt[request_hash]
+6 failed, 1 passed, 29 deselected in 21.91s

@@ -50,9 +50,13 @@ def context_history(
     query = main_runs(run.owner_id, run.session_id).where(
         Run.status == "completed",
         # A one-turn record grant must not leak via a previous generated reply.
-        Run.id.not_in(
-            select(ContextGrant.run_id).where(ContextGrant.source_type != "conversation")
-        ),
+        ~select(ContextGrant.id)
+        .where(
+            ContextGrant.run_id == Run.id,
+            ContextGrant.purpose == "current_run",
+            ContextGrant.source_type != "conversation",
+        )
+        .exists(),
         tuple_(Run.created_at, Run.id) < (run.created_at, run.id),
     )
     selected: list[ContextTurn] = []
