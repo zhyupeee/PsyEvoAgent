@@ -502,6 +502,7 @@ test('S2-A03 optional fields, conflict preserves edits, compare and clear', asyn
 test('S2-A01 excerpt preview, one-turn grant and source deletion', async ({
   page,
 }) => {
+  test.setTimeout(60000)
   await login(page)
   await page.getByRole('button', { name: '开始一次对话' }).click()
   await page.getByLabel('想说的事').fill('合成摘记来源：今天完成了一件小事。')

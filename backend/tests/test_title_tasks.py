@@ -197,7 +197,9 @@ def test_late_title_never_overwrites_manual_or_deleted_source(
             assert source.title_source == "manual" and source.title == "新的对话"
 
 
-@pytest.mark.parametrize("failure", ["invalid", "missing_usage", "provider_error", "deadline"])
+@pytest.mark.parametrize(
+    "failure", ["invalid", "missing_usage", "provider_error", "deadline", "deadline_before_call"]
+)
 def test_failure_keeps_default_and_never_retries(client: TestClient, failure: str) -> None:
     sid, _, owner = ready(client)
     fake = model("x" * 25 if failure == "invalid" else "工作压力")
@@ -205,17 +207,23 @@ def test_failure_keeps_default_and_never_retries(client: TestClient, failure: st
         fake.outcomes = [AIMessage(content='{"title":"工作压力"}')]
     elif failure == "provider_error":
         fake.outcomes = [RuntimeError("synthetic failure")]
-    elif failure == "deadline":
+    elif failure in {"deadline", "deadline_before_call"}:
         fake.delay = 0.5
         with Session(engine(client)) as db, db.begin():
             task = db.get(TitleTask, sid)
             assert task is not None
-            task.deadline_at = now() + timedelta(seconds=0.1)
+            task.deadline_at = now() + timedelta(seconds=0.1 if failure == "deadline" else -1)
     asyncio.run(titles.execute(engine(client), sid, owner, fake))
     assert session(client, sid)["title"] == "新的对话"
     assert session(client, sid)["title_generation_status"] in {"failed", "cancelled"}
     asyncio.run(titles.execute(engine(client), sid, owner, fake))
-    assert fake.calls == 1
+    if failure == "deadline_before_call":
+        assert fake.calls == 0
+    elif failure == "deadline":
+        # Load can consume the remaining 100ms before dispatch; neither path may retry.
+        assert fake.calls in {0, 1}
+    else:
+        assert fake.calls == 1
 
 
 def test_manual_creation_and_stale_title_revision(client: TestClient) -> None:

@@ -1,0 +1,60 @@
+
+Running 14 tests using 1 worker
+
+  ok  1 tests\records.spec.ts:51:1 › S2-A01 note persists after reopening, filters, edits and confirms deletion (16.9s)
+  ok  2 tests\records.spec.ts:74:1 › S2-A01 failed draft save keeps editor and lost acknowledgement is reconciled (9.9s)
+  ok  3 tests\records.spec.ts:112:1 › S2-A01 dirty navigation needs explicit discard and no localStorage body (8.4s)
+  ok  4 tests\records.spec.ts:134:3 › save reconciliation preserves newer new-note edits and updates the same record (9.6s)
+  ok  5 tests\records.spec.ts:134:3 › save reconciliation preserves newer edit-note edits and updates the same record (10.9s)
+  ok  6 tests\records.spec.ts:134:3 › save reconciliation preserves newer sleep edits and updates the same record (10.6s)
+  ok  7 tests\records.spec.ts:134:3 › save reconciliation preserves newer support-card edits and updates the same record (9.8s)
+  ok  8 tests\records.spec.ts:225:1 › edits made while a successful save response is pending remain unsaved (9.6s)
+  ok  9 tests\records.spec.ts:260:1 › accepted lost send consumes the selected record only once (25.6s)
+  ok 10 tests\records.spec.ts:298:1 › a deleted selected record can be removed after its grant returns 404 (21.1s)
+  ok 11 tests\records.spec.ts:335:1 › reopening deletion waits for a fresh preview and blocks confirmation on preview failure (20.3s)
+  ok 12 tests\records.spec.ts:412:1 › S2-A02 cross-day and unknown times, server data after login on mobile (13.6s)
+  ok 13 tests\records.spec.ts:443:1 › S2-A03 optional fields, conflict preserves edits, compare and clear (16.5s)
+  x  14 tests\records.spec.ts:502:1 › S2-A01 excerpt preview, one-turn grant and source deletion (30.0s)
+
+
+  1) tests\records.spec.ts:502:1 › S2-A01 excerpt preview, one-turn grant and source deletion ──────
+
+    Test timeout of 30000ms exceeded.
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('status')
+    Expected substring: "已完成"
+    Received string:    "正在响应 · 已连接"
+
+    Call log:
+      - Expect "toContainText" getByRole('status') with timeout 20000ms
+      - waiting for getByRole('status')
+        5 × locator resolved to <p role="status" class="mb-2 text-sm text-muted">已接收，等待响应 · </p>
+          - unexpected value "已接收，等待响应 · "
+        2 × locator resolved to <p role="status" class="mb-2 text-sm text-muted">已接收，等待响应 · 已连接</p>
+          - unexpected value "已接收，等待响应 · 已连接"
+        7 × locator resolved to <p role="status" class="mb-2 text-sm text-muted">正在响应 · 已连接</p>
+          - unexpected value "正在响应 · 已连接"
+      - Test timeout of 30000ms exceeded.
+
+
+      530 |   await page.getByRole('button', { name: '发送', exact: true }).click()
+      531 |   expect((await start).postDataJSON().grant_ids).toHaveLength(2)
+    > 532 |   await expect(page.getByRole('status')).toContainText('已完成', {
+          |                                          ^
+      533 |     timeout: 20000,
+      534 |   })
+      535 |   await expect(page.getByText(/本次参考/)).toHaveCount(0)
+        at D:\PsyEvoAgent\frontend\tests\records.spec.ts:532:42
+
+    Error Context: test-results\records-S2-A01-excerpt-pre-71ffa-n-grant-and-source-deletion\error-context.md
+
+  1 failed
+    tests\records.spec.ts:502:1 › S2-A01 excerpt preview, one-turn grant and source deletion ───────
+  13 passed (3.7m)
+[WebServer] INFO:     Started server process [93876]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8194 (Press CTRL+C to quit)

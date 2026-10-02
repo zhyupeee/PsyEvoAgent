@@ -1,0 +1,14 @@
+
+Running 4 tests using 1 worker
+
+  ok 1 tests\memory.spec.ts:43:1 › S2-A04 real page auto-save, correction, reopen and confirmed forgetting (26.1s)
+  ok 2 tests\memory.spec.ts:89:1 › mobile stop filter, errors and no horizontal overflow (14.2s)
+  ok 3 tests\memory.spec.ts:122:1 › failed save preserves edit, conflict requires review and escape retains dirty form (13.3s)
+  ok 4 tests\memory.spec.ts:158:1 › concurrent correction shows latest content and preserves the editor (16.0s)
+
+  4 passed (1.3m)
+[WebServer] INFO:     Started server process [106476]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8194 (Press CTRL+C to quit)

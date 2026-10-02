@@ -1,0 +1,90 @@
+{
+  "step_id": "S2-STEP04.4",
+  "execution_kind": "live",
+  "started": "2026-10-02T03:42:56.644623+00:00",
+  "fixture": "我喜欢在晚饭后散步十分钟。今天我有些紧张。",
+  "fixture_hash": "2e6bd202ff6feb055e9a4a658cc96d39e5e350ae8fc20a9646875b0b08c43d48",
+  "schema": "memory-proposal/1",
+  "versions": {
+    "langmem": "0.0.30",
+    "trustcall": "0.0.39",
+    "langchain-core": "1.6.4",
+    "langchain-openai": "1.6.6",
+    "langgraph": "1.2.12"
+  },
+  "model": "openai/gpt-oss-20b",
+  "provider": "https://runanytime.hxi.me/v1",
+  "expected": "LangMem candidates validated and committed once through PG business transaction",
+  "passed": true,
+  "limitations": [
+    "Synthetic sources only",
+    "Price/retention/region unknown",
+    "No summary/retrieval/clinical validation",
+    "Fault injection receipts are separate"
+  ],
+  "job_id": "8662bbc1-3b78-4f3e-9857-d2ab8607ba18",
+  "source_refs": [
+    {
+      "source_type": "note",
+      "source_id": "62001e89-f6d2-4edc-bf77-60afab004661",
+      "source_version": 1,
+      "purpose": "candidate_extraction",
+      "grant_ref": "cb4657dc-364b-41d7-a8e7-bb845d353935",
+      "grant_version": 1
+    }
+  ],
+  "status": "succeeded",
+  "error_code": null,
+  "budget_ref": "e6941984-af78-48cd-945c-82acb1d7d0fa",
+  "calls": [
+    {
+      "cost": null,
+      "job_id": "8662bbc1-3b78-4f3e-9857-d2ab8607ba18",
+      "status": "settled",
+      "attempt": 1,
+      "currency": "unknown",
+      "generation": 1,
+      "request_id": "c6054ff4-4e45-4e48-b22f-cb71112e5abf",
+      "lease_token": 1,
+      "actual_tokens": 1465,
+      "charged_tokens": 1465,
+      "reserved_tokens": 5424
+    }
+  ],
+  "candidates": [
+    {
+      "id": "d5ad9324-e6d1-4d95-a1b5-5431b4f21673",
+      "memory_id": "77bcf6fc-0c12-4bc4-a23b-1592ac64495d",
+      "content": "我喜欢在晚饭后散步十分钟。",
+      "claim_type": "user_statement",
+      "source_refs": [
+        {
+          "purpose": "candidate_extraction",
+          "grant_ref": "cb4657dc-364b-41d7-a8e7-bb845d353935",
+          "source_id": "62001e89-f6d2-4edc-bf77-60afab004661",
+          "source_type": "note",
+          "grant_version": 1,
+          "source_version": 1
+        }
+      ]
+    },
+    {
+      "id": "e441e081-40e4-401a-b5ce-baf688d6dc43",
+      "memory_id": "2eae6f35-9dd4-4531-89a0-01eb8cab236d",
+      "content": "今天我有些紧张。",
+      "claim_type": "user_feeling",
+      "source_refs": [
+        {
+          "purpose": "candidate_extraction",
+          "grant_ref": "cb4657dc-364b-41d7-a8e7-bb845d353935",
+          "source_id": "62001e89-f6d2-4edc-bf77-60afab004661",
+          "source_type": "note",
+          "grant_version": 1,
+          "source_version": 1
+        }
+      ]
+    }
+  ],
+  "duplicate_job_id": "8662bbc1-3b78-4f3e-9857-d2ab8607ba18",
+  "ended": "2026-10-02T03:43:05.306033+00:00"
+}

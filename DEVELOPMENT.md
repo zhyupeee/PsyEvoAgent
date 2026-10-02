@@ -1,5 +1,26 @@
 # 本地工程开发（S1-STEP02～08内部实验工程交付）
 
+## 阶段2 STEP04记忆提取与管理（2026-10-02）
+
+本步实现与验证边界见[技术合同](PsyEvoAgent项目计划/阶段2/02-技术方案与实施计划.md#s2-step04-implementation)及[执行记录](PsyEvoAgent项目计划/阶段2/evidence/S2-STEP04/README.md)。普通`start-dev.ps1`在真实Support准备完成后设置`PSYEVO_MEMORY_MODE=live`，由原受管Worker同时处理独立PG记忆任务；`-DisableSupport`/`-PrepareOnly`关闭。不会回扫历史记录；仅新保存的有效记录及用户输入同事务入队。
+
+`config.load_settings`读取`PSYEVO_MEMORY_MODE=disabled|fake|live`，默认disabled，启用值须与Support模式一致。fake只允许隔离test库。记忆复用原Provider配置/加密读取，不增加前端凭据；每任务冻结精确来源和模型。单任务最多2次调用、32768总token、每次1024输出token和120秒绝对deadline；重试/恢复保留原预占与未知用量。没有新的实验总预算服务。
+
+```powershell
+# 仓库根目录；纯合成合同/页面/真实PG与进程恢复，不加载真实密钥
+backend/.venv/Scripts/python.exe -X utf8 scripts/check_step03.py --s2-step04 --web-port 3194 --api-port 8194 --tls-port 3494
+# 完整STEP04含显式真实合成提取；仅专用服务端子进程读取忽略的 .env.step08.ps1
+backend/.venv/Scripts/python.exe -X utf8 scripts/check_step03.py --s2-step04-live --web-port 3194 --api-port 8194 --tls-port 3494
+```
+
+live入口拒绝CI和网络隔离模式；前端/build的白名单环境不接收凭据。每次创建并清理独立随机PostgreSQL容器，收据在`.artifacts/psyevo-step07-*`；不操作开发库。`PSYEVO_S2_STEP04_ARTIFACTS`仅供测试输出无秘密的进程恢复与页面证据。手工测试Worker可用`python -m app.worker --memory`，`--once`仅扫描一次；`--probe-pause`只允许test/fake故障注入，普通启动不使用。
+
+浏览器失败后的续验可追加`--reuse-postgres-evidence .artifacts/<前一轮>/receipt.json`：只接受本步已完整通过的PG JUnit/命令记录，逐一比较全部后端文件清单及SHA-256；后端变化或任何PG失败/跳过均拒绝复用。新库仍执行迁移、恢复/记忆专项、后端基础检查、全部浏览器、live和重启核对；收据记录原证据路径/hash及本轮复验，不把先前失败的整轮改成通过。默认命令仍完整执行所有PG测试。
+
+页面入口设置→AI记忆→`/me/memories`。停止/更正/遗忘会阻止相同来源再次提取，遗忘确认保留原记录；失败可通过原删除任务记录重试。LangMem只有候选接口，不接Store；本步未启用聊天长期检索、摘要、画像或后续阶段功能。
+
+2026-10-02 审查修复：增量迁移 `o015_memory_sources` 为记忆保存提取时的底层消息引用 `source_snapshot`，遗忘读取快照，不随摘记后续改链或清理而变化。旧数据仅回填仍匹配提取版本的摘记；已丢失的历史引用无法重建，不用新版引用替代。沿原启动迁移流程升级，不重置数据库。删除回执纳入关联摘记的任务调用；遗忘冲突采用用户核对后的版本，弹窗关闭恢复焦点。独立验证见[审查修复记录](PsyEvoAgent项目计划/阶段2/evidence/S2-STEP04/review-repairs.md)，原始收据保留。
+
 ## 2026-09-30 S2-STEP02 审查修复
 
 发送恢复清除当次记录附件，明确缺失的记录可移除；保存恢复保留后续编辑并继续更新同一记录；删除确认每次重新核对关联摘记。睡眠顺序和跨度按 UTC 瞬时值计算，笔记日期按记录时区筛选。未新增依赖、迁移或配置读取方式。本次实现及独立验证记录见[审查修复](PsyEvoAgent项目计划/阶段2/evidence/S2-STEP02/review-repairs.md)，历史 STEP02 收据保留。

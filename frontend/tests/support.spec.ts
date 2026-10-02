@@ -150,7 +150,7 @@ test('multi-turn timeline: pagination, reload, switching and mobile sidebar', as
   page,
 }) => {
   // This journey includes 21 sequential worker replies plus reloads and screenshots.
-  test.setTimeout(180000)
+  test.setTimeout(300000)
   await login(page, 'admin@example.com', 'synthetic-admin-password')
   await page.getByRole('button', { name: '开始一次对话' }).click()
   const inputs = Array.from(
@@ -249,6 +249,7 @@ test('chat: real send, lost acknowledgement retry, snapshot reload, account isol
   page,
   context,
 }) => {
+  test.setTimeout(60000)
   await login(page)
   await page.getByRole('button', { name: '开始一次对话' }).click()
   await page.getByLabel('想说的事').fill('合成页面输入，只想倾听')

@@ -204,7 +204,12 @@ async def execute(
     with Session(engine) as db, db.begin():
         lock_owner(db, owner)
         task, source = db.get(TitleTask, sid), db.get(Conversation, sid)
-        if task is None or source is None or not valid(db, task, source):
+        if task is None or source is None:
+            return
+        if not valid(db, task, source):
+            # A claimed task can expire before dispatch. Close it without a model call.
+            if source.title_generation_status == "running":
+                source.title_generation_status = "cancelled"
             return
         request_id = str(uuid5(NAMESPACE_URL, "psyevo:title:" + sid))
         if source.title_generation_status != "running" or db.get(ModelCall, request_id) is not None:

@@ -1,5 +1,7 @@
 # PsyEvoAgent
 
+2026-10-02：**S2-STEP04 LangMem提取、校验与自动保存已完成**。记录/用户输入→持久job→原Worker/Provider→LangMem候选→校验自动保存→查看、更正、停止与确认遗忘闭环已实现。210项PG/API/迁移通过，同版后端哈希复核后复用并另跑38项恢复/记忆专项；190项后端、54项浏览器、前端check/build、真实提取/保存、三处记忆Worker强杀及PG重启指纹通过。详见[执行证据](PsyEvoAgent项目计划/阶段2/evidence/S2-STEP04/README.md)。无本步未解决blocker，最早未完成为S2-STEP05；未进入检索、摘要、画像或后续阶段，未操作开发库或发布服务。下方保留历史记录。
+
 2026-09-30：**S2-STEP03 持久job与Worker恢复已完成**。PG领取/续租、有限重试、取消、预算保留与三种真实进程崩溃恢复已验证；180项数据库/API/迁移、190项后端、49项浏览器、前端check/build与真实数据库重启指纹通过，见[本步证据](PsyEvoAgent项目计划/阶段2/evidence/S2-STEP03/README.md)。无本步未解决blocker，最早未完成为S2-STEP04。任务当前仅由隔离合成probe消费，未启用LangMem、正式记忆或新增Agent，普通开发行为不自动增加提取任务。下方保留各次历史记录。
 
 2026-09-30：**S2-STEP02 笔记、睡眠及备忘CRUD已完成**。记录页面、服务端持久化、单次来源带入及确认删除闭环已落地；143项数据库/API/迁移、188项后端、41项浏览器、前端check/build及真实数据库重启核对通过，见[本步证据](PsyEvoAgent项目计划/阶段2/evidence/S2-STEP02/README.md)。最早未完成为S2-STEP03；未实现后台job、LangMem、长期记忆或画像。本次仅使用隔离合成库和受控模型，未修改开发库、调用真实Provider或发布服务。下方保留历史时点。

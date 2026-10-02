@@ -1,0 +1,15 @@
+........................................................................ [ 34%]
+........................................................................ [ 68%]
+..................................................................       [100%]
+============================ slowest 10 durations =============================
+54.92s call     tests/test_jobs.py::test_claim_scans_past_locked_owner_batches[201]
+27.19s call     tests/test_jobs.py::test_claim_scans_past_locked_owner_batches[100]
+14.60s call     tests/test_memory.py::test_real_killed_memory_worker_recovers_once[before_commit]
+13.64s call     tests/test_multiturn.py::test_timeline_pagination_revision_and_scope
+13.10s call     tests/test_email_identity.py::test_email_lifecycle
+12.94s call     tests/test_memory.py::test_real_killed_memory_worker_recovers_once[after_claim]
+12.08s call     tests/test_jobs.py::test_real_killed_worker_recovers_once[before_commit]
+11.52s call     tests/test_jobs.py::test_database_unavailable_is_bounded
+11.27s call     tests/test_runs.py::test_cursor_handshake_expiry_and_snapshot
+10.85s call     tests/test_jobs.py::test_real_killed_worker_recovers_once[after_claim]
+210 passed, 190 deselected in 979.17s (0:16:19)

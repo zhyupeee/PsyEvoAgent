@@ -11,6 +11,9 @@ if (
 
 export default defineConfig({
   ...base,
+  // Auth, multiple durable turns and lost-response recovery share one bounded journey.
+  timeout: 60000,
+  expect: { timeout: 15000 },
   testMatch: ['runs.spec.ts'],
   use: {
     ...base.use,

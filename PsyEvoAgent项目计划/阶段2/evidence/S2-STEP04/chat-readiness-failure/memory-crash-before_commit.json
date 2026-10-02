@@ -1,0 +1,71 @@
+{
+  "case_id": "S2-A10",
+  "execution_kind": "real-postgresql-process-kill/fake-model",
+  "phase": "before_commit",
+  "job_id": "b7caf78d-3a0a-4e25-8980-b4fda7d69fd8",
+  "before": {
+    "id": "b7caf78d-3a0a-4e25-8980-b4fda7d69fd8",
+    "version": 5,
+    "kind": "memory_extraction",
+    "generation": 1,
+    "status": "running",
+    "attempt": 1,
+    "max_attempts": 3,
+    "available_at": "2026-10-02T07:21:57.161007Z",
+    "deadline_at": "2026-10-02T07:23:57.135740Z",
+    "lease_token": 1,
+    "lease_until": "2026-10-02T07:22:06.809096Z",
+    "cancelled_at": null,
+    "error_code": null,
+    "result_ref": null,
+    "budget_ref": "9e5592d7-5c6e-4985-afae-4ffd7c357e2e",
+    "lease_losses": 0
+  },
+  "after": {
+    "id": "b7caf78d-3a0a-4e25-8980-b4fda7d69fd8",
+    "version": 11,
+    "kind": "memory_extraction",
+    "generation": 1,
+    "status": "succeeded",
+    "attempt": 2,
+    "max_attempts": 3,
+    "available_at": "2026-10-02T07:22:08.663409Z",
+    "deadline_at": "2026-10-02T07:23:57.135740Z",
+    "lease_token": 2,
+    "lease_until": null,
+    "cancelled_at": null,
+    "error_code": null,
+    "result_ref": "b7caf78d-3a0a-4e25-8980-b4fda7d69fd8",
+    "budget_ref": "9e5592d7-5c6e-4985-afae-4ffd7c357e2e",
+    "lease_losses": 1
+  },
+  "calls": [
+    {
+      "cost": "0",
+      "job_id": "b7caf78d-3a0a-4e25-8980-b4fda7d69fd8",
+      "status": "reserved",
+      "attempt": 1,
+      "currency": "SYNTHETIC",
+      "generation": 1,
+      "request_id": "b7eaaad3-8e52-47b4-b639-662e5f7b8173",
+      "lease_token": 1,
+      "actual_tokens": null,
+      "charged_tokens": 5342,
+      "reserved_tokens": 5342
+    },
+    {
+      "cost": "0",
+      "job_id": "b7caf78d-3a0a-4e25-8980-b4fda7d69fd8",
+      "status": "settled",
+      "attempt": 2,
+      "currency": "SYNTHETIC",
+      "generation": 1,
+      "request_id": "d213a715-7b58-4016-b20d-21cdd6735fca",
+      "lease_token": 2,
+      "actual_tokens": 20,
+      "charged_tokens": 20,
+      "reserved_tokens": 5342
+    }
+  ],
+  "result_count": 1
+}

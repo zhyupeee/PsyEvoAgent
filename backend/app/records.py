@@ -140,6 +140,8 @@ class CardInput(Input):
 
 
 def source_model(kind: str) -> type[Personal]:
+    if kind == "message":
+        return Message
     if kind == "conversation":
         return Conversation
     model = RECORD_MODELS.get(kind)
@@ -184,6 +186,17 @@ def source_available(db: Session, grant: ContextGrant) -> bool:
         return False
     if isinstance(row, Conversation):
         return row.status in {"active", "archived"}
+    if isinstance(row, Message):
+        from app.runs import execution, sources_available
+
+        run = db.get(Run, row.run_id)
+        return bool(
+            run
+            and not run.deleted_at
+            and not db.scalar(select(RunBranch.id).where(RunBranch.parent_run_id == run.id))
+            and (row.role == "user" or run.status == "completed")
+            and sources_available(db, run, execution(db, run))
+        )
     if isinstance(row, Note):
         return row.status == "saved" and excerpt_messages(db, row) is not None
     return True
@@ -355,6 +368,9 @@ def create_note(body: NoteInput, request: Request, db: DB, auth: Auth) -> dict[s
 
     row = create_once(db, request, auth, Note, body.model_dump(mode="json"), build)
     sync_refs(db, row)
+    from app.memory import auto_enqueue
+
+    auto_enqueue(db, request.app.state.settings, row)
     return dto(db, row)
 
 
@@ -379,6 +395,9 @@ def change_note(
             setattr(row, key, value)
         validate_note(db, row)
         sync_refs(db, row)
+    from app.memory import auto_enqueue
+
+    auto_enqueue(db, request.app.state.settings, row)
     return dto(db, row)
 
 
@@ -449,6 +468,9 @@ def create_sleep(body: SleepInput, request: Request, db: DB, auth: Auth) -> dict
         body.model_dump(mode="json"),
         lambda: SleepRecord(owner_id=auth.owner_id, **body.model_dump()),
     )
+    from app.memory import auto_enqueue
+
+    auto_enqueue(db, request.app.state.settings, row)
     return dto(db, row)
 
 
@@ -475,6 +497,9 @@ def change_sleep(
         bump(row, body.expected_version)
         for key, value in parsed.model_dump().items():
             setattr(row, key, value)
+    from app.memory import auto_enqueue
+
+    auto_enqueue(db, request.app.state.settings, row)
     return dto(db, row)
 
 
@@ -544,6 +569,9 @@ def put_card(body: CardInput, request: Request, db: DB, auth: Auth) -> dict[str,
         for key, value in body.model_dump(exclude={"expected_version"}).items():
             setattr(row, key, value)
     db.flush()
+    from app.memory import auto_enqueue
+
+    auto_enqueue(db, request.app.state.settings, row)
     return dto(db, row)
 
 

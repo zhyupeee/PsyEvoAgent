@@ -21,6 +21,7 @@ import { Route as SupportResourcesRouteImport } from './routes/_support.resource
 import { Route as SupportChatIndexRouteImport } from './routes/_support.chat.index'
 import { Route as SupportChatSessionIdRouteImport } from './routes/_support.chat.$sessionId'
 import { Route as SupportMePrivacyRouteImport } from './routes/_support.me.privacy'
+import { Route as SupportMeMemoriesRouteImport } from './routes/_support.me_.memories'
 import { Route as SupportMeSupportCardRouteImport } from './routes/_support.me_.support-card'
 import { Route as SupportRecordsIndexRouteImport } from './routes/_support.records.index'
 import { Route as SupportRecordsSleepRouteImport } from './routes/_support.records.sleep'
@@ -86,6 +87,11 @@ const SupportMePrivacyRoute = SupportMePrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => SupportMeRoute,
 } as any)
+const SupportMeMemoriesRoute = SupportMeMemoriesRouteImport.update({
+  id: '/me_/memories',
+  path: '/me/memories',
+  getParentRoute: () => SupportRoute,
+} as any)
 const SupportMeSupportCardRoute = SupportMeSupportCardRouteImport.update({
   id: '/me_/support-card',
   path: '/me/support-card',
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/resources': typeof SupportResourcesRouteWithChildren
   '/chat/$sessionId': typeof SupportChatSessionIdRoute
   '/me/privacy': typeof SupportMePrivacyRoute
+  '/me/memories': typeof SupportMeMemoriesRoute
   '/me/support-card': typeof SupportMeSupportCardRoute
   '/records/sleep': typeof SupportRecordsSleepRoute
   '/chat/': typeof SupportChatIndexRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/me': typeof SupportMeRouteWithChildren
   '/chat/$sessionId': typeof SupportChatSessionIdRoute
   '/me/privacy': typeof SupportMePrivacyRoute
+  '/me/memories': typeof SupportMeMemoriesRoute
   '/me/support-card': typeof SupportMeSupportCardRoute
   '/records/sleep': typeof SupportRecordsSleepRoute
   '/chat': typeof SupportChatIndexRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/_support/resources': typeof SupportResourcesRouteWithChildren
   '/_support/chat/$sessionId': typeof SupportChatSessionIdRoute
   '/_support/me/privacy': typeof SupportMePrivacyRoute
+  '/_support/me_/memories': typeof SupportMeMemoriesRoute
   '/_support/me_/support-card': typeof SupportMeSupportCardRoute
   '/_support/records/sleep': typeof SupportRecordsSleepRoute
   '/_support/chat/': typeof SupportChatIndexRoute
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/resources'
     | '/chat/$sessionId'
     | '/me/privacy'
+    | '/me/memories'
     | '/me/support-card'
     | '/records/sleep'
     | '/chat/'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/chat/$sessionId'
     | '/me/privacy'
+    | '/me/memories'
     | '/me/support-card'
     | '/records/sleep'
     | '/chat'
@@ -213,6 +224,7 @@ export interface FileRouteTypes {
     | '/_support/resources'
     | '/_support/chat/$sessionId'
     | '/_support/me/privacy'
+    | '/_support/me_/memories'
     | '/_support/me_/support-card'
     | '/_support/records/sleep'
     | '/_support/chat/'
@@ -315,6 +327,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SupportMePrivacyRouteImport
       parentRoute: typeof SupportMeRoute
     }
+    '/_support/me_/memories': {
+      id: '/_support/me_/memories'
+      path: '/me/memories'
+      fullPath: '/me/memories'
+      preLoaderRoute: typeof SupportMeMemoriesRouteImport
+      parentRoute: typeof SupportRoute
+    }
     '/_support/me_/support-card': {
       id: '/_support/me_/support-card'
       path: '/me/support-card'
@@ -412,6 +431,7 @@ interface SupportRouteChildren {
   SupportMeRoute: typeof SupportMeRouteWithChildren
   SupportRecordsRoute: typeof SupportRecordsRouteWithChildren
   SupportResourcesRoute: typeof SupportResourcesRouteWithChildren
+  SupportMeMemoriesRoute: typeof SupportMeMemoriesRoute
   SupportMeSupportCardRoute: typeof SupportMeSupportCardRoute
 }
 
@@ -420,6 +440,7 @@ const SupportRouteChildren: SupportRouteChildren = {
   SupportMeRoute: SupportMeRouteWithChildren,
   SupportRecordsRoute: SupportRecordsRouteWithChildren,
   SupportResourcesRoute: SupportResourcesRouteWithChildren,
+  SupportMeMemoriesRoute: SupportMeMemoriesRoute,
   SupportMeSupportCardRoute: SupportMeSupportCardRoute,
 }
 

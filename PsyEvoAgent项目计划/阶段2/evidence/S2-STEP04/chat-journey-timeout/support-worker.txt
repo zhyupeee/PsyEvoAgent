@@ -1,0 +1,1 @@
+worker.started consumers=2 mode=fake

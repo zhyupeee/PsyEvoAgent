@@ -18,7 +18,7 @@ import pytest
 from fastapi.testclient import TestClient
 from langchain_core.messages import AIMessage
 from pydantic import SecretStr
-from sqlalchemy import func, inspect, select, text
+from sqlalchemy import func, select, text
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session
 
@@ -142,7 +142,11 @@ def test_enqueue_atomic_dedupe_owner_and_purpose(
             )
             == 1
         )
-        assert "memories" not in inspect(engine(client)).get_table_names()
+        from app.memory_models import Memory
+
+        assert (
+            db.scalar(select(func.count()).select_from(Memory).where(Memory.owner_id == owner)) == 0
+        )
 
 
 def test_concurrent_claim_and_fencing(
@@ -492,7 +496,17 @@ def test_probe_validates_schema_and_reads_real_source(
     asyncio.run(job_worker.execute(engine(client), claim(client, jid), model=adapter))
     assert state(client, jid)["error_code"] == "schema"
     assert "synthetic private note" in str(adapter.captures)
-    assert "memory_candidates" not in inspect(engine(client)).get_table_names()
+    from app.memory_models import MemoryCandidate
+
+    with Session(engine(client)) as db:
+        assert (
+            db.scalar(
+                select(func.count())
+                .select_from(MemoryCandidate)
+                .where(MemoryCandidate.job_id == jid)
+            )
+            == 0
+        )
 
 
 @pytest.mark.parametrize("revoke", [False, True])

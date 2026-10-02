@@ -7,6 +7,7 @@ export default defineConfig({
     'account-recovery.spec.ts',
     'feedback-ui.spec.ts',
     'chat-regressions.spec.ts',
+    'memory-recovery.spec.ts',
   ],
   fullyParallel: false,
   workers: 1,

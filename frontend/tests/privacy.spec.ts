@@ -221,13 +221,15 @@ test('brand and browser icon resources on all entry pages', async ({
     await expect(
       page.getByRole('link', { name: 'PsyEvoAgent 首页' }),
     ).toBeVisible()
-    expect(
-      await page
-        .locator('img[src="/brand/logo.png"]')
-        .evaluate(
-          (node: HTMLImageElement) => node.complete && node.naturalWidth > 0,
-        ),
-    ).toBe(true)
+    await expect
+      .poll(() =>
+        page
+          .locator('img[src="/brand/logo.png"]')
+          .evaluate(
+            (node: HTMLImageElement) => node.complete && node.naturalWidth > 0,
+          ),
+      )
+      .toBe(true)
     await expect(
       page.locator('link[rel="icon"][href="/favicon.ico"]'),
     ).toHaveCount(1)

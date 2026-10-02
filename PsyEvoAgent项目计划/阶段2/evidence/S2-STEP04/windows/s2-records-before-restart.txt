@@ -1,0 +1,30 @@
+{
+  "phase": "before",
+  "passed": true,
+  "tables": {
+    "notes": {
+      "count": 9,
+      "sha256": "62beb9d6bb5ad8c20b229fdf094b3a3a91828104c4ddf51dea17e799b7fe8b0c"
+    },
+    "sleep_records": {
+      "count": 2,
+      "sha256": "2dd53dfca8463467b39072b963360fd756d3d0f6caf40fb416e7a9893d48a6d1"
+    },
+    "support_cards": {
+      "count": 1,
+      "sha256": "781cb242168b5fcd22ac9039b4a37135d49ceda70356ba2278ded10889e482bf"
+    },
+    "note_sources": {
+      "count": 2,
+      "sha256": "f36ca94eb84cbfd25288ac2e42ab45af4320d3d91b1754159b2489b80b18760a"
+    },
+    "context_grants": {
+      "count": 9,
+      "sha256": "27c63bbbbd9cb59be793b899d5d14a7c3872f53787a9aea7700467d38cc5afa6"
+    },
+    "deletion_jobs": {
+      "count": 3,
+      "sha256": "9323fb8c0b830a8cbf4294671daaedbe4a235086051a484117d0bf6eb7e834dc"
+    }
+  }
+}

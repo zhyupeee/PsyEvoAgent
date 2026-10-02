@@ -406,6 +406,9 @@ def start_run(
     )
     run.updated_at = now()
     db.flush()
+    from app.memory import auto_enqueue
+
+    auto_enqueue(db, settings, original)
     try:
         with db.begin_nested():
             db.add(

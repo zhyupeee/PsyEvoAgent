@@ -1,0 +1,15 @@
+
+Running 5 tests using 1 worker
+
+  ok 1 tests\history.spec.ts:83:1 › optional feedback: failure, empty reason, lost acknowledgement and real receipt (11.3s)
+  ok 2 tests\history.spec.ts:128:1 › rename search archive restore, revision and regenerate preserve separate history (15.1s)
+  ok 3 tests\history.spec.ts:207:1 › ordinary changes refresh the affected tab and preserve unrelated unsent forms (16.0s)
+  ok 4 tests\history.spec.ts:290:1 › sidebar deletion preserves the page and unrelated conversation draft (5.7s)
+  ok 5 tests\history.spec.ts:333:1 › confirmed deletion clears two tabs, retries lost response, survives logout and back (18.1s)
+
+  5 passed (1.4m)
+[WebServer] INFO:     Started server process [136112]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8204 (Press CTRL+C to quit)

@@ -13,6 +13,7 @@ import socket
 import subprocess
 import sys
 import time
+import xml.etree.ElementTree as ET
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
@@ -29,7 +30,16 @@ parser.add_argument("--s2-step02", action="store_true", help="Verify records CRU
 parser.add_argument("--s2-step03", action="store_true", help="Verify durable jobs, leases and real Worker crash recovery")
 parser.add_argument("--step08-live", action="store_true", help="Explicit live integration after fake regression")
 parser.add_argument("--multiturn-live", action="store_true", help="Two synthetic live context turns instead of historical STEP08 live journey")
+parser.add_argument("--s2-step04", action="store_true", help="Verify canonical memory extraction and management")
+parser.add_argument("--s2-step04-live", action="store_true", help="Also explicitly verify live synthetic memory extraction")
+parser.add_argument("--reuse-postgres-evidence", type=Path, help="STEP04 only: verify unchanged backend hashes and reuse completed PostgreSQL checks after a browser failure")
 args = parser.parse_args()
+if args.s2_step04_live:
+    if os.environ.get("CI") or os.environ.get("PSYEVO_CHECK_NETWORK"):
+        parser.error("Live memory acceptance is separate from PR/network isolation")
+    args.s2_step04 = True
+if args.s2_step04:
+    args.s2_step03 = True
 if args.s2_step03:
     args.s2_step02 = True
 if args.s2_step02:
@@ -140,14 +150,20 @@ if args.s2_step03:
     RECEIPT["limitations"] = ["Actual PostgreSQL/process-kill recovery with a synthetic probe; no real LangMem or memory writes", "STEP04 extraction and later consumers remain unimplemented", "No live Provider/SMTP, development DB access or publication", "Windows language egress guards are not kernel isolation"]
     ENV["PSYEVO_S2_STEP03_ARTIFACTS"] = str(RUN)
 
+if args.s2_step04:
+    RECEIPT["step_id"] = "S2-STEP04"
+    RECEIPT["acceptance_ids"] = ["S2-A04", "S2-A09", "S2-A10", "S2-A11 (memory scope)", "RSI-S2-A01", "RSI-S2-A04 (memory scope)"]
+    RECEIPT["limitations"] = ["Only extraction/save/manage; no STEP05 retrieval or summaries", "Fault injections separate from live observations", "No clinical validation or publication", "Windows guards are not kernel isolation"]
+    ENV["PSYEVO_S2_STEP04_ARTIFACTS"] = str(RUN)
 
-def run(label: str, args: list[str], cwd: Path = ROOT, timeout: int = 240) -> str:
+
+def run(label: str, args: list[str], cwd: Path = ROOT, timeout: int = 240, env: dict[str, str] | None = None) -> str:
     print(label, flush=True)
     try:
         result = subprocess.run(
             args,
             cwd=cwd,
-            env=ENV,
+            env=ENV if env is None else env,
             capture_output=True,
             text=True,
             encoding="utf-8",
@@ -170,6 +186,41 @@ def run(label: str, args: list[str], cwd: Path = ROOT, timeout: int = 240) -> st
         raise RuntimeError(f"{label} failed")
     return output
 
+
+prior_postgres = None
+if args.reuse_postgres_evidence:
+    if not args.s2_step04:
+        parser.error("PostgreSQL evidence reuse is only supported for S2-STEP04")
+    prior_path = args.reuse_postgres_evidence.resolve()
+    if not prior_path.is_relative_to(ROOT / ".artifacts"):
+        parser.error("Evidence must be a local isolated gate receipt")
+    prior_postgres = json.loads(prior_path.read_text(encoding="utf-8"))
+    if prior_postgres.get("step_id") != "S2-STEP04" or not any(
+        c["label"] == "api-migrations" and c["exit_code"] == 0
+        for c in prior_postgres["commands"]
+    ):
+        parser.error("Prior PostgreSQL checks did not complete successfully")
+    current_backend = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "backend"],
+        cwd=ROOT, capture_output=True, text=True, encoding="utf-8", check=True,
+    ).stdout.splitlines()
+    backend_hashes = {
+        p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest()
+        for p in current_backend if (ROOT / p).is_file()
+    }
+    if backend_hashes != {p: h for p, h in prior_postgres["source_sha256"].items() if p.startswith("backend/")}:
+        parser.error("Backend sources changed; rerun the full PostgreSQL group")
+    prior_xml = prior_path.parent / "postgres-tests.xml"
+    suite = ET.parse(prior_xml).getroot()
+    if list(suite.iter("failure")) or list(suite.iter("error")) or list(suite.iter("skipped")) or not list(suite.iter("testcase")):
+        parser.error("Prior PostgreSQL JUnit is incomplete or unsuccessful")
+    RECEIPT["reused_postgres_evidence"] = {
+        "receipt": str(prior_path.relative_to(ROOT)),
+        "receipt_sha256": hashlib.sha256(prior_path.read_bytes()).hexdigest(),
+        "junit_sha256": hashlib.sha256(prior_xml.read_bytes()).hexdigest(),
+        "backend_files_verified": len(backend_hashes),
+        "tests": len(list(suite.iter("testcase"))),
+    }
 
 created = False
 try:
@@ -241,20 +292,33 @@ try:
     run("types", [sys.executable, "-m", "mypy"], BACKEND)
     run("migration", [sys.executable, "-m", "alembic", "upgrade", "head"], BACKEND)
     run("schema-drift", [sys.executable, "-m", "alembic", "check"], BACKEND)
-    run(
-        "api-migrations",
-        [
-            sys.executable,
-            "-m",
-            "pytest",
-            "-m",
-            "postgres",
-            "--durations=10",
-            "--junitxml=" + str(RUN / "postgres-tests.xml"),
-        ],
-        BACKEND,
-        timeout=480 if args.s2_step03 else 240,
-    )
+    if prior_postgres is not None:
+        shutil.copy2(prior_xml, RUN / "postgres-tests.xml")
+        shutil.copy2(prior_path.parent / "api-migrations.txt", RUN / "api-migrations.txt")
+        commands.append({"label": "api-migrations", "exit_code": 0, "log": "api-migrations.txt", "reused_from": str(prior_path.relative_to(ROOT))})
+        # Rebuild real recovery/derivative facts in this fresh database for restart checks.
+        run("postgres-recovery-recheck", [sys.executable, "-m", "pytest", "-m", "postgres",
+            "tests/test_memory.py", "tests/test_jobs.py", "-k",
+            "memory or real_killed_worker or retry_classification or invalidation_blocks",
+            "--junitxml=" + str(RUN / "postgres-recovery-recheck.xml")], BACKEND, timeout=600)
+    else:
+        run(
+            "api-migrations",
+            [
+                sys.executable,
+                "-m",
+                "pytest",
+                "-m",
+                "postgres",
+                "--durations=10",
+                "--maxfail=1",
+                "-o",
+                "faulthandler_timeout=60",
+                "--junitxml=" + str(RUN / "postgres-tests.xml"),
+            ],
+            BACKEND,
+            timeout=1800 if args.s2_step04 else 480 if args.s2_step03 else 240,
+        )
     run("foundation", [sys.executable, "-m", "pytest"], BACKEND)
     seed = """
 from sqlalchemy.orm import Session
@@ -301,12 +365,12 @@ engine.dispose()
             worker = subprocess.Popen([sys.executable, "-m", "app.worker", "--support"], cwd=BACKEND, env=ENV, stdout=worker_log, stderr=subprocess.STDOUT)
             try:
                 if args.s2_step02:
-                    run("s2-step02-browser", [PNPM, "exec", "playwright", "test", "--config", "playwright.records.config.ts"], ROOT / "frontend")
+                    run("s2-step02-browser", [PNPM, "exec", "playwright", "test", "--config", "playwright.records.config.ts"], ROOT / "frontend", timeout=480)
                 run("step05-gateway", [PNPM, "exec", "playwright", "test", "--config", "playwright.step05.config.ts"], ROOT / "frontend")
                 if args.step06:
-                    run("step06-browser", [PNPM, "exec", "playwright", "test", "--config", "playwright.step06.config.ts"], ROOT / "frontend")
+                    run("step06-browser", [PNPM, "exec", "playwright", "test", "--config", "playwright.step06.config.ts"], ROOT / "frontend", timeout=720)
                 if args.step07:
-                    run("step07-browser", [PNPM, "exec", "playwright", "test", "--config", "playwright.step07.config.ts"], ROOT / "frontend")
+                    run("step07-browser", [PNPM, "exec", "playwright", "test", "--config", "playwright.step07.config.ts"], ROOT / "frontend", timeout=600)
                 if worker.poll() is not None:
                     raise RuntimeError("Support worker exited before gateway acceptance completed")
             finally:
@@ -314,6 +378,23 @@ engine.dispose()
                 worker.wait(timeout=15)
         if args.step07:
             run("model-settings-browser", [sys.executable, "scripts/check_model_settings.py"], timeout=240)
+    if args.s2_step04:
+        run("seed-s2-memory", [sys.executable, "-c", seed.replace("admin@example.com", "s2-memory-browser@example.com").replace("synthetic-admin-password", "synthetic-browser-password").replace("browser-b@example.com", "s2-memory-other@example.com")], BACKEND)
+        ENV["PSYEVO_MEMORY_MODE"] = "fake"
+        with (RUN / "memory-worker.txt").open("w", encoding="utf-8") as memory_log:
+            worker = subprocess.Popen([sys.executable, "-m", "app.worker", "--memory"], cwd=BACKEND, env=ENV, stdout=memory_log, stderr=subprocess.STDOUT)
+            try:
+                run("s2-step04-browser", [PNPM, "exec", "playwright", "test", "--config", "playwright.memory.config.ts"], ROOT / "frontend")
+            finally:
+                worker.terminate()
+                worker.wait(timeout=15)
+        ENV.pop("PSYEVO_MEMORY_MODE")
+        if args.s2_step04_live:
+            live_env = dict(ENV)
+            for name in ("PSYEVO_CHECK_NETWORK", "PYTHONPATH", "NODE_OPTIONS"):
+                live_env.pop(name, None)
+            live_env.update(PSYEVO_OUTPUT_TOKEN_OVERRIDE="1024")
+            run("s2-step04-live", [sys.executable, "-m", "app.memory_probe", "--config-file", str(ROOT / ".env.step08.ps1"), "--receipt", str(RUN / "memory-live.json")], BACKEND, env=live_env)
     if args.step08_live:
         run("seed-step08", [sys.executable, "-c", seed.replace("admin@example.com", "step08-live@example.com").replace("synthetic-admin-password", "synthetic-browser-password").replace("browser-b@example.com", "step08-other@example.com")], BACKEND)
         # Only API/Worker receive credentials. Browser/build/test environments remain scrubbed.
@@ -340,6 +421,8 @@ engine.dispose()
         run("s2-records-before-restart", [sys.executable, "-m", "tests.records_receipt", "before", str(RUN / "records-restart.json")], BACKEND)
     if args.s2_step03:
         run("s2-jobs-before-restart", [sys.executable, "-m", "tests.jobs_receipt", "before", str(RUN / "jobs-restart.json")], BACKEND)
+    if args.s2_step04:
+        run("memory-before-restart", [sys.executable, "-m", "tests.memory_receipt", "before", str(RUN / "memory-restart.json")], BACKEND)
     run("database-restart", ["docker", "restart", NAME])
     # Docker may assign a new published port after restart when HostPort was random.
     port = (
@@ -366,6 +449,8 @@ engine.dispose()
         run("s2-records-after-restart", [sys.executable, "-m", "tests.records_receipt", "after", str(RUN / "records-restart.json")], BACKEND)
     if args.s2_step03:
         run("s2-jobs-after-restart", [sys.executable, "-m", "tests.jobs_receipt", "after", str(RUN / "jobs-restart.json")], BACKEND)
+    if args.s2_step04:
+        run("memory-after-restart", [sys.executable, "-m", "tests.memory_receipt", "after", str(RUN / "memory-restart.json")], BACKEND)
     persisted = """
 from sqlalchemy import select
 from sqlalchemy.orm import Session

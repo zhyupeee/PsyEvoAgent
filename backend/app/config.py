@@ -24,6 +24,7 @@ class Settings(BaseModel):
     smtp_tls_mode: Literal["starttls", "ssl"] | None = None
     email_code_key: SecretStr | None = None
     support_mode: Literal["disabled", "fake", "live"] = "disabled"
+    memory_mode: Literal["disabled", "fake", "live"] = "disabled"
     # STEP08 internal PoC only; this does not enable the API or Worker.
     live_probe_enabled: bool = False
     provider_base_url: str = "https://ai.hybgzs.com/v1"
@@ -115,6 +116,10 @@ class Settings(BaseModel):
 
     @model_validator(mode="after")
     def isolated_test_database(self) -> "Settings":
+        if self.memory_mode != "disabled" and (
+            self.database_url is None or self.memory_mode != self.support_mode
+        ):
+            raise ValueError("Memory requires the matching explicitly configured Support mode")
         if self.environment == "test" and self.provider_max_output_tokens > 1024:
             raise ValueError("Synthetic acceptance retains its 1024 output token limit")
         if self.support_mode == "live" and (
@@ -146,6 +151,7 @@ def load_settings(environ: Mapping[str, str] | None = None) -> Settings:
         {
             "environment": source.get("PSYEVO_ENV", "development"),
             "support_mode": source.get("PSYEVO_SUPPORT_MODE", "disabled"),
+            "memory_mode": source.get("PSYEVO_MEMORY_MODE", "disabled"),
             "live_probe_enabled": source.get("PSYEVO_LIVE_PROBE_ENABLED", "false"),
             "provider_base_url": source.get("PSYEVO_PROVIDER_BASE_URL", "https://ai.hybgzs.com/v1"),
             "provider_model": source.get("PSYEVO_PROVIDER_MODEL", "grok-4.7"),

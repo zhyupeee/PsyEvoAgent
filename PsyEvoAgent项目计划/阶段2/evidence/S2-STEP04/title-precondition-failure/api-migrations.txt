@@ -1,0 +1,147 @@
+........................................................................ [ 34%]
+........................................................................ [ 68%]
+............................................................F
+================================== FAILURES ===================================
+___________ test_failure_keeps_default_and_never_retries[deadline] ____________
+
+client = <starlette.testclient.TestClient object at 0x000001E825E28C20>
+failure = 'deadline'
+
+    @pytest.mark.parametrize(
+        "failure", ["invalid", "missing_usage", "provider_error", "deadline", "deadline_before_call"]
+    )
+    def test_failure_keeps_default_and_never_retries(client: TestClient, failure: str) -> None:
+        sid, _, owner = ready(client)
+        fake = model("x" * 25 if failure == "invalid" else "工作压力")
+        if failure == "missing_usage":
+            fake.outcomes = [AIMessage(content='{"title":"工作压力"}')]
+        elif failure == "provider_error":
+            fake.outcomes = [RuntimeError("synthetic failure")]
+        elif failure in {"deadline", "deadline_before_call"}:
+            fake.delay = 0.5
+            with Session(engine(client)) as db, db.begin():
+                task = db.get(TitleTask, sid)
+                assert task is not None
+                task.deadline_at = now() + timedelta(seconds=0.1 if failure == "deadline" else -1)
+>       asyncio.run(titles.execute(engine(client), sid, owner, fake))
+E       AssertionError: assert 'running' in {'cancelled', 'failed'}
+
+tests\test_title_tasks.py:216: AssertionError
+============================ slowest 10 durations =============================
+59.34s call     tests/test_jobs.py::test_claim_scans_past_locked_owner_batches[201]
+33.06s call     tests/test_jobs.py::test_claim_scans_past_locked_owner_batches[100]
+19.26s call     tests/test_jobs.py::test_real_killed_worker_recovers_once[before_commit]
+14.05s call     tests/test_memory.py::test_real_killed_memory_worker_recovers_once[before_commit]
+12.95s call     tests/test_step03.py::test_identity_purpose_versions_and_storage
+12.78s call     tests/test_history.py::test_revision_regeneration_branch_context_and_idempotency
+12.77s call     tests/test_jobs.py::test_real_killed_worker_recovers_once[after_claim]
+12.58s call     tests/test_history.py::test_delete_source_cleans_derived_regenerated_runs
+12.23s call     tests/test_memory.py::test_real_killed_memory_worker_recovers_once[after_claim]
+12.18s call     tests/test_email_identity.py::test_email_lifecycle
+=========================== short test summary info ===========================
+FAILED tests/test_title_tasks.py::test_failure_keeps_default_and_never_retries[deadline]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 204 passed, 190 deselected in 1018.62s (0:16:58)
+Timeout (0:01:00)!
+Thread 0x0001af08 (most recent call first):
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\threading.py", line 355 in wait
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\queue.py", line 171 in get
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1089 in run
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x000178b4 (most recent call first):
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\threading.py", line 355 in wait
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\queue.py", line 171 in get
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1089 in run
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x0001bdc4 (most recent call first):
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\windows_events.py", line 774 in _poll
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\windows_events.py", line 445 in select
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\base_events.py", line 1961 in _run_once
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\base_events.py", line 645 in run_forever
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\windows_events.py", line 322 in run_forever
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\base_events.py", line 678 in run_until_complete
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\runners.py", line 118 in run
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2548 in run
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\anyio\_core\_eventloop.py", line 83 in run
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\anyio\from_thread.py", line 538 in run_blocking_portal
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\threading.py", line 1012 in run
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00017728 (most recent call first):
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\windows_events.py", line 774 in _poll
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\windows_events.py", line 445 in select
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\base_events.py", line 1961 in _run_once
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\base_events.py", line 645 in run_forever
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\windows_events.py", line 322 in run_forever
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\base_events.py", line 678 in run_until_complete
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\asyncio\runners.py", line 118 in run
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2548 in run
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\anyio\_core\_eventloop.py", line 83 in run
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\anyio\from_thread.py", line 538 in run_blocking_portal
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\threading.py", line 1012 in run
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\xuand\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x0001a024 (most recent call first):
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\psycopg\_pipeline_base.py", line 112 in _communicate_gen
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\psycopg\_cursor_base.py", line 239 in _executemany_gen_pipeline
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\psycopg\waiting.py", line 363 in wait_select
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\psycopg\connection.py", line 495 in wait
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\psycopg\cursor.py", line 138 in executemany
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 949 in do_executemany
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1938 in _exec_single_context
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1848 in _execute_context
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1643 in _execute_clauseelement
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 526 in _execute_on_connection
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1421 in execute
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 913 in _emit_update_statements
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 86 in save_obj
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 641 in execute
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 465 in execute
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4449 in _flush
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4353 in flush
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1290 in _prepare_impl
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137 in _go
+  File "<string>", line 2 in _prepare_impl
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1316 in commit
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137 in _go
+  File "<string>", line 2 in commit
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\sqlalchemy\engine\util.py", line 145 in __exit__
+  File "D:\PsyEvoAgent\backend\tests\test_jobs.py", line 230 in test_claim_scans_past_locked_owner_batches
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\_pytest\python.py", line 167 in pytest_pyfunc_call
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\_pytest\python.py", line 1707 in runtest
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\_pytest\runner.py", line 184 in pytest_runtest_call
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\_pytest\runner.py", line 250 in <lambda>
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\_pytest\runner.py", line 361 in from_call
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\_pytest\runner.py", line 249 in call_and_report
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\_pytest\runner.py", line 139 in runtestprotocol
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\_pytest\runner.py", line 118 in pytest_runtest_protocol
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\_pytest\main.py", line 408 in pytest_runtestloop
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\_pytest\main.py", line 384 in _main
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\_pytest\main.py", line 330 in wrap_session
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\_pytest\main.py", line 377 in pytest_cmdline_main
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\_pytest\config\__init__.py", line 229 in _main
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\_pytest\config\__init__.py", line 253 in _console_main
+  File "D:\PsyEvoAgent\backend\.venv\Lib\site-packages\pytest\__main__.py", line 9 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main

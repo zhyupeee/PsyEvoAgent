@@ -1,0 +1,38 @@
+
+Running 1 test using 1 worker
+
+  x  1 tests\https.spec.ts:4:1 › configured HTTPS origin, secure cookie, icons and rejected alternate origin (15.0s)
+
+
+  1) tests\https.spec.ts:4:1 › configured HTTPS origin, secure cookie, icons and rejected alternate origin 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: '对话', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: '对话', exact: true }) with timeout 5000ms
+      - waiting for getByRole('heading', { name: '对话', exact: true })
+
+
+      14 |   await expect(
+      15 |     page.getByRole('heading', { name: '对话', exact: true }),
+    > 16 |   ).toBeVisible()
+         |     ^
+      17 |   expect(page.url()).toMatch(/^https:/)
+      18 |   expect(
+      19 |     (await context.cookies()).find((c) => c.name === 'psyevo_session')?.secure,
+        at D:\PsyEvoAgent\frontend\tests\https.spec.ts:16:5
+
+    Error Context: test-results\https-configured-HTTPS-ori-3613d-d-rejected-alternate-origin\error-context.md
+
+  1 failed
+    tests\https.spec.ts:4:1 › configured HTTPS origin, secure cookie, icons and rejected alternate origin 
+[WebServer] INFO:     Started server process [105788]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8194 (Press CTRL+C to quit)

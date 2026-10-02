@@ -1,5 +1,6 @@
 from alembic import context
 
+from app import memory_models  # noqa: F401
 from app.config import load_settings
 from app.database import make_engine
 from app.models import Base

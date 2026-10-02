@@ -1,0 +1,5 @@
+app\memory.py:222: error: Incompatible types in assignment (expression has type "list[dict[str, str | int]]", target has type "str | int")  [assignment]
+app\memory.py:303: error: Incompatible types in assignment (expression has type "list[dict[str, str | int]]", variable has type "str | int | None")  [assignment]
+app\memory.py:309: error: Argument 1 to "extend" of "list" has incompatible type "str | int | None"; expected "Iterable[dict[str, str | int]]"  [arg-type]
+tests\test_memory.py:347: error: Module "tests.test_runs" does not explicitly export attribute "execute_one"  [attr-defined]
+Found 4 errors in 2 files (checked 82 source files)

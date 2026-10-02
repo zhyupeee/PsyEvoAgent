@@ -1,0 +1,26 @@
+{
+  "step_id": "S2-STEP04",
+  "passed": true,
+  "run": "psyevo-step07-a97226260cc8",
+  "postgres_tests": 210,
+  "failures": 0,
+  "source_files_verified": 217,
+  "source_hash_mismatches": [],
+  "reused_postgres_evidence": {
+    "receipt": ".artifacts\\psyevo-step07-a2c990dd030b\\receipt.json",
+    "receipt_sha256": "66561c80085f871893b8dffdb60b2ccfe79e660ed794d021f920388af0b02cca",
+    "junit_sha256": "0707a06fbdf1da414b3b11997dbc07c163365ec15cbd2459603ebbccfea885c9",
+    "backend_files_verified": 102,
+    "tests": 210
+  },
+  "live_passed": true,
+  "live_calls": 1,
+  "live_candidates": 2,
+  "limits": [
+    "No STEP05 summaries/retrieval",
+    "No profiles or followups",
+    "No clinical or public-chunk validation",
+    "No development database migration or publication",
+    "No WSL kernel gate in this step"
+  ]
+}
