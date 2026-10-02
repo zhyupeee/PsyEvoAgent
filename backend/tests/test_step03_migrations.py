@@ -331,6 +331,10 @@ def test_empty_upgrade_is_repeatable(migration_url: str) -> None:
             "note_sources",
             "sleep_records",
             "support_cards",
+            "memories",
+            "memory_candidates",
+            "memory_suppressions",
+            "artifact_sources",
             "alembic_version",
             "users",
             "email_codes",
@@ -505,7 +509,7 @@ def test_no_expiry_migration_preserves_records_and_refuses_lossy_downgrade(
         with engine.connect() as connection:
             assert (
                 connection.scalar(text("SELECT version_num FROM alembic_version"))
-                == "m013_background_jobs"
+                == "o015_memory_sources"
             )
         command.check(config)
     finally:

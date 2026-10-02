@@ -211,6 +211,9 @@ export function SettingsPage({
         <Link to="/me/support-card" className="btn mt-3">
           支持备忘卡
         </Link>
+        <Link to="/me/memories" className="btn mt-3 ml-2">
+          AI 记忆
+        </Link>
       </header>
       <nav
         className="resource-tabs mb-6 flex flex-wrap gap-x-6 gap-y-1 border-b border-line"

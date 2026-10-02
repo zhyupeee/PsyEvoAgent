@@ -1,0 +1,3 @@
+Artifacts: D:\PsyEvoAgent\.artifacts\model-settings-check-ccc53ab44b90
+Browser checks passed; managed API and Worker both stopped cleanly.
+dev.replace stopping previous server pid=109584

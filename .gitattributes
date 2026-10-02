@@ -7,3 +7,6 @@
 *.yaml text eol=lf
 *.lock text eol=lf
 *.md text eol=lf
+
+# Preserve raw evidence logs; only exempt their trailing spaces from diff checks.
+PsyEvoAgent项目计划/**/evidence/**/*.txt whitespace=-blank-at-eol

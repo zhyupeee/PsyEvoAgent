@@ -1,0 +1,24 @@
+
+Running 14 tests using 1 worker
+
+  ok  1 tests\records.spec.ts:51:1 › S2-A01 note persists after reopening, filters, edits and confirms deletion (18.5s)
+  ok  2 tests\records.spec.ts:74:1 › S2-A01 failed draft save keeps editor and lost acknowledgement is reconciled (12.2s)
+  ok  3 tests\records.spec.ts:112:1 › S2-A01 dirty navigation needs explicit discard and no localStorage body (10.0s)
+  ok  4 tests\records.spec.ts:134:3 › save reconciliation preserves newer new-note edits and updates the same record (11.5s)
+  ok  5 tests\records.spec.ts:134:3 › save reconciliation preserves newer edit-note edits and updates the same record (12.7s)
+  ok  6 tests\records.spec.ts:134:3 › save reconciliation preserves newer sleep edits and updates the same record (11.1s)
+  ok  7 tests\records.spec.ts:134:3 › save reconciliation preserves newer support-card edits and updates the same record (11.0s)
+  ok  8 tests\records.spec.ts:225:1 › edits made while a successful save response is pending remain unsaved (11.9s)
+  ok  9 tests\records.spec.ts:260:1 › accepted lost send consumes the selected record only once (33.8s)
+  ok 10 tests\records.spec.ts:298:1 › a deleted selected record can be removed after its grant returns 404 (24.9s)
+  ok 11 tests\records.spec.ts:335:1 › reopening deletion waits for a fresh preview and blocks confirmation on preview failure (22.6s)
+  ok 12 tests\records.spec.ts:412:1 › S2-A02 cross-day and unknown times, server data after login on mobile (16.6s)
+  ok 13 tests\records.spec.ts:443:1 › S2-A03 optional fields, conflict preserves edits, compare and clear (18.3s)
+  ok 14 tests\records.spec.ts:502:1 › S2-A01 excerpt preview, one-turn grant and source deletion (47.7s)
+
+  14 passed (4.5m)
+[WebServer] INFO:     Started server process [116084]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8194 (Press CTRL+C to quit)

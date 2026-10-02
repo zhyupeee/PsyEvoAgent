@@ -1,0 +1,48 @@
+
+Running 17 tests using 1 worker
+
+  ok  1 tests\chat-regressions.spec.ts:60:1 › a competing tab start restores the active run stop control after draft rejection (5.4s)
+  ok  2 tests\chat-regressions.spec.ts:95:3 › sidebar deletion stays blocked after a lost response and dialog dismissal (4.2s)
+  ok  3 tests\chat-regressions.spec.ts:95:3 › management deletion stays blocked after a lost response and dialog dismissal (4.3s)
+  ok  4 tests\chat-regressions.spec.ts:170:1 › short viewport keeps an expanded composer send button reachable at both font sizes (7.8s)
+  ok  5 tests\chat-regressions.spec.ts:204:1 › revision disclosure supports keyboard, retained draft and focus return (3.9s)
+  ok  6 tests\chat-regressions.spec.ts:227:1 › fallback scrolling preserves the timeline pagination anchor (8.0s)
+  ok  7 tests\feedback-ui.spec.ts:3:1 › feedback components support keyboard, drafts, cancellation and idempotent retry (5.1s)
+  ok  8 tests\support.spec.ts:41:1 › support navigation preserves the shell without flashing the identity check (11.3s)
+  ok  9 tests\support.spec.ts:127:1 › direct resource access still requires identity and recovers from identity errors (13.9s)
+  x  10 tests\support.spec.ts:149:1 › multi-turn timeline: pagination, reload, switching and mobile sidebar (3.8m)
+  ok 11 tests\support.spec.ts:248:1 › chat: real send, lost acknowledgement retry, snapshot reload, account isolation (42.8s)
+  ok 12 tests\support.spec.ts:314:1 › unaccepted send reports its unchanged state and retries the original message (23.2s)
+  ok 13 tests\support.spec.ts:341:1 › confirmed lost start clears pending send and preserves a revised next message (31.4s)
+  ok 14 tests\support.spec.ts:379:1 › stop reflects backend terminal even when completion wins; stream loss recovers without send (23.3s)
+  ok 15 tests\support.spec.ts:416:1 › preferences: failure is not saved; persistence, mobile keyboard and title display (22.2s)
+  ok 16 tests\support.spec.ts:473:1 › independent exercise: no model requests, skip, exit, refresh, unknown resources (16.2s)
+  ok 17 tests\support.spec.ts:515:1 › navigation keeps core entry clear, settings drafts and exercise return accessible (26.1s)
+
+
+  1) tests\support.spec.ts:149:1 › multi-turn timeline: pagination, reload, switching and mobile sidebar 
+
+    Error: expect(received).toBeLessThan(expected)
+
+    Expected: < 2
+    Received:   3741
+
+      194 |         .evaluate((node) => node.getBoundingClientRect().top)) - anchorTop,
+      195 |     ),
+    > 196 |   ).toBeLessThan(2)
+          |     ^
+      197 |   await expect(page.getByText('查看旧版本', { exact: true })).toHaveCount(0)
+      198 |   await screenshot(page, 'multiturn-desktop')
+      199 |   await page.getByRole('button', { name: '新建对话', exact: true }).click()
+        at D:\PsyEvoAgent\frontend\tests\support.spec.ts:196:5
+
+    Error Context: test-results\support-multi-turn-timelin-b25dc-witching-and-mobile-sidebar\error-context.md
+
+  1 failed
+    tests\support.spec.ts:149:1 › multi-turn timeline: pagination, reload, switching and mobile sidebar 
+  16 passed (8.1m)
+[WebServer] INFO:     Started server process [115400]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8194 (Press CTRL+C to quit)

@@ -14,6 +14,8 @@ $previousPassword = $env:PSYEVO_POSTGRES_PASSWORD
 $previousDatabase = $env:PSYEVO_DATABASE_URL
 $previousEnvironment = $env:PSYEVO_ENV
 $previousSupport = $env:PSYEVO_SUPPORT_MODE
+$previousMemory = $env:PSYEVO_MEMORY_MODE
+$env:PSYEVO_MEMORY_MODE = 'disabled'
 $previousProvider = @{}
 Get-ChildItem Env:PSYEVO_PROVIDER_* | ForEach-Object { $previousProvider[$_.Name] = $_.Value }
 $previousProbe = $env:PSYEVO_LIVE_PROBE_ENABLED
@@ -82,7 +84,8 @@ try {
                 $env:PSYEVO_SUPPORT_MODE = 'live'
                 & uv run --no-sync python -c 'from app.config import load_settings; load_settings()' *> $null
                 if ($LASTEXITCODE -ne 0) { throw 'Live support configuration is invalid.' }
-                Write-Host 'Live support enabled; API supervisor owns the independent Worker.'
+                $env:PSYEVO_MEMORY_MODE = 'live'
+                Write-Host 'Live support and memory extraction enabled; API supervisor owns the independent Worker.'
                 $BackendArgs = @('--support-worker') + $BackendArgs
             }
             & uv run --no-sync python -m app.dev @BackendArgs
@@ -92,6 +95,7 @@ try {
 } finally {
     $env:PSYEVO_OUTPUT_TOKEN_OVERRIDE = $previousOverride
     $env:PSYEVO_SUPPORT_MODE = $previousSupport
+    $env:PSYEVO_MEMORY_MODE = $previousMemory
     Get-ChildItem Env:PSYEVO_PROVIDER_* | ForEach-Object { Remove-Item -LiteralPath "Env:$($_.Name)" }
     foreach ($name in $previousProvider.Keys) { Set-Item -LiteralPath "Env:$name" -Value $previousProvider[$name] }
     $env:PSYEVO_LIVE_PROBE_ENABLED = $previousProbe

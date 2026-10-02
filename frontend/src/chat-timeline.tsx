@@ -2,6 +2,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react'
 import { z } from 'zod'
 import { request } from './account-api'
+import { Button } from './components/ui/button'
 import { ExcerptButton } from './records-page'
 import { MarkdownMessage } from './markdown-message'
 import { runSchema, type Run } from './support-api'
@@ -76,7 +77,18 @@ export function ChatTimeline({
   )
   const scroller = useRef<HTMLDivElement>(null)
   const follow = useRef(true)
-  const anchor = useRef<{ id: string; top: number } | null>(null)
+  const anchor = useRef<{ id: string; top: number; pages: number } | null>(null)
+  const activationAnchor = useRef<typeof anchor.current>(null)
+  function captureAnchor() {
+    const item = scroller.current?.querySelector<HTMLElement>('[data-run-id]')
+    return item?.dataset.runId
+      ? {
+          id: item.dataset.runId,
+          top: item.getBoundingClientRect().top,
+          pages: timeline.data?.pages.length ?? 0,
+        }
+      : null
+  }
   useLayoutEffect(() => {
     const node = scroller.current
     if (!node) return
@@ -84,18 +96,34 @@ export function ChatTimeline({
       const item = node.querySelector<HTMLElement>(
         `[data-run-id="${anchor.current.id}"]`,
       )
-      if (item)
-        node.scrollTop += item.getBoundingClientRect().top - anchor.current.top
-      if (!timeline.isFetchingNextPage) anchor.current = null
+      if (item) {
+        let remaining = item.getBoundingClientRect().top - anchor.current.top
+        let container: HTMLElement | null = node
+        while (container && Math.abs(remaining) > 0.5) {
+          const before = container.scrollTop
+          container.scrollTop += remaining
+          remaining -= container.scrollTop - before
+          container = container.parentElement
+        }
+      }
+      // Current-run updates can render before fetchNextPage's pending flag arrives.
+      // Keep the anchor until the older page is actually part of the result.
+      if (
+        (timeline.data?.pages.length ?? 0) > anchor.current.pages ||
+        timeline.isError
+      ) {
+        anchor.current = null
+        follow.current = false
+      }
     } else if (follow.current) node.scrollTop = node.scrollHeight
-  }, [timeline.data, timeline.isFetchingNextPage, current])
+  }, [timeline.data, timeline.isFetchingNextPage, timeline.isError, current])
   return (
     <div
       className="chat-scroll min-h-[100px] flex-1 overflow-y-auto"
       ref={scroller}
       onScroll={() => {
         const node = scroller.current
-        if (node)
+        if (node && !anchor.current)
           follow.current =
             node.scrollHeight - node.scrollTop - node.clientHeight < 80
       }}
@@ -114,25 +142,32 @@ export function ChatTimeline({
         ) : (
           <>
             {timeline.hasNextPage ? (
-              <button
+              <Button
                 className="earlier-messages btn mx-auto mb-7 block min-h-11 text-xs"
                 disabled={timeline.isFetching}
+                onPointerDown={() => {
+                  activationAnchor.current = captureAnchor()
+                }}
+                onPointerCancel={() => {
+                  activationAnchor.current = null
+                }}
+                onBlur={() => {
+                  activationAnchor.current = null
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ')
+                    activationAnchor.current = captureAnchor()
+                }}
                 onClick={() => {
-                  const item =
-                    scroller.current?.querySelector<HTMLElement>(
-                      '[data-run-id]',
-                    )
-                  if (item)
-                    anchor.current = {
-                      id: item.dataset.runId!,
-                      top: item.getBoundingClientRect().top,
-                    }
+                  // Capture before pointer focus can scroll an outer overflow container.
+                  anchor.current = activationAnchor.current ?? captureAnchor()
+                  activationAnchor.current = null
                   follow.current = false
                   void timeline.fetchNextPage({ cancelRefetch: false })
                 }}
               >
                 {timeline.isFetchingNextPage ? '正在加载…' : '加载更早消息'}
-              </button>
+              </Button>
             ) : null}
             {!turns.length ? (
               <p className="py-10 text-center text-sm text-muted">

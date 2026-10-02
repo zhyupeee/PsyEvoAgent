@@ -224,37 +224,40 @@ test('revision disclosure supports keyboard, retained draft and focus return', a
   await expect(trigger).toHaveAttribute('aria-expanded', 'false')
 })
 
-test('fallback scrolling preserves the timeline pagination anchor', async ({
-  page,
-}) => {
-  await mockChat(page)
-  const turns = Array.from({ length: 21 }, (_, index) => ({
-    ...run,
-    run_id: `review-run-${String(index).padStart(2, '0')}`,
-    input_text: `合成分页输入 ${index}`,
-  }))
-  await page.route('**/api/v1/**/current-run', (route) =>
-    route.fulfill({ json: turns[20] }),
-  )
-  await page.route('**/api/v1/**/timeline?*', (route) =>
-    route.fulfill({
-      json: new URL(route.request().url()).searchParams.has('cursor')
-        ? { items: [turns[0]], next_cursor: null }
-        : { items: turns.slice(1), next_cursor: 'older' },
-    }),
-  )
-  await page.reload()
-  await expect(page.locator('.chat-turn')).toHaveCount(20)
-  const earlier = page.getByRole('button', { name: '加载更早消息' })
-  await earlier.scrollIntoViewIfNeeded()
-  const anchor = page.locator('[data-run-id="review-run-01"]')
-  const before = await anchor.evaluate(
-    (node) => node.getBoundingClientRect().top,
-  )
-  await earlier.click()
-  await expect(page.locator('.chat-turn')).toHaveCount(21)
-  const after = await anchor.evaluate(
-    (node) => node.getBoundingClientRect().top,
-  )
-  expect(Math.abs(after - before)).toBeLessThan(2)
-})
+for (const height of [720, 260]) {
+  test(`fallback scrolling preserves the timeline pagination anchor at ${height}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height })
+    await mockChat(page)
+    const turns = Array.from({ length: 21 }, (_, index) => ({
+      ...run,
+      run_id: `review-run-${String(index).padStart(2, '0')}`,
+      input_text: `合成分页输入 ${index}`,
+    }))
+    await page.route('**/api/v1/**/current-run', (route) =>
+      route.fulfill({ json: turns[20] }),
+    )
+    await page.route('**/api/v1/**/timeline?*', (route) =>
+      route.fulfill({
+        json: new URL(route.request().url()).searchParams.has('cursor')
+          ? { items: [turns[0]], next_cursor: null }
+          : { items: turns.slice(1), next_cursor: 'older' },
+      }),
+    )
+    await page.reload()
+    await expect(page.locator('.chat-turn')).toHaveCount(20)
+    const earlier = page.getByRole('button', { name: '加载更早消息' })
+    await earlier.scrollIntoViewIfNeeded()
+    const anchor = page.locator('[data-run-id="review-run-01"]')
+    const before = await anchor.evaluate(
+      (node) => node.getBoundingClientRect().top,
+    )
+    await earlier.click()
+    await expect(page.locator('.chat-turn')).toHaveCount(21)
+    const after = await anchor.evaluate(
+      (node) => node.getBoundingClientRect().top,
+    )
+    expect(Math.abs(after - before)).toBeLessThan(2)
+  })
+}

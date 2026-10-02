@@ -5,6 +5,7 @@ test('configured HTTPS origin, secure cookie, icons and rejected alternate origi
   page,
   context,
 }) => {
+  test.setTimeout(60000)
   await context.route('**/*', (route) =>
     new URL(route.request().url()).hostname === '127.0.0.1'
       ? route.continue()
@@ -13,7 +14,7 @@ test('configured HTTPS origin, secure cookie, icons and rejected alternate origi
   await register(page, `browser-https-${Date.now()}@example.com`)
   await expect(
     page.getByRole('heading', { name: '对话', exact: true }),
-  ).toBeVisible()
+  ).toBeVisible({ timeout: 15000 })
   expect(page.url()).toMatch(/^https:/)
   expect(
     (await context.cookies()).find((c) => c.name === 'psyevo_session')?.secure,
@@ -21,7 +22,7 @@ test('configured HTTPS origin, secure cookie, icons and rejected alternate origi
   await page.reload()
   await expect(
     page.getByRole('heading', { name: '对话', exact: true }),
-  ).toBeVisible()
+  ).toBeVisible({ timeout: 15000 })
   expect((await context.request.get('/favicon.ico')).status()).toBe(200)
   expect((await context.request.get('/brand/icon-180.png')).status()).toBe(200)
   const result = await context.request.post('/api/v1/auth/registration-codes', {

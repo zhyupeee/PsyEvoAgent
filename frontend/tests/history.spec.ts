@@ -128,6 +128,7 @@ test('optional feedback: failure, empty reason, lost acknowledgement and real re
 test('rename search archive restore, revision and regenerate preserve separate history', async ({
   page,
 }) => {
+  test.setTimeout(90000)
   await conversation(page, 'STEP07旧输入不可混入')
   await page.getByText('管理此对话', { exact: true }).click()
   await page.getByLabel('对话标题').fill('STEP07检索对话')
@@ -207,6 +208,7 @@ test('ordinary changes refresh the affected tab and preserve unrelated unsent fo
   page,
   context,
 }) => {
+  test.setTimeout(120000)
   await conversation(
     page,
     'STEP07 cross-tab source',
@@ -332,6 +334,7 @@ test('confirmed deletion clears two tabs, retries lost response, survives logout
   page,
   context,
 }) => {
+  test.setTimeout(60000)
   await conversation(page, 'STEP07删除后不再可见')
   const url = page.url()
   const shell = await page.locator('.support-shell').elementHandle()

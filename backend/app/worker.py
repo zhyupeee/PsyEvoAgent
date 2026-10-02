@@ -20,11 +20,14 @@ def main() -> None:
     parser.add_argument("--check", action="store_true", help="Start, clean up and exit immediately")
     parser.add_argument("--support", action="store_true", help="Consume isolated fake support runs")
     parser.add_argument("--jobs-probe", action="store_true", help="Consume synthetic STEP03 jobs")
+    parser.add_argument(
+        "--memory", action="store_true", help="Consume configured memory extraction jobs"
+    )
     parser.add_argument("--once", action="store_true", help="One job recovery scan")
     parser.add_argument("--probe-pause", choices=["after_claim", "before_commit", "after_commit"])
     args = parser.parse_args()
-    if (args.support and args.jobs_probe) or (
-        (args.once or args.probe_pause) and not args.jobs_probe
+    if sum((args.support, args.jobs_probe, args.memory)) > 1 or (
+        (args.once or args.probe_pause) and not (args.jobs_probe or args.memory)
     ):
         parser.error("Job probe flags require a separate --jobs-probe invocation")
 
@@ -32,7 +35,11 @@ def main() -> None:
         stop = asyncio.Event()
         if args.check:
             stop.set()
-        if args.jobs_probe:
+        if args.memory:
+            from app.memory_worker import consume as consume_memory
+
+            await consume_memory(stop, once=args.once, pause=args.probe_pause)
+        elif args.jobs_probe:
             from app.job_worker import consume as consume_jobs
 
             await consume_jobs(stop, once=args.once, pause=args.probe_pause)

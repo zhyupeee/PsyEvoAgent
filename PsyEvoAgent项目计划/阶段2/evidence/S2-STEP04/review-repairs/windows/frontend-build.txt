@@ -1,0 +1,86 @@
+
+> psyevoagent-frontend@0.1.0 build D:\PsyEvoAgent\frontend
+> vite build
+
+[36mvite v7.3.6 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32m✓[39m 2572 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/client/[22m[35massets/style-npcQ14wI.css                                    [39m[1m[2m 41.00 kB[22m[1m[22m[2m │ gzip:   8.65 kB[22m
+[2mdist/client/[22m[36massets/_support.chat-B0Mog_4N.js                             [39m[1m[2m  0.07 kB[22m[1m[22m[2m │ gzip:   0.09 kB[22m
+[2mdist/client/[22m[36massets/_support.records-BFcZPVQm.js                          [39m[1m[2m  0.07 kB[22m[1m[22m[2m │ gzip:   0.09 kB[22m
+[2mdist/client/[22m[36massets/_support.resources-BFcZPVQm.js                        [39m[1m[2m  0.07 kB[22m[1m[22m[2m │ gzip:   0.09 kB[22m
+[2mdist/client/[22m[36massets/_support.me_.support-card-DRaVF4uS.js                 [39m[1m[2m  0.25 kB[22m[1m[22m[2m │ gzip:   0.19 kB[22m
+[2mdist/client/[22m[36massets/_support.records.index-DMmAqVjj.js                    [39m[1m[2m  0.25 kB[22m[1m[22m[2m │ gzip:   0.19 kB[22m
+[2mdist/client/[22m[36massets/_support.resources.index-hwF99QmL.js                  [39m[1m[2m  0.26 kB[22m[1m[22m[2m │ gzip:   0.21 kB[22m
+[2mdist/client/[22m[36massets/_support.records.sleep-B1qpInK7.js                    [39m[1m[2m  0.28 kB[22m[1m[22m[2m │ gzip:   0.22 kB[22m
+[2mdist/client/[22m[36massets/_support.resources.exercises._exerciseId-e0JHJFy1.js  [39m[1m[2m  0.30 kB[22m[1m[22m[2m │ gzip:   0.23 kB[22m
+[2mdist/client/[22m[36massets/login-CA5Wma4x.js                                     [39m[1m[2m  0.32 kB[22m[1m[22m[2m │ gzip:   0.24 kB[22m
+[2mdist/client/[22m[36massets/register-CKuY7xAs.js                                  [39m[1m[2m  0.32 kB[22m[1m[22m[2m │ gzip:   0.24 kB[22m
+[2mdist/client/[22m[36massets/book-open-xMby35rp.js                                 [39m[1m[2m  0.33 kB[22m[1m[22m[2m │ gzip:   0.25 kB[22m
+[2mdist/client/[22m[36massets/_support.chat.index-UxImmQDz.js                       [39m[1m[2m  0.34 kB[22m[1m[22m[2m │ gzip:   0.24 kB[22m
+[2mdist/client/[22m[36massets/_support.me-B8V3yq01.js                               [39m[1m[2m  0.36 kB[22m[1m[22m[2m │ gzip:   0.25 kB[22m
+[2mdist/client/[22m[36massets/brand-Dz4fbBGV.js                                     [39m[1m[2m  0.36 kB[22m[1m[22m[2m │ gzip:   0.29 kB[22m
+[2mdist/client/[22m[36massets/_support.chat._sessionId-CLYpv_pX.js                  [39m[1m[2m  0.40 kB[22m[1m[22m[2m │ gzip:   0.28 kB[22m
+[2mdist/client/[22m[36massets/heart-handshake-CC5dNSeW.js                           [39m[1m[2m  0.50 kB[22m[1m[22m[2m │ gzip:   0.32 kB[22m
+[2mdist/client/[22m[36massets/useInfiniteQuery-DdVX7mji.js                          [39m[1m[2m  2.60 kB[22m[1m[22m[2m │ gzip:   1.05 kB[22m
+[2mdist/client/[22m[36massets/health-BUnevv0-.js                                    [39m[1m[2m  3.62 kB[22m[1m[22m[2m │ gzip:   1.66 kB[22m
+[2mdist/client/[22m[36massets/_support-DwKUo2LD.js                                  [39m[1m[2m  5.17 kB[22m[1m[22m[2m │ gzip:   2.29 kB[22m
+[2mdist/client/[22m[36massets/queryClient-DTgY_L_c.js                               [39m[1m[2m  6.99 kB[22m[1m[22m[2m │ gzip:   2.18 kB[22m
+[2mdist/client/[22m[36massets/resources-page-CV95GiKx.js                            [39m[1m[2m  7.30 kB[22m[1m[22m[2m │ gzip:   2.59 kB[22m
+[2mdist/client/[22m[36massets/model-settings-CcpYlzcG.js                            [39m[1m[2m 10.50 kB[22m[1m[22m[2m │ gzip:   3.96 kB[22m
+[2mdist/client/[22m[36massets/_support.me_.memories-CTedDUOT.js                     [39m[1m[2m 11.54 kB[22m[1m[22m[2m │ gzip:   4.73 kB[22m
+[2mdist/client/[22m[36massets/account-page-TJRCVvyE.js                              [39m[1m[2m 17.69 kB[22m[1m[22m[2m │ gzip:   5.97 kB[22m
+[2mdist/client/[22m[36massets/chat-page-DxS9Aav_.js                                 [39m[1m[2m 21.04 kB[22m[1m[22m[2m │ gzip:   8.01 kB[22m
+[2mdist/client/[22m[36massets/records-page-C6O_4pMo.js                              [39m[1m[2m 21.61 kB[22m[1m[22m[2m │ gzip:   8.00 kB[22m
+[2mdist/client/[22m[36massets/support-api-KPVPPC9C.js                               [39m[1m[2m 28.90 kB[22m[1m[22m[2m │ gzip:  10.36 kB[22m
+[2mdist/client/[22m[36massets/history-page-zXJr_2Ba.js                              [39m[1m[2m344.19 kB[22m[1m[22m[2m │ gzip: 104.99 kB[22m
+[2mdist/client/[22m[36massets/index-DXozucfe.js                                     [39m[1m[2m445.11 kB[22m[1m[22m[2m │ gzip: 140.37 kB[22m
+[32m✓ built in 15.51s[39m
+[36mvite v7.3.6 [32mbuilding ssr environment for production...[36m[39m
+transforming...
+[32m✓[39m 175 modules transformed.
+rendering chunks...
+[2mdist/server/[22m[36massets/start-HYkvq4Ni.js                                     [39m[1m[2m  0.06 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/_support.chat-hdlc17Rz.js                             [39m[1m[2m  0.12 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/_support.records-hdlc17Rz.js                          [39m[1m[2m  0.12 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/_support.resources-hdlc17Rz.js                        [39m[1m[2m  0.12 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/empty-plugin-adapters-BFgPZ6_d.js                     [39m[1m[2m  0.13 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/_support.resources.index-CZ8FfGUw.js                  [39m[1m[2m  0.46 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/_support.resources.exercises._exerciseId-D6TUPB7i.js  [39m[1m[2m  0.54 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/_support.records.index-ClC4yqwo.js                    [39m[1m[2m  0.54 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/_support.me_.support-card-Bwkoc8TV.js                 [39m[1m[2m  0.55 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/_support.records.sleep-Cd7eew86.js                    [39m[1m[2m  0.60 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/_support.chat.index-D6vtZJ5Q.js                       [39m[1m[2m  0.65 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/brand-yk77jtlB.js                                     [39m[1m[2m  0.67 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/login-DbTE2MtN.js                                     [39m[1m[2m  0.67 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/register-eOfrpwt_.js                                  [39m[1m[2m  0.67 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/_support.me-DT73rpm9.js                               [39m[1m[2m  0.75 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/_support.chat._sessionId-JVFbluDu.js                  [39m[1m[2m  0.75 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/support-api-Dxf9nCYD.js                               [39m[1m[2m  4.14 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/_tanstack-start-manifest_v-DMwg6nxL.js                [39m[1m[2m  4.69 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/health-BSrn5gNu.js                                    [39m[1m[2m  5.15 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/_support-Cv1nHq-g.js                                  [39m[1m[2m  8.34 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/router-DnWCi6ug.js                                    [39m[1m[2m 10.24 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/resources-page-Dgs24XjE.js                            [39m[1m[2m 10.66 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/model-settings-CJratdU9.js                            [39m[1m[2m 18.09 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/_support.me_.memories-jQYEknJl.js                     [39m[1m[2m 20.64 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/account-page-Q7e7neEi.js                              [39m[1m[2m 29.15 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/chat-page-YxOtOKzT.js                                 [39m[1m[2m 36.66 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/records-page-CkAJsQKS.js                              [39m[1m[2m 39.34 kB[22m[1m[22m
+[2mdist/server/[22m[36massets/history-page-BGsDrKUk.js                              [39m[1m[2m 47.92 kB[22m[1m[22m
+[2mdist/server/[22m[36mserver.js                                                    [39m[1m[2m230.18 kB[22m[1m[22m
+[32m✓ built in 3.46s[39m
+[33mnode_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/util.js (400:0): A comment
+
+"// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+
+in "node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.[39m
+[33mnode_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/regexes.js (74:0): A comment
+
+"/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+ * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+ * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+
+in "node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.[39m

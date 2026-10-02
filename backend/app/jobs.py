@@ -34,7 +34,7 @@ ERRORS = TRANSIENT | {"schema", "parameters", "permission", "deleted", "unknown_
 
 
 class JobSource(Input):
-    source_type: Literal["conversation", "note", "sleep_record", "support_card"]
+    source_type: Literal["conversation", "message", "note", "sleep_record", "support_card"]
     source_id: str = Field(pattern=r"^[a-f0-9-]{36}$")
     source_version: int = Field(gt=0, strict=True)
 
@@ -76,6 +76,8 @@ def finish(job: BackgroundJob, status: str, reason: str | None, at: datetime) ->
     job.lease_owner, job.lease_until = None, None
     job.version += 1
     job.updated_at = at
+    if status in {"failed", "cancelled", "invalidated", "succeeded"}:
+        job.encrypted_config = None
 
 
 def eligible(db: Session, job: BackgroundJob) -> bool:
@@ -86,7 +88,7 @@ def eligible(db: Session, job: BackgroundJob) -> bool:
         or job.deleted_at
         or job.cancelled_at
         or job.purpose != PURPOSE
-        or job.kind != "recovery_probe"
+        or job.kind not in {"recovery_probe", "memory_extraction"}
         or job.experiment_config_version != CONFIG_VERSION
         or not job.source_refs
     ):
@@ -111,6 +113,11 @@ def eligible(db: Session, job: BackgroundJob) -> bool:
             or grant.source_version != ref.source_version
             or not source_available(db, grant)
         ):
+            return False
+    if job.kind == "memory_extraction":
+        from app.memory import suppressed
+
+        if suppressed(db, job.owner_id, job.source_refs):
             return False
     # A newer generation fences the old worker even if its lease has not expired.
     return (
@@ -137,9 +144,13 @@ def enqueue(
     generation: int = 1,
     budget: Budget | None = None,
     max_attempts: int = 3,
+    kind: Literal["recovery_probe", "memory_extraction"] = "recovery_probe",
 ) -> BackgroundJob:
     """Caller commits source changes, grants and job together; no HTTP auto-enqueue yet."""
-    require_probe(settings)
+    if kind == "recovery_probe":
+        require_probe(settings)
+    elif settings.memory_mode == "disabled":
+        raise APIError(409, "memory_unavailable")
     if not 1 <= len(sources) <= 8 or generation < 1 or not 1 <= max_attempts <= 5:
         raise APIError(422, "invalid_job")
     lock_owner(db, owner)
@@ -150,12 +161,17 @@ def enqueue(
     identifiers = [(ref.source_type, ref.source_id) for ref in ordered]
     if len(set(identifiers)) != len(identifiers):
         raise APIError(422, "duplicate_source")
-    key = digest(json.dumps(identifiers))
+    key = digest(
+        json.dumps(
+            [ref.model_dump() for ref in ordered] if kind == "memory_extraction" else identifiers,
+            sort_keys=True,
+        )
+    )
     previous = db.scalar(
         select(BackgroundJob)
         .where(
             BackgroundJob.owner_id == owner,
-            BackgroundJob.kind == "recovery_probe",
+            BackgroundJob.kind == kind,
             BackgroundJob.source_key == key,
         )
         .order_by(BackgroundJob.generation.desc())
@@ -190,7 +206,7 @@ def enqueue(
             finish(previous, "invalidated", "generation_changed", at)
     job = BackgroundJob(
         owner_id=owner,
-        kind="recovery_probe",
+        kind=kind,
         purpose=PURPOSE,
         source_key=key,
         generation=generation,
@@ -244,12 +260,19 @@ def retry(job: BackgroundJob, reason: str, at: datetime) -> None:
         finish(job, "failed", reason, at)
 
 
-def claim(engine: Engine, worker_id: str, *, lease_seconds: float = 5) -> Lease | None:
+def claim(
+    engine: Engine,
+    worker_id: str,
+    *,
+    lease_seconds: float = 5,
+    kind: str = "recovery_probe",
+) -> Lease | None:
     if not 0 < lease_seconds <= 60 or not 1 <= len(worker_id) <= 36:
         raise ValueError("invalid_lease")
     cursor: tuple[datetime, str] | None = None
     while True:
         query = select(BackgroundJob.id, BackgroundJob.owner_id, BackgroundJob.available_at).where(
+            BackgroundJob.kind == kind,
             BackgroundJob.status.in_(ACTIVE),
             or_(
                 BackgroundJob.available_at <= func.clock_timestamp(),
@@ -344,7 +367,7 @@ def renew(engine: Engine, lease: Lease, *, lease_seconds: float = 5) -> bool:
         return True
 
 
-def reserve(engine: Engine, lease: Lease, tokens: int) -> str | None:
+def reserve(engine: Engine, lease: Lease, tokens: int, *, live: bool = False) -> str | None:
     """Reserve before any invocation; unknown usage retains the full reservation on recovery."""
     if type(tokens) is not int or tokens <= 0:
         raise ValueError("invalid_reservation")
@@ -372,8 +395,8 @@ def reserve(engine: Engine, lease: Lease, tokens: int) -> str | None:
                 "reserved_tokens": tokens,
                 "charged_tokens": tokens,
                 "actual_tokens": None,
-                "cost": "0",
-                "currency": "SYNTHETIC",
+                "cost": None if live else "0",
+                "currency": "unknown" if live else "SYNTHETIC",
                 "status": "reserved",
             },
         ]

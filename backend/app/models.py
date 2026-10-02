@@ -197,6 +197,10 @@ class Run(Personal, Base):
 class ContextGrant(Personal, Base):
     __tablename__ = "context_grants"
     __table_args__ = (
+        UniqueConstraint("id", "owner_id"),
+        ForeignKeyConstraint(
+            ["message_source_id", "owner_id"], ["messages.id", "messages.owner_id"]
+        ),
         ForeignKeyConstraint(
             ["run_id", "owner_id"], ["runs.id", "runs.owner_id"], name="fk_grant_run_owner"
         ),
@@ -212,7 +216,9 @@ class ContextGrant(Personal, Base):
         ForeignKeyConstraint(
             ["card_source_id", "owner_id"], ["support_cards.id", "support_cards.owner_id"]
         ),
-        CheckConstraint("source_type IN ('conversation','note','sleep_record','support_card')"),
+        CheckConstraint(
+            "source_type IN ('conversation','message','note','sleep_record','support_card')"
+        ),
         ForeignKeyConstraint(
             ["consent_id", "owner_id"],
             ["consent_records.id", "consent_records.owner_id"],
@@ -231,6 +237,9 @@ class ContextGrant(Personal, Base):
     run_id: Mapped[str | None] = mapped_column(ForeignKey("runs.id"), index=True)
     job_id: Mapped[str | None] = mapped_column(String(36), index=True)
     source_id: Mapped[str] = mapped_column(String(36))
+    message_source_id: Mapped[str | None] = mapped_column(
+        String(36), Computed("CASE WHEN source_type = 'message' THEN source_id END")
+    )
     conversation_source_id: Mapped[str | None] = mapped_column(
         String(36), Computed("CASE WHEN source_type = 'conversation' THEN source_id END")
     )
@@ -254,6 +263,9 @@ class DeletionJob(Personal, Base):
     __tablename__ = "deletion_jobs"
     __table_args__ = (
         ForeignKeyConstraint(
+            ["memory_target_id", "owner_id"], ["memories.id", "memories.owner_id"]
+        ),
+        ForeignKeyConstraint(
             ["conversation_target_id", "owner_id"],
             ["conversations.id", "conversations.owner_id"],
             name="fk_deletion_target_owner",
@@ -265,13 +277,18 @@ class DeletionJob(Personal, Base):
         ForeignKeyConstraint(
             ["card_target_id", "owner_id"], ["support_cards.id", "support_cards.owner_id"]
         ),
-        CheckConstraint("target_type IN ('conversation','note','sleep_record','support_card')"),
+        CheckConstraint(
+            "target_type IN ('conversation','note','sleep_record','support_card','memory')"
+        ),
         CheckConstraint(
             "status IN ('requested','online_blocked','derivatives_purged',"
             "'backup_pending','completed','failed_retryable')"
         ),
     )
     target: Mapped[str] = mapped_column(String(36))
+    memory_target_id: Mapped[str | None] = mapped_column(
+        String(36), Computed("CASE WHEN target_type = 'memory' THEN target END")
+    )
     target_type: Mapped[str] = mapped_column(
         String(30), default="conversation", server_default="conversation"
     )
@@ -337,6 +354,10 @@ class BackgroundJob(Personal, Base):
         Index("ix_background_jobs_recovery", "status", "available_at", "lease_until"),
     )
     kind: Mapped[str] = mapped_column(String(40))
+    provider_profile: Mapped[dict[str, object]] = mapped_column(
+        JSONB, default=dict, server_default="{}"
+    )
+    encrypted_config: Mapped[str | None] = mapped_column(Text)
     source_key: Mapped[str] = mapped_column(String(64))
     generation: Mapped[int] = mapped_column(Integer)
     experiment_config_version: Mapped[str] = mapped_column(String(80))

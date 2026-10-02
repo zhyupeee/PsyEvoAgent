@@ -1,0 +1,71 @@
+{
+  "case_id": "S2-A10",
+  "execution_kind": "real-postgresql-process-kill/fake-model",
+  "phase": "before_commit",
+  "job_id": "cd06baf6-157c-4d5d-83dd-18cc1766aaf7",
+  "before": {
+    "id": "cd06baf6-157c-4d5d-83dd-18cc1766aaf7",
+    "version": 4,
+    "kind": "memory_extraction",
+    "generation": 1,
+    "status": "running",
+    "attempt": 1,
+    "max_attempts": 3,
+    "available_at": "2026-10-02T12:53:20.192691Z",
+    "deadline_at": "2026-10-02T12:55:20.185647Z",
+    "lease_token": 1,
+    "lease_until": "2026-10-02T12:53:29.610022Z",
+    "cancelled_at": null,
+    "error_code": null,
+    "result_ref": null,
+    "budget_ref": "5925c734-6801-4ae4-ad59-4fc15d72c363",
+    "lease_losses": 0
+  },
+  "after": {
+    "id": "cd06baf6-157c-4d5d-83dd-18cc1766aaf7",
+    "version": 9,
+    "kind": "memory_extraction",
+    "generation": 1,
+    "status": "succeeded",
+    "attempt": 2,
+    "max_attempts": 3,
+    "available_at": "2026-10-02T12:53:30.838153Z",
+    "deadline_at": "2026-10-02T12:55:20.185647Z",
+    "lease_token": 2,
+    "lease_until": null,
+    "cancelled_at": null,
+    "error_code": null,
+    "result_ref": "cd06baf6-157c-4d5d-83dd-18cc1766aaf7",
+    "budget_ref": "5925c734-6801-4ae4-ad59-4fc15d72c363",
+    "lease_losses": 1
+  },
+  "calls": [
+    {
+      "cost": "0",
+      "job_id": "cd06baf6-157c-4d5d-83dd-18cc1766aaf7",
+      "status": "reserved",
+      "attempt": 1,
+      "currency": "SYNTHETIC",
+      "generation": 1,
+      "request_id": "28714c1b-e9a9-4d22-bbbd-880027c6e62e",
+      "lease_token": 1,
+      "actual_tokens": null,
+      "charged_tokens": 5342,
+      "reserved_tokens": 5342
+    },
+    {
+      "cost": "0",
+      "job_id": "cd06baf6-157c-4d5d-83dd-18cc1766aaf7",
+      "status": "settled",
+      "attempt": 2,
+      "currency": "SYNTHETIC",
+      "generation": 1,
+      "request_id": "4fea876b-841e-4f41-b8c6-d5c12a02692d",
+      "lease_token": 2,
+      "actual_tokens": 20,
+      "charged_tokens": 20,
+      "reserved_tokens": 5342
+    }
+  ],
+  "result_count": 1
+}

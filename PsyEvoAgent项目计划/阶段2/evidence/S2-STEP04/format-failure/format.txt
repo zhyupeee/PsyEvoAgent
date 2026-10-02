@@ -1,0 +1,11 @@
+unformatted: File would be reformatted
+   --> tests\test_step03_migrations.py:511:83
+    |
+510 |             assert (
+    -                 connection.scalar(text("SELECT version_num FROM alembic_version"))
+    -                 == "n014_memory"
+511 +                 connection.scalar(text("SELECT version_num FROM alembic_version")) == "n014_memory"
+512 |             )
+    |
+
+1 file would be reformatted, 96 files already formatted

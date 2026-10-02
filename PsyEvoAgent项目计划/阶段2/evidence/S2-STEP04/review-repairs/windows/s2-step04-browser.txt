@@ -1,0 +1,23 @@
+
+Running 13 tests using 1 worker
+
+  ok  1 tests\memory-recovery.spec.ts:112:3 › memory 更正 restores keyboard focus after Escape and cancellation (5.2s)
+  ok  2 tests\memory-recovery.spec.ts:112:3 › memory 停止使用 restores keyboard focus after Escape and cancellation (2.2s)
+  ok  3 tests\memory-recovery.spec.ts:112:3 › memory 遗忘 restores keyboard focus after Escape and cancellation (2.4s)
+  ok  4 tests\memory-recovery.spec.ts:129:1 › dirty memory correction returns to editor, then restores opener when discarded (2.4s)
+  ok  5 tests\memory-recovery.spec.ts:153:3 › conflicting forgetting uses reviewed version with available source=true (2.4s)
+  ok  6 tests\memory-recovery.spec.ts:153:3 › conflicting forgetting uses reviewed version with available source=false (2.7s)
+  ok  7 tests\memory-recovery.spec.ts:179:3 › successful memory 更正 restores focus to a surviving control (2.1s)
+  ok  8 tests\memory-recovery.spec.ts:179:3 › successful memory 停止使用 restores focus to a surviving control (2.3s)
+  ok  9 tests\memory-recovery.spec.ts:179:3 › successful memory 遗忘 restores focus to a surviving control (2.1s)
+  ok 10 tests\memory.spec.ts:43:1 › S2-A04 real page auto-save, correction, reopen and confirmed forgetting (11.2s)
+  ok 11 tests\memory.spec.ts:89:1 › mobile stop filter, errors and no horizontal overflow (7.2s)
+  ok 12 tests\memory.spec.ts:122:1 › failed save preserves edit, conflict requires review and escape retains dirty form (6.8s)
+  ok 13 tests\memory.spec.ts:158:1 › concurrent correction shows latest content and preserves the editor (7.4s)
+
+  13 passed (1.2m)
+[WebServer] INFO:     Started server process [137396]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     api.started
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8204 (Press CTRL+C to quit)

@@ -297,6 +297,10 @@ async def consume(stop: asyncio.Event, *, ready: Callable[[], None] | None = Non
         async with asyncio.TaskGroup() as group:
             group.create_task(loop(False))
             group.create_task(loop(True))
+            if settings.memory_mode != "disabled":
+                from app.memory_worker import consume as consume_memory
+
+                group.create_task(consume_memory(stop))
     finally:
         engine.dispose()
         print(f"worker.stopped consumers=2 mode={settings.support_mode}", flush=True)

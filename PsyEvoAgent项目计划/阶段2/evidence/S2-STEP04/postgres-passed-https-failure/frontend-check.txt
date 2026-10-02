@@ -1,0 +1,90 @@
+
+> psyevoagent-frontend@0.1.0 check D:\PsyEvoAgent\frontend
+> pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run format:check
+
+
+> psyevoagent-frontend@0.1.0 typecheck D:\PsyEvoAgent\frontend
+> tsc --noEmit
+
+
+> psyevoagent-frontend@0.1.0 lint D:\PsyEvoAgent\frontend
+> eslint . --max-warnings 0
+
+
+> psyevoagent-frontend@0.1.0 test D:\PsyEvoAgent\frontend
+> pnpm run test:unit
+
+
+> psyevoagent-frontend@0.1.0 test:unit D:\PsyEvoAgent\frontend
+> node --test ../scripts/start-backend.test.cjs && vitest run
+
+TAP version 13
+# Subtest: a fresh Windows terminal uses the existing database preparation entry
+ok 1 - a fresh Windows terminal uses the existing database preparation entry
+  ---
+  duration_ms: 1.8639
+  type: 'test'
+  ...
+# Subtest: an explicit database on win32 is inherited without local preparation
+ok 2 - an explicit database on win32 is inherited without local preparation
+  ---
+  duration_ms: 0.1663
+  type: 'test'
+  ...
+# Subtest: an explicit database on linux is inherited without local preparation
+ok 3 - an explicit database on linux is inherited without local preparation
+  ---
+  duration_ms: 0.1322
+  type: 'test'
+  ...
+# Subtest: missing configuration fails closed on linux in default
+ok 4 - missing configuration fails closed on linux in default
+  ---
+  duration_ms: 0.1841
+  type: 'test'
+  ...
+# Subtest: missing configuration fails closed on win32 in test
+ok 5 - missing configuration fails closed on win32 in test
+  ---
+  duration_ms: 0.1224
+  type: 'test'
+  ...
+# Subtest: missing configuration fails closed on win32 in production
+ok 6 - missing configuration fails closed on win32 in production
+  ---
+  duration_ms: 0.1284
+  type: 'test'
+  ...
+# Subtest: spawn failure is actionable and does not expose raw errors
+ok 7 - spawn failure is actionable and does not expose raw errors
+  ---
+  duration_ms: 0.1766
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 120.6389
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/PsyEvoAgent/frontend[39m
+
+ [32m✓[39m src/health.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/markdown-message.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32m✓[39m src/chat-timeline.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[32m7 passed[39m[22m[90m (7)[39m
+[2m   Start at [22m 13:41:05
+[2m   Duration [22m 2.10s[2m (transform 229ms, setup 0ms, collect 1.51s, tests 49ms, environment 1ms, prepare 323ms)[22m
+
+
+> psyevoagent-frontend@0.1.0 format:check D:\PsyEvoAgent\frontend
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!

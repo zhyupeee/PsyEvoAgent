@@ -1,0 +1,10 @@
+unformatted: File would be reformatted
+   --> app\memory.py:214:57
+    |
+213 |         refs = [r for r in job.source_refs if r["source_id"] in proposal.source_ids]
+    -         source_snapshot: list[dict[str, str | int]] = []
+214 +         source_snapshot: list[dict[str, str | int]] = []
+215 |         for ref in refs:
+    |
+
+1 file would be reformatted, 97 files already formatted

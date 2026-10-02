@@ -17,6 +17,7 @@ dependencies = [
     "pydantic>=2.10,<3",
     "sqlalchemy>=2.0,<3",
     "uvicorn[standard]>=0.34,<1",
+    "langmem==0.0.30",
 ]
 
 [dependency-groups]
@@ -48,4 +49,10 @@ filterwarnings = [
     "error",
     # Locked Starlette TestClient imports this deprecated AnyIO compatibility alias.
     "ignore:The anyio.abc.BlockingPortal alias is deprecated.*:DeprecationWarning",
+    # Locked trustcall 0.0.39 imports the backwards-compatible LangGraph 1.x alias.
+    "ignore:Importing Send from langgraph.constants is deprecated.*:DeprecationWarning",
 ]
+
+[[tool.mypy.overrides]]
+module = ["langmem", "langmem.*"]
+follow_untyped_imports = true

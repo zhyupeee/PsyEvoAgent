@@ -33,15 +33,44 @@ STEPS = ["online_blocked", "messages", "events", "feedback", "source_links"]
 
 def receipt(job: DeletionJob, db: Session) -> dict[str, Any]:
     # Persisted call reservations survive deletion and process/configuration changes.
+    run_ids = [run.id for run in affected_runs(db, job.target)]
     calls = db.scalars(
         select(ModelCall)
         .join(Run, Run.id == ModelCall.run_id)
         .where(
             Run.owner_id == job.owner_id,
-            Run.id.in_([run.id for run in affected_runs(db, job.target)]),
+            Run.id.in_(run_ids),
         )
     ).all()
     external = any(call.receipt.get("currency") != "SYNTHETIC" for call in calls)
+    from app.memory_models import ArtifactSource
+    from app.models import BackgroundJob, JobBudget
+
+    message_ids = select(Message.id).where(
+        Message.owner_id == job.owner_id, Message.run_id.in_(run_ids)
+    )
+    grants = select(ContextGrant.job_id).where(
+        ContextGrant.owner_id == job.owner_id,
+        or_(
+            ContextGrant.source_id == job.target,
+            ContextGrant.id.in_(
+                select(ArtifactSource.grant_id).where(ArtifactSource.memory_id == job.target)
+            ),
+            ContextGrant.source_id.in_(message_ids),
+            ContextGrant.source_id.in_(
+                select(NoteSource.note_id).where(
+                    NoteSource.owner_id == job.owner_id,
+                    NoteSource.message_id.in_(message_ids),
+                )
+            ),
+        ),
+    )
+    for budget in db.scalars(
+        select(JobBudget)
+        .join(BackgroundJob, BackgroundJob.budget_ref == JobBudget.id)
+        .where(BackgroundJob.id.in_(grants))
+    ):
+        external = external or any(call.get("currency") != "SYNTHETIC" for call in budget.calls)
     result: dict[str, Any] = {
         "deletion_id": job.id,
         "target": job.target,
@@ -92,6 +121,12 @@ def affected_runs(db: Session, target: str) -> list[Run]:
 
 
 def purge_step(db: Session, job: DeletionJob, step: str) -> None:
+    if job.target_type == "memory":
+        from app.memory import purge_unavailable
+
+        if step == "messages":
+            purge_unavailable(db, job.owner_id)
+        return
     runs = affected_runs(db, job.target)
     ids = [run.id for run in runs]
     if step == "messages":
@@ -137,6 +172,9 @@ def purge_step(db: Session, job: DeletionJob, step: str) -> None:
             ex = execution(db, run)
             if ex:
                 ex.grant_ids, ex.source_refs, ex.consent_refs = [], [], []
+        from app.memory import purge_unavailable
+
+        purge_unavailable(db, job.owner_id)
         for edge in db.scalars(select(RunBranch).where(RunBranch.run_id.in_(ids))):
             edge.deleted_at, edge.source_refs, edge.consent_refs = now(), [], []
 

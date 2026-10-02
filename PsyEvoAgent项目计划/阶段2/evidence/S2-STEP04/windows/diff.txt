@@ -1,0 +1,6 @@
+warning: in the working copy of 'backend/app/records.py', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/app/runs.py', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/pyproject.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_jobs.py', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_step03_migrations.py', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'scripts/check_step03.py', CRLF will be replaced by LF the next time Git touches it

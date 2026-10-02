@@ -1,0 +1,38 @@
+{
+  "phase": "before",
+  "passed": true,
+  "tables": {
+    "memories": {
+      "count": 19,
+      "sha256": "d9349ba55271373085bcc15c67a0cc158bdf83ff569a72e6626d5b914004f4c3"
+    },
+    "memory_candidates": {
+      "count": 19,
+      "sha256": "04de2726738278855c034985f9d072f62bb68039c2d9c92be27a5e8c9ebc6e74"
+    },
+    "memory_suppressions": {
+      "count": 10,
+      "sha256": "c4c6806efc8bc47f4e1f7ab4808240f26878bcc8c0d87638fbdc65be8a6469e3"
+    },
+    "artifact_sources": {
+      "count": 19,
+      "sha256": "6bfd95d8ea25a93921a5eed20fe3111ff0621d0b04959fc92e73166312265f84"
+    },
+    "background_jobs": {
+      "count": 372,
+      "sha256": "a1c5571f4c782c4f11de3b575c9fcbcc7fa201e9e80a85a677998561d0ff4049"
+    },
+    "job_budgets": {
+      "count": 370,
+      "sha256": "f08339b84d285affe9dec8f45d9421383ec604b3cc1c3310619ef52ab9d52779"
+    },
+    "job_grants": {
+      "count": 372,
+      "sha256": "2a6a564a54d16c07f9c1fa02ffc3914cc25f76535b1c92e9c6608135e5da5c3b"
+    },
+    "job_results": {
+      "count": 9,
+      "sha256": "5204d404648d8a970e721c33f2e67a1762da127234faff8987eb3da1e1b3d41d"
+    }
+  }
+}

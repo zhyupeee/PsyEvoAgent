@@ -22,3 +22,18 @@
 .coverage*
 .DS_Store
 Thumbs.db
+
+# Local scratch files, editor backups, and merge leftovers.
+**/.tmp/
+**/.temp/
+/tmp/
+/temp/
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+*.swp
+*.swo
+*~
+~$*

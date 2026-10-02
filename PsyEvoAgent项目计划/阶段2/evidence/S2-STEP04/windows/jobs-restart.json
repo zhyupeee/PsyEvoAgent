@@ -1,0 +1,18 @@
+{
+  "background_jobs": {
+    "count": 44,
+    "sha256": "bca1a4e01ba5e0d4e545b551c29a9458736fb068e2491c2b4178c85e921fc2c1"
+  },
+  "job_budgets": {
+    "count": 43,
+    "sha256": "5afada2516a2c2c8463997558bfcb4a9c3156d0d7a25a913f8bdaef23e706e9b"
+  },
+  "job_grants": {
+    "count": 44,
+    "sha256": "c7bad709e60d30687de646aad2e652a79e83716ed1c5cfbb822d8d2fd851426c"
+  },
+  "job_results": {
+    "count": 3,
+    "sha256": "a8b4647315c538b7f7d4c20fa0911520013ed1cf51ef2c83cc580387f463a71c"
+  }
+}
